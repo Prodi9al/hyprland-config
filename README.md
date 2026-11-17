@@ -449,11 +449,16 @@ All hardcoded paths use `$HOME` or `$XDG_*` placeholders — no personal data is
 | `Configs/.config/` | Dotfiles restored to `~/.config/` |
 | `Configs/.local/` | Dotfiles restored to `~/.local/` |
 | `Scripts/install.sh` | Arch Linux install script |
-| `Scripts/pkg_core.lst` | Core package list |
-| `Scripts/pkg_extra.lst` | Extra package list |
+| `Scripts/pkg_core.lst` | Core package list (pacman) |
+| `Scripts/pkg_extra.lst` | Extra package list (AUR) |
 | `Scripts/restore_cfg.lst` | Config restore manifest |
+| `Scripts/uninstall.sh` | Uninstall script |
+| `Scripts/install_aur.sh` | AUR package installer |
+| `Scripts/restore_cfg.sh` | Config restore script |
+| `Scripts/version.sh` | Version info |
 | `dots.toml` | Dotfile manifest |
 | `Source/assets/` | Wallpapers and images |
+| `LICENSE` | MIT License |
 
 ---
 
@@ -471,6 +476,16 @@ cd ~/hyprland-config
 ```
 
 The installer handles dependency installation, backs up existing configs to `~/.config/cfg_backups/`, and restores all dotfiles from `Configs/` to their target locations.
+
+**Options:**
+- `./Scripts/install.sh` — Standard install (pacman packages only)
+- `./Scripts/install.sh --aur` — Also install AUR packages (requires yay/paru/pamac)
+
+**Other scripts:**
+- `./Scripts/uninstall.sh` — Remove all restored dotfiles
+- `./Scripts/restore_cfg.sh` — Restore configs from `Configs/` with backup
+- `./Scripts/install_aur.sh` — Install AUR packages from `pkg_extra.lst`
+- `./Scripts/version.sh` — Show version info
 
 ### Option 2: Manual
 
