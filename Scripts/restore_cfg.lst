@@ -39,12 +39,9 @@
 .local/bin/prodi-shell -> ~/.local/bin/prodi-shell
 .local/share/hypr -> ~/.local/share/hypr
 .local/share/themes -> ~/.local/share/themes
-.local/share/icons -> ~/.local/share/icons
-.local/share/fonts -> ~/.local/share/fonts
 .local/share/waybar -> ~/.local/share/waybar
 .local/share/sddm -> ~/.local/share/sddm
 .local/share/rofi -> ~/.local/share/rofi
-.local/share/hyde -> ~/.local/share/hyde
 .local/share/wallbash -> ~/.local/share/wallbash
 .local/share/kio -> ~/.local/share/kio
 .local/share/kxmlgui5 -> ~/.local/share/kxmlgui5

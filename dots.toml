@@ -42,12 +42,9 @@ share-prodi = { source = "Configs/.local/share/prodi", target = "~/.local/share/
 bin-prodi-shell = { source = "Configs/.local/bin/prodi-shell", target = "~/.local/bin/prodi-shell" }
 share-hypr = { source = "Configs/.local/share/hypr", target = "~/.local/share/hypr" }
 themes = { source = "Configs/.local/share/themes", target = "~/.local/share/themes" }
-icons = { source = "Configs/.local/share/icons", target = "~/.local/share/icons" }
-fonts = { source = "Configs/.local/share/fonts", target = "~/.local/share/fonts" }
 waybar = { source = "Configs/.local/share/waybar", target = "~/.local/share/waybar" }
 sddm = { source = "Configs/.local/share/sddm", target = "~/.local/share/sddm" }
 rofi-share = { source = "Configs/.local/share/rofi", target = "~/.local/share/rofi" }
-hyde-share = { source = "Configs/.local/share/hyde", target = "~/.local/share/hyde" }
 wallbash = { source = "Configs/.local/share/wallbash", target = "~/.local/share/wallbash" }
 kio = { source = "Configs/.local/share/kio", target = "~/.local/share/kio" }
 kxmlgui5 = { source = "Configs/.local/share/kxmlgui5", target = "~/.local/share/kxmlgui5" }
