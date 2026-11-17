@@ -84,16 +84,30 @@ while IFS= read -r line; do
     fi
   fi
 
-  # Restore
+  # Restore via staging to avoid failure window
   if [[ "$DRY_RUN" == true ]]; then
     echo "    [DRY RUN] Would restore: $source_rel → $target_path"
   else
     mkdir -p "$(dirname "$target_path")"
-    # Remove existing target first so cp -r doesn't create a nested directory
-    # (cp -r source target/ would create target/source/ if target already exists)
-    rm -rf "$target_path"
-    cp -r "$source_path" "$target_path"
-    echo "Restored: $target_path"
+    staging="$(dirname "$target_path")/.restore-staging-$$"
+    if cp -r "$source_path" "$staging"; then
+      rm -rf "$target_path"
+      if mv "$staging" "$target_path"; then
+        echo "Restored: $target_path"
+      else
+        echo "ERROR: mv failed for $target_path — restoring from backup"
+        rm -rf "$staging" 2>/dev/null || true
+        if [[ -e "$backup_path" ]]; then
+          cp -r "$backup_path" "$target_path"
+          echo "Restored from backup: $target_path"
+        fi
+        exit 1
+      fi
+    else
+      echo "ERROR: cp staging failed for $source_rel"
+      rm -rf "$staging" 2>/dev/null || true
+      exit 1
+    fi
   fi
 
 done < "$RESTORE_LIST"
