@@ -6,6 +6,7 @@ download_and_extract() {
     local name="$1"
     local url="$2"
     local expected_sha256="${3:-}"
+    [[ "$name" == */* ]] && { echo "[font] Invalid font name: $name"; return 1; }
     local temp_dir="$landing_dir/$name"
     rm -rf "$temp_dir"
     mkdir -p "$temp_dir"
