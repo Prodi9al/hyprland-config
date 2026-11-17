@@ -31,6 +31,8 @@ dolphinrc = { source = "Configs/.config/dolphinrc", target = "~/.config/dolphinr
 kdeglobals = { source = "Configs/.config/kdeglobals", target = "~/.config/kdeglobals" }
 xdg-terminals = { source = "Configs/.config/xdg-terminals.list", target = "~/.config/xdg-terminals.list" }
 electron-flags = { source = "Configs/.config/electron-flags.conf", target = "~/.config/electron-flags.conf" }
+libinput-gestures = { source = "Configs/.config/libinput-gestures.conf", target = "~/.config/libinput-gestures.conf" }
+spotify-flags = { source = "Configs/.config/spotify-flags.conf", target = "~/.config/spotify-flags.conf" }
 baloofilerc = { source = "Configs/.config/baloofilerc", target = "~/.config/baloofilerc" }
 dconf-profile = { source = "Configs/.config/dconf/profile", target = "~/.config/dconf/profile" }
 

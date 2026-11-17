@@ -14,6 +14,10 @@ INSTALL_AUR=false
 SKIP_SYS_UPDATE=false
 DRY_RUN=false
 
+# Source shared backup naming utility
+# shellcheck source=./backup-utils.sh
+. "$SCRIPTS_DIR/backup-utils.sh"
+
 # Parse arguments
 for arg in "$@"; do
   case "$arg" in
@@ -141,7 +145,7 @@ else
 # Back up .config dirs that will be overwritten
 for d in hypr waybar dunst fastfetch gtk-3.0 gtk-4.0 kitty Kvantum nwg-look pypr qt5ct qt6ct swaync wlogout xsettingsd hyde rofi zsh uwsm fish starship swaylock lsd vim satty menus; do
   if [ -d "$HOME/.config/$d" ]; then
-    safe_backup "$HOME/.config/$d" "$BACKUP_DIR/config-$d"
+    safe_backup "$HOME/.config/$d" "$(backup_path ".config/$d")"
     echo "    backed up .config/$d"
   fi
 done
@@ -149,7 +153,7 @@ done
 # Back up .config/ files that will be overwritten
 for f in dolphinrc kdeglobals xdg-terminals.list electron-flags.conf baloofilerc libinput-gestures.conf spotify-flags.conf starship.toml; do
   if [ -f "$HOME/.config/$f" ]; then
-    safe_backup "$HOME/.config/$f" "$BACKUP_DIR/$f"
+    safe_backup "$HOME/.config/$f" "$(backup_path ".config/$f")"
     echo "    backed up .config/$f"
   fi
 done
@@ -157,26 +161,26 @@ done
 # Back up .local/share dirs that will be overwritten
 for d in themes icons fonts waybar sddm rofi hyde wallbash kio kxmlgui5 xdg-desktop-portal dolphin; do
   if [ -d "$HOME/.local/share/$d" ]; then
-    safe_backup "$HOME/.local/share/$d" "$BACKUP_DIR/share-$d"
+    safe_backup "$HOME/.local/share/$d" "$(backup_path ".local/share/$d")"
     echo "    backed up .local/share/$d"
   fi
 done
 
 # Back up prodi framework if exists (use unique names to avoid collisions)
 if [ -e "$HOME/.local/lib/prodi" ]; then
-  safe_backup "$HOME/.local/lib/prodi" "$BACKUP_DIR/prodi-lib"
+  safe_backup "$HOME/.local/lib/prodi" "$(backup_path ".local/lib/prodi")"
   echo "    backed up .local/lib/prodi"
 fi
 if [ -e "$HOME/.local/share/prodi" ]; then
-  safe_backup "$HOME/.local/share/prodi" "$BACKUP_DIR/prodi-share"
+  safe_backup "$HOME/.local/share/prodi" "$(backup_path ".local/share/prodi")"
   echo "    backed up .local/share/prodi"
 fi
 if [ -e "$HOME/.local/bin/prodi-shell" ]; then
-  safe_backup "$HOME/.local/bin/prodi-shell" "$BACKUP_DIR/prodi-bin-shell"
+  safe_backup "$HOME/.local/bin/prodi-shell" "$(backup_path ".local/bin/prodi-shell")"
   echo "    backed up .local/bin/prodi-shell"
 fi
 if [ -e "$HOME/.local/share/hypr" ]; then
-  safe_backup "$HOME/.local/share/hypr" "$BACKUP_DIR/prodi-share-hypr"
+  safe_backup "$HOME/.local/share/hypr" "$(backup_path ".local/share/hypr")"
   echo "    backed up .local/share/hypr"
 fi
 

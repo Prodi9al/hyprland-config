@@ -30,6 +30,8 @@
 .config/kdeglobals -> ~/.config/kdeglobals
 .config/xdg-terminals.list -> ~/.config/xdg-terminals.list
 .config/electron-flags.conf -> ~/.config/electron-flags.conf
+.config/libinput-gestures.conf -> ~/.config/libinput-gestures.conf
+.config/spotify-flags.conf -> ~/.config/spotify-flags.conf
 .config/baloofilerc -> ~/.config/baloofilerc
 .config/dconf/profile -> ~/.config/dconf/profile
 .local/lib/prodi -> ~/.local/lib/prodi

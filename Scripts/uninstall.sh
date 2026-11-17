@@ -19,6 +19,10 @@ for arg in "$@"; do
   esac
 done
 
+# Source shared backup naming utility
+# shellcheck source=./backup-utils.sh
+. "$SCRIPTS_DIR/backup-utils.sh"
+
 echo "==> Prodi9al Hyprland Config Uninstaller"
 echo ""
 
@@ -42,8 +46,14 @@ if [[ ! -f "$RESTORE_LIST" ]]; then
   exit 1
 fi
 
+read -r -p "This will remove all restored dotfiles and restore backups. Continue? [y/N] " confirm
+if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+  echo "Aborted."
+  exit 0
+fi
+
 # Collect all managed targets from the manifest
-declare -a MANAGED_TARGETS=()
+declare -a MANAGED_DIRS=()
 declare -a MANAGED_FILES=()
 
 while IFS= read -r line; do
@@ -55,24 +65,17 @@ while IFS= read -r line; do
   target_path="${target_exp/#\~/$HOME}"
 
   if [[ -d "$REPO_DIR/$source_rel" ]]; then
-    MANAGED_TARGETS+=("$target_path")
+    MANAGED_DIRS+=("$target_path")
   elif [[ -f "$REPO_DIR/$source_rel" ]]; then
     MANAGED_FILES+=("$target_path")
   fi
 done < "$RESTORE_LIST"
 
-read -r -p "This will remove all restored dotfiles and restore backups. Continue? [y/N] " confirm
-if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
-  echo "Aborted."
-  exit 0
-fi
-
 # Restore each managed item from its backup (if a backup exists)
 echo "==> Restoring backed-up configs..."
 
-for target_path in "${MANAGED_TARGETS[@]}"; do
-  # Derive backup name from the manifest source path
-  # We need to find which source maps to this target — re-read the manifest
+for target_path in "${MANAGED_DIRS[@]}"; do
+  # Find the source_rel that maps to this target
   while IFS= read -r line; do
     [[ "$line" =~ ^[[:space:]]*# ]] && continue
     [[ -z "${line// }" ]] && continue
@@ -85,8 +88,7 @@ for target_path in "${MANAGED_TARGETS[@]}"; do
       continue
     fi
 
-    backup_name="$(echo "$source_rel" | sed 's/^\.//; s/\//-/g')"
-    backup_path="$BACKUP_DIR/$backup_name"
+    backup_path="$(backup_path "$source_rel")"
 
     if [[ -e "$backup_path" ]]; then
       if [[ "$DRY_RUN" == true ]]; then
@@ -95,7 +97,7 @@ for target_path in "${MANAGED_TARGETS[@]}"; do
         # Remove existing target first to avoid nested directories
         rm -rf "$target_path"
         mkdir -p "$(dirname "$target_path")"
-        cp -r "$backup_path" "$target_path"
+        cp -a "$backup_path" "$target_path"
         echo "Restored from backup: $target_path"
       fi
     elif [[ -e "$target_path" ]]; then
@@ -123,15 +125,14 @@ for target_path in "${MANAGED_FILES[@]}"; do
       continue
     fi
 
-    backup_name="$(echo "$source_rel" | sed 's/^\.//; s/\//-/g')"
-    backup_path="$BACKUP_DIR/$backup_name"
+    backup_path="$(backup_path "$source_rel")"
 
     if [[ -e "$backup_path" ]]; then
       if [[ "$DRY_RUN" == true ]]; then
         echo "    [DRY RUN] Would restore backup: $backup_path → $target_path"
       else
         mkdir -p "$(dirname "$target_path")"
-        cp "$backup_path" "$target_path"
+        cp -a "$backup_path" "$target_path"
         echo "Restored from backup: $target_path"
       fi
     elif [[ -e "$target_path" ]]; then

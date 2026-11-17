@@ -55,30 +55,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Verify dots.toml and restore_cfg.lst consistency
-        run: |
-          python3 -c "
-import tomllib
-import os
-
-with open('dots.toml', 'rb') as f:
-    manifest = tomllib.load(f)
-
-errors = []
-for section in manifest.values():
-    for name, entry in section.items():
-        src = entry['source'].replace('Configs/', '')
-        if not os.path.exists(f'Configs/{src}'):
-            errors.append(f'Missing: {src}')
-        tgt = entry['target'].replace('~', os.path.expanduser('~'))
-        
-if errors:
-    print('MANIFEST ERRORS:')
-    for e in errors:
-        print(f'  {e}')
-    exit(1)
-else:
-    print('Manifest consistency: OK')
-"
+        run: python3 Scripts/validate_manifest.py
 
   hardcoded-paths:
     runs-on: ubuntu-latest

@@ -18,6 +18,10 @@ for arg in "$@"; do
   esac
 done
 
+# Source shared backup naming utility
+# shellcheck source=./backup-utils.sh
+. "$SCRIPTS_DIR/backup-utils.sh"
+
 echo "==> Prodi9al Config Restore"
 echo ""
 
@@ -38,10 +42,10 @@ safe_backup() {
   local src="$1"
   local dst="$2"
   if [[ "$DRY_RUN" == true ]]; then
-    echo "    [DRY RUN] cp -r \"$src\" \"$dst\""
+    echo "    [DRY RUN] cp -a \"$src\" \"$dst\""
     return 0
   fi
-  if ! cp -r "$src" "$dst"; then
+  if ! cp -a "$src" "$dst"; then
     echo "FATAL: Failed to back up $src to $dst — aborting before any data loss."
     exit 1
   fi
@@ -78,10 +82,8 @@ while IFS= read -r line; do
     continue
   fi
 
-  # Derive a unique, collision-free backup name from the relative path
-  # .config/hypr → config-hypr, .local/lib/prodi → local-lib-prodi
-  backup_name="$(echo "$source_rel" | sed 's/^\.//; s/\//-/g')"
-  backup_path="$BACKUP_DIR/$backup_name"
+  # Derive backup path using shared naming convention
+  backup_path="$(backup_path "$source_rel")"
 
   # Back up existing target if it exists (backup failure is fatal)
   target_existed=false
@@ -94,30 +96,50 @@ while IFS= read -r line; do
     echo "Backed up: $target_path → $backup_path"
   fi
 
-  # Restore via staging to avoid failure window
+  # Restore via rename-original to avoid failure window
   if [[ "$DRY_RUN" == true ]]; then
     echo "    [DRY RUN] Would restore: $source_rel → $target_path"
   else
     mkdir -p "$(dirname "$target_path")"
     staging="$(mktemp -d "$(dirname "$target_path")/.restore-staging-XXXXXX")"
-    if cp -r "$source_path" "$staging"/.; then
-      rm -rf "$target_path"
-      if mv "$staging" "$target_path"; then
-        echo "Restored: $target_path"
-      else
-        echo "ERROR: mv failed for $target_path — restoring from backup"
-        rm -rf "$staging" 2>/dev/null || true
-        if $target_existed && [[ -e "$backup_path" ]]; then
-          cp -r "$backup_path" "$target_path"
-          echo "Restored from backup: $target_path"
-        fi
-        exit 1
-      fi
-    else
+
+    # Stage the new content
+    if ! cp -a "$source_path"/. "$staging"/; then
       echo "ERROR: cp staging failed for $source_rel"
       rm -rf "$staging" 2>/dev/null || true
       exit 1
     fi
+
+    # Rename original to rollback location
+    rollback="$BACKUP_DIR/.rollback-$(backup_name "$source_rel")-$$"
+    if [[ -e "$target_path" ]]; then
+      if ! mv "$target_path" "$rollback"; then
+        echo "ERROR: Could not rename $target_path to rollback"
+        rm -rf "$staging" 2>/dev/null || true
+        exit 1
+      fi
+    fi
+
+    # Move staged content into place
+    if ! mv "$staging" "$target_path"; then
+      echo "ERROR: mv failed for $target_path — restoring from backup"
+      rm -rf "$staging" 2>/dev/null || true
+      if $target_existed && [[ -e "$rollback" ]]; then
+        mv "$rollback" "$target_path" || cp -a "$rollback" "$target_path"
+        echo "Restored from rollback: $target_path"
+      elif $target_existed && [[ -e "$backup_path" ]]; then
+        cp -a "$backup_path" "$target_path"
+        echo "Restored from backup: $target_path"
+      fi
+      exit 1
+    fi
+
+    # Remove rollback now that restore is confirmed
+    if [[ -e "$rollback" ]]; then
+      rm -rf "$rollback" 2>/dev/null || true
+    fi
+
+    echo "Restored: $target_path"
   fi
 
 done < "$RESTORE_LIST"
