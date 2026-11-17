@@ -1,0 +1,31 @@
+# Config files/directories to restore from Configs/ to target locations
+# Format: source_path -> target_path
+
+.config/hypr -> ~/.config/hypr
+.config/waybar -> ~/.config/waybar
+.config/dunst -> ~/.config/dunst
+.config/fastfetch -> ~/.config/fastfetch
+.config/gtk-3.0 -> ~/.config/gtk-3.0
+.config/gtk-4.0 -> ~/.config/gtk-4.0
+.config/kitty -> ~/.config/kitty
+.config/Kvantum -> ~/.config/Kvantum
+.config/nwg-look -> ~/.config/nwg-look
+.config/pypr -> ~/.config/pypr
+.config/qt5ct -> ~/.config/qt5ct
+.config/qt6ct -> ~/.config/qt6ct
+.config/swaync -> ~/.config/swaync
+.config/wlogout -> ~/.config/wlogout
+.config/xsettingsd -> ~/.config/xsettingsd
+.config/hyde -> ~/.config/hyde
+.local/lib/prodi -> ~/.local/lib/prodi
+.local/share/prodi -> ~/.local/share/prodi
+.local/bin/prodi-shell -> ~/.local/bin/prodi-shell
+.local/share/hypr -> ~/.local/share/hypr
+.local/share/themes -> ~/.local/share/themes
+.local/share/icons -> ~/.local/share/icons
+.local/share/fonts -> ~/.local/share/fonts
+.local/share/waybar -> ~/.local/share/waybar
+.local/share/sddm -> ~/.local/share/sddm
+.local/share/rofi -> ~/.local/share/rofi
+.local/share/hyde -> ~/.local/share/hyde
+.local/share/wallbash -> ~/.local/share/wallbash

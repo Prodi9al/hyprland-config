@@ -1,0 +1,34 @@
+# Prodi9al Hyprland Config — dots.toml manifest
+# Lists all dotfiles and their target locations
+
+[config]
+hypr = { source = "Configs/.config/hypr", target = "~/.config/hypr" }
+waybar = { source = "Configs/.config/waybar", target = "~/.config/waybar" }
+dunst = { source = "Configs/.config/dunst", target = "~/.config/dunst" }
+fastfetch = { source = "Configs/.config/fastfetch", target = "~/.config/fastfetch" }
+gtk-3.0 = { source = "Configs/.config/gtk-3.0", target = "~/.config/gtk-3.0" }
+gtk-4.0 = { source = "Configs/.config/gtk-4.0", target = "~/.config/gtk-4.0" }
+kitty = { source = "Configs/.config/kitty", target = "~/.config/kitty" }
+Kvantum = { source = "Configs/.config/Kvantum", target = "~/.config/Kvantum" }
+nwg-look = { source = "Configs/.config/nwg-look", target = "~/.config/nwg-look" }
+pypr = { source = "Configs/.config/pypr", target = "~/.config/pypr" }
+qt5ct = { source = "Configs/.config/qt5ct", target = "~/.config/qt5ct" }
+qt6ct = { source = "Configs/.config/qt6ct", target = "~/.config/qt6ct" }
+swaync = { source = "Configs/.config/swaync", target = "~/.config/swaync" }
+wlogout = { source = "Configs/.config/wlogout", target = "~/.config/wlogout" }
+xsettingsd = { source = "Configs/.config/xsettingsd", target = "~/.config/xsettingsd" }
+hyde = { source = "Configs/.config/hyde", target = "~/.config/hyde" }
+
+[local]
+lib-prodi = { source = "Configs/.local/lib/prodi", target = "~/.local/lib/prodi" }
+share-prodi = { source = "Configs/.local/share/prodi", target = "~/.local/share/prodi" }
+bin-prodi-shell = { source = "Configs/.local/bin/prodi-shell", target = "~/.local/bin/prodi-shell" }
+share-hypr = { source = "Configs/.local/share/hypr", target = "~/.local/share/hypr" }
+themes = { source = "Configs/.local/share/themes", target = "~/.local/share/themes" }
+icons = { source = "Configs/.local/share/icons", target = "~/.local/share/icons" }
+fonts = { source = "Configs/.local/share/fonts", target = "~/.local/share/fonts" }
+waybar = { source = "Configs/.local/share/waybar", target = "~/.local/share/waybar" }
+sddm = { source = "Configs/.local/share/sddm", target = "~/.local/share/sddm" }
+rofi = { source = "Configs/.local/share/rofi", target = "~/.local/share/rofi" }
+hyde-share = { source = "Configs/.local/share/hyde", target = "~/.local/share/hyde" }
+wallbash = { source = "Configs/.local/share/wallbash", target = "~/.local/share/wallbash" }

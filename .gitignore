@@ -1,0 +1,15 @@
+*.before-*
+hyprlock-backups/
+__pycache__/
+*.pyc
+*.bak-*
+uv.lock
+*.db
+*.db-shm
+*.db-wal
+state/
+Configs/.config/waybar/scripts/htb_token.env
+Configs/.config/waybar/scripts/*.env
+Configs/.local/share/hyde/
+Configs/.local/share/fonts/
+Configs/.local/share/icons/
