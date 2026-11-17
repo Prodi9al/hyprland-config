@@ -39,6 +39,30 @@ run() {
   fi
 }
 
+safe_backup() {
+  local src="$1"
+  local dst="$2"
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "    [DRY RUN] cp -r \"$src\" \"$dst\""
+    return 0
+  fi
+  if ! cp -r "$src" "$dst" 2>/dev/null; then
+    echo "FATAL: Failed to back up $src to $dst — aborting before any data loss."
+    exit 1
+  fi
+}
+
+safe_write_file() {
+  local content="$1"
+  local dst="$2"
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "    [DRY RUN] write \"$dst\""
+    return 0
+  fi
+  # Write with single-quoted heredoc to avoid shell interpretation of special chars
+  printf '%s\n' "$content" > "$dst"
+}
+
 # 1. Verify Arch-based Linux
 if [[ ! -f /etc/arch-release ]]; then
   echo "ERROR: This installer is designed for Arch and Arch-based distros only."
@@ -117,71 +141,43 @@ else
 # Back up .config dirs that will be overwritten
 for d in hypr waybar dunst fastfetch gtk-3.0 gtk-4.0 kitty Kvantum nwg-look pypr qt5ct qt6ct swaync wlogout xsettingsd hyde rofi zsh uwsm fish starship swaylock lsd vim satty menus; do
   if [ -d "$HOME/.config/$d" ]; then
-    if [[ "$DRY_RUN" == true ]]; then
-      echo "    [DRY RUN] cp -r \"$HOME/.config/$d\" \"$BACKUP_DIR/config-$d\""
-    else
-      cp -r "$HOME/.config/$d" "$BACKUP_DIR/config-$d" 2>/dev/null || true
-      echo "    backed up .config/$d"
-    fi
+    safe_backup "$HOME/.config/$d" "$BACKUP_DIR/config-$d"
+    echo "    backed up .config/$d"
   fi
 done
 
 # Back up .config/ files that will be overwritten
 for f in dolphinrc kdeglobals xdg-terminals.list electron-flags.conf baloofilerc libinput-gestures.conf spotify-flags.conf starship.toml; do
   if [ -f "$HOME/.config/$f" ]; then
-    if [[ "$DRY_RUN" == true ]]; then
-      echo "    [DRY RUN] cp \"$HOME/.config/$f\" \"$BACKUP_DIR/$f\""
-    else
-      cp "$HOME/.config/$f" "$BACKUP_DIR/$f" 2>/dev/null || true
-      echo "    backed up .config/$f"
-    fi
+    safe_backup "$HOME/.config/$f" "$BACKUP_DIR/$f"
+    echo "    backed up .config/$f"
   fi
 done
 
 # Back up .local/share dirs that will be overwritten
 for d in themes icons fonts waybar sddm rofi hyde wallbash kio kxmlgui5 xdg-desktop-portal dolphin; do
   if [ -d "$HOME/.local/share/$d" ]; then
-    if [[ "$DRY_RUN" == true ]]; then
-      echo "    [DRY RUN] cp -r \"$HOME/.local/share/$d\" \"$BACKUP_DIR/share-$d\""
-    else
-      cp -r "$HOME/.local/share/$d" "$BACKUP_DIR/share-$d" 2>/dev/null || true
-      echo "    backed up .local/share/$d"
-    fi
+    safe_backup "$HOME/.local/share/$d" "$BACKUP_DIR/share-$d"
+    echo "    backed up .local/share/$d"
   fi
 done
 
 # Back up prodi framework if exists (use unique names to avoid collisions)
 if [ -e "$HOME/.local/lib/prodi" ]; then
-  if [[ "$DRY_RUN" == true ]]; then
-    echo "    [DRY RUN] cp -r \"$HOME/.local/lib/prodi\" \"$BACKUP_DIR/prodi-lib\""
-  else
-    cp -r "$HOME/.local/lib/prodi" "$BACKUP_DIR/prodi-lib" 2>/dev/null || true
-    echo "    backed up .local/lib/prodi"
-  fi
+  safe_backup "$HOME/.local/lib/prodi" "$BACKUP_DIR/prodi-lib"
+  echo "    backed up .local/lib/prodi"
 fi
 if [ -e "$HOME/.local/share/prodi" ]; then
-  if [[ "$DRY_RUN" == true ]]; then
-    echo "    [DRY RUN] cp -r \"$HOME/.local/share/prodi\" \"$BACKUP_DIR/prodi-share\""
-  else
-    cp -r "$HOME/.local/share/prodi" "$BACKUP_DIR/prodi-share" 2>/dev/null || true
-    echo "    backed up .local/share/prodi"
-  fi
+  safe_backup "$HOME/.local/share/prodi" "$BACKUP_DIR/prodi-share"
+  echo "    backed up .local/share/prodi"
 fi
 if [ -e "$HOME/.local/bin/prodi-shell" ]; then
-  if [[ "$DRY_RUN" == true ]]; then
-    echo "    [DRY RUN] cp -r \"$HOME/.local/bin/prodi-shell\" \"$BACKUP_DIR/prodi-bin-shell\""
-  else
-    cp -r "$HOME/.local/bin/prodi-shell" "$BACKUP_DIR/prodi-bin-shell" 2>/dev/null || true
-    echo "    backed up .local/bin/prodi-shell"
-  fi
+  safe_backup "$HOME/.local/bin/prodi-shell" "$BACKUP_DIR/prodi-bin-shell"
+  echo "    backed up .local/bin/prodi-shell"
 fi
 if [ -e "$HOME/.local/share/hypr" ]; then
-  if [[ "$DRY_RUN" == true ]]; then
-    echo "    [DRY RUN] cp -r \"$HOME/.local/share/hypr\" \"$BACKUP_DIR/prodi-share-hypr\""
-  else
-    cp -r "$HOME/.local/share/hypr" "$BACKUP_DIR/prodi-share-hypr" 2>/dev/null || true
-    echo "    backed up .local/share/hypr"
-  fi
+  safe_backup "$HOME/.local/share/hypr" "$BACKUP_DIR/prodi-share-hypr"
+  echo "    backed up .local/share/hypr"
 fi
 
 echo "    Backup complete."
@@ -274,16 +270,15 @@ echo ""
 TOKEN_FILE="$HOME/.config/waybar/scripts/htb_token.env"
 
 if [[ -n "${HTB_TOKEN:-}" ]]; then
-  echo "export HTB_TOKEN=\"${HTB_TOKEN}\"" > "$TOKEN_FILE"
+  printf 'export HTB_TOKEN=%s\n' "$HTB_TOKEN" > "$TOKEN_FILE"
   chmod 600 "$TOKEN_FILE"
   echo "    Wrote HTB token to $TOKEN_FILE"
 else
-  echo "    Skipping HTB token (module will show offline)."
   : > "$TOKEN_FILE"
 fi
 
 if [[ -n "${HTB_USER_ID:-}" ]]; then
-  echo "export HTB_USER_ID=\"${HTB_USER_ID}\"" >> "$TOKEN_FILE"
+  printf 'export HTB_USER_ID=%s\n' "$HTB_USER_ID" >> "$TOKEN_FILE"
   echo "    Set HTB_USER_ID=$HTB_USER_ID"
 fi
 fi

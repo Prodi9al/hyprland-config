@@ -34,6 +34,19 @@ run() {
   fi
 }
 
+safe_backup() {
+  local src="$1"
+  local dst="$2"
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "    [DRY RUN] cp -r \"$src\" \"$dst\""
+    return 0
+  fi
+  if ! cp -r "$src" "$dst"; then
+    echo "FATAL: Failed to back up $src to $dst — aborting before any data loss."
+    exit 1
+  fi
+}
+
 # Create backup directory
 if [[ "$DRY_RUN" == true ]]; then
   echo "    [DRY RUN] Would create backup directory: $BACKUP_DIR"
@@ -70,18 +83,15 @@ while IFS= read -r line; do
   backup_name="$(echo "$source_rel" | sed 's/^\.//; s/\//-/g')"
   backup_path="$BACKUP_DIR/$backup_name"
 
-  # Back up existing target if it exists (non-destructive: keep original + backup)
+  # Back up existing target if it exists (backup failure is fatal)
+  target_existed=false
   if [[ -e "$target_path" ]]; then
-    if [[ "$DRY_RUN" == true ]]; then
-      echo "    [DRY RUN] Would back up existing target: $target_path → $backup_path"
-    else
-      # If backup already exists, append a timestamp to avoid overwriting
-      if [[ -e "$backup_path" ]]; then
-        backup_path="${backup_path}.$(date +%s)"
-      fi
-      cp -r "$target_path" "$backup_path" 2>/dev/null || true
-      echo "Backed up: $target_path → $backup_path"
+    target_existed=true
+    if [[ -e "$backup_path" ]]; then
+      backup_path="${backup_path}.$(date +%s)"
     fi
+    safe_backup "$target_path" "$backup_path"
+    echo "Backed up: $target_path → $backup_path"
   fi
 
   # Restore via staging to avoid failure window
@@ -89,15 +99,15 @@ while IFS= read -r line; do
     echo "    [DRY RUN] Would restore: $source_rel → $target_path"
   else
     mkdir -p "$(dirname "$target_path")"
-    staging="$(dirname "$target_path")/.restore-staging-$$"
-    if cp -r "$source_path" "$staging"; then
+    staging="$(mktemp -d "$(dirname "$target_path")/.restore-staging-XXXXXX")"
+    if cp -r "$source_path" "$staging"/.; then
       rm -rf "$target_path"
       if mv "$staging" "$target_path"; then
         echo "Restored: $target_path"
       else
         echo "ERROR: mv failed for $target_path — restoring from backup"
         rm -rf "$staging" 2>/dev/null || true
-        if [[ -e "$backup_path" ]]; then
+        if $target_existed && [[ -e "$backup_path" ]]; then
           cp -r "$backup_path" "$target_path"
           echo "Restored from backup: $target_path"
         fi

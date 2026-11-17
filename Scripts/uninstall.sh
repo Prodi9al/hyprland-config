@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Prodi9al Hyprland Config — Uninstall Script
-# Removes all dotfiles and restores backups if available.
+# Removes restored dotfiles and restores backups if available.
+# Manifest-driven: only touches items the installer manages.
 
 set -euo pipefail
 
@@ -9,104 +10,159 @@ REPO_DIR="$(cd "$(dirname "${SCRIPTS_DIR}")" && pwd)"
 CONFIGS_DIR="$REPO_DIR/Configs"
 
 BACKUP_DIR="$HOME/.config/cfg_backups"
+DRY_RUN=false
+
+# Parse arguments
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=true ;;
+  esac
+done
 
 echo "==> Prodi9al Hyprland Config Uninstaller"
 echo ""
 
-read -r -p "This will remove all restored dotfiles. Continue? [y/N] " confirm
+if [[ "$DRY_RUN" == true ]]; then
+  echo "==> DRY RUN MODE — no changes will be made"
+  echo ""
+fi
+
+run() {
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "    [DRY RUN] $*"
+  else
+    "$@"
+  fi
+}
+
+# Read the restore manifest to know exactly what the installer manages
+RESTORE_LIST="$SCRIPTS_DIR/restore_cfg.lst"
+if [[ ! -f "$RESTORE_LIST" ]]; then
+  echo "No restore_cfg.lst found — cannot uninstall safely."
+  exit 1
+fi
+
+# Collect all managed targets from the manifest
+declare -a MANAGED_TARGETS=()
+declare -a MANAGED_FILES=()
+
+while IFS= read -r line; do
+  [[ "$line" =~ ^[[:space:]]*# ]] && continue
+  [[ -z "${line// }" ]] && continue
+
+  source_rel=$(echo "$line" | cut -d'>' -f1 | xargs)
+  target_exp=$(echo "$line" | cut -d'>' -f2 | xargs)
+  target_path="${target_exp/#\~/$HOME}"
+
+  if [[ -d "$REPO_DIR/$source_rel" ]]; then
+    MANAGED_TARGETS+=("$target_path")
+  elif [[ -f "$REPO_DIR/$source_rel" ]]; then
+    MANAGED_FILES+=("$target_path")
+  fi
+done < "$RESTORE_LIST"
+
+read -r -p "This will remove all restored dotfiles and restore backups. Continue? [y/N] " confirm
 if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
   echo "Aborted."
   exit 0
 fi
 
-# Remove restored .config/ dirs
-echo "==> Removing restored .config/ dirs..."
-for d in hypr waybar dunst fastfetch gtk-3.0 gtk-4.0 kitty Kvantum nwg-look pypr qt5ct qt6ct swaync wlogout xsettingsd hyde rofi zsh uwsm fish starship swaylock lsd vim satty menus; do
-  if [ -d "$HOME/.config/$d" ]; then
-    rm -rf "$HOME/.config/$d"
-    echo "    removed .config/$d"
-  fi
-done
+# Restore each managed item from its backup (if a backup exists)
+echo "==> Restoring backed-up configs..."
 
-# Remove restored .config/ files
-for f in dolphinrc kdeglobals xdg-terminals.list electron-flags.conf baloofilerc libinput-gestures.conf spotify-flags.conf; do
-  if [ -f "$HOME/.config/$f" ]; then
-    rm -f "$HOME/.config/$f"
-    echo "    removed .config/$f"
-  fi
-done
+for target_path in "${MANAGED_TARGETS[@]}"; do
+  # Derive backup name from the manifest source path
+  # We need to find which source maps to this target — re-read the manifest
+  while IFS= read -r line; do
+    [[ "$line" =~ ^[[:space:]]*# ]] && continue
+    [[ -z "${line// }" ]] && continue
 
-# Remove restored .local/share/ dirs
-echo "==> Removing restored .local/share/ dirs..."
-for d in themes waybar rofi sddm wallbash kio kxmlgui5 xdg-desktop-portal dolphin; do
-  if [ -d "$HOME/.local/share/$d" ]; then
-    rm -rf "$HOME/.local/share/$d"
-    echo "    removed .local/share/$d"
-  fi
-done
+    source_rel=$(echo "$line" | cut -d'>' -f1 | xargs)
+    target_exp=$(echo "$line" | cut -d'>' -f2 | xargs)
+    manifest_target="${target_exp/#\~/$HOME}"
 
-# Remove prodi framework
-echo "==> Removing Prodi framework..."
-for d in .local/lib/prodi .local/share/prodi .local/bin/prodi-shell .local/share/hypr; do
-  if [ -e "$HOME/$d" ]; then
-    rm -rf "$HOME/$d"
-    echo "    removed $d"
-  fi
-done
-
-# Restore prodi framework from backup
-if [ -d "$BACKUP_DIR/prodi-lib" ]; then
-  mkdir -p "$HOME/.local/lib"
-  cp -r "$BACKUP_DIR/prodi-lib" "$HOME/.local/lib/prodi"
-  echo "    restored .local/lib/prodi"
-fi
-if [ -d "$BACKUP_DIR/prodi-share" ]; then
-  mkdir -p "$HOME/.local/share"
-  cp -r "$BACKUP_DIR/prodi-share" "$HOME/.local/share/prodi"
-  echo "    restored .local/share/prodi"
-fi
-if [ -d "$BACKUP_DIR/prodi-bin-shell" ]; then
-  mkdir -p "$HOME/.local/bin"
-  cp -r "$BACKUP_DIR/prodi-bin-shell" "$HOME/.local/bin/prodi-shell"
-  echo "    restored .local/bin/prodi-shell"
-fi
-if [ -d "$BACKUP_DIR/prodi-share-hypr" ]; then
-  mkdir -p "$HOME/.local/share"
-  cp -r "$BACKUP_DIR/prodi-share-hypr" "$HOME/.local/share/hypr"
-  echo "    restored .local/share/hypr"
-fi
-
-# Restore from backup if available
-if [ -d "$BACKUP_DIR" ]; then
-  echo "==> Restoring remaining backups from $BACKUP_DIR..."
-  for backup in "$BACKUP_DIR"/config-* "$BACKUP_DIR"/share-*; do
-    [ -e "$backup" ] || continue
-    name=$(basename "$backup")
-    if [[ "$name" == config-* ]]; then
-      target="$HOME/.config/${name#config-}"
-    elif [[ "$name" == share-* ]]; then
-      target="$HOME/.local/share/${name#share-}"
+    if [[ "$manifest_target" != "$target_path" ]]; then
+      continue
     fi
-    if [ -d "$backup" ]; then
-      mkdir -p "$(dirname "$target")"
-      cp -r "$backup" "$target"
-      echo "    restored $target"
-    elif [ -f "$backup" ]; then
-      mkdir -p "$(dirname "$target")"
-      cp "$backup" "$target"
-      echo "    restored $target"
-    fi
-  done
-fi
 
-# Remove PATH from .bashrc
+    backup_name="$(echo "$source_rel" | sed 's/^\.//; s/\//-/g')"
+    backup_path="$BACKUP_DIR/$backup_name"
+
+    if [[ -e "$backup_path" ]]; then
+      if [[ "$DRY_RUN" == true ]]; then
+        echo "    [DRY RUN] Would restore backup: $backup_path → $target_path"
+      else
+        # Remove existing target first to avoid nested directories
+        rm -rf "$target_path"
+        mkdir -p "$(dirname "$target_path")"
+        cp -r "$backup_path" "$target_path"
+        echo "Restored from backup: $target_path"
+      fi
+    elif [[ -e "$target_path" ]]; then
+      if [[ "$DRY_RUN" == true ]]; then
+        echo "    [DRY RUN] Would remove: $target_path (no backup available)"
+      else
+        rm -rf "$target_path"
+        echo "Removed (no backup): $target_path"
+      fi
+    fi
+    break
+  done < "$RESTORE_LIST"
+done
+
+for target_path in "${MANAGED_FILES[@]}"; do
+  while IFS= read -r line; do
+    [[ "$line" =~ ^[[:space:]]*# ]] && continue
+    [[ -z "${line// }" ]] && continue
+
+    source_rel=$(echo "$line" | cut -d'>' -f1 | xargs)
+    target_exp=$(echo "$line" | cut -d'>' -f2 | xargs)
+    manifest_target="${target_exp/#\~/$HOME}"
+
+    if [[ "$manifest_target" != "$target_path" ]]; then
+      continue
+    fi
+
+    backup_name="$(echo "$source_rel" | sed 's/^\.//; s/\//-/g')"
+    backup_path="$BACKUP_DIR/$backup_name"
+
+    if [[ -e "$backup_path" ]]; then
+      if [[ "$DRY_RUN" == true ]]; then
+        echo "    [DRY RUN] Would restore backup: $backup_path → $target_path"
+      else
+        mkdir -p "$(dirname "$target_path")"
+        cp "$backup_path" "$target_path"
+        echo "Restored from backup: $target_path"
+      fi
+    elif [[ -e "$target_path" ]]; then
+      if [[ "$DRY_RUN" == true ]]; then
+        echo "    [DRY RUN] Would remove: $target_path (no backup available)"
+      else
+        rm -f "$target_path"
+        echo "Removed (no backup): $target_path"
+      fi
+    fi
+    break
+  done < "$RESTORE_LIST"
+done
+
+# Remove PATH addition from .bashrc
 RC_FILE="$HOME/.bashrc"
 if [ -f "$RC_FILE" ]; then
-  echo "==> Cleaning up $RC_FILE..."
-  sed -i '/export PATH="\$HOME\/.local\/bin:\$PATH"/d' "$RC_FILE" 2>/dev/null || true
-  echo "    Cleaned up $RC_FILE"
+  if grep -q 'export PATH="\$HOME\/.local\/bin:\$PATH"' "$RC_FILE" 2>/dev/null; then
+    if [[ "$DRY_RUN" == true ]]; then
+      echo "    [DRY RUN] Would clean PATH from $RC_FILE"
+    else
+      sed -i '/export PATH="\$HOME\/.local\/bin:\$PATH"/d' "$RC_FILE" 2>/dev/null || true
+      echo "    Cleaned up PATH from $RC_FILE"
+    fi
+  fi
 fi
 
 echo ""
 echo "==> Uninstall complete!"
-echo "    Backup (if any) kept at: $BACKUP_DIR"
+if [[ "$DRY_RUN" == true ]]; then
+  echo "    (No changes were made — dry run mode)"
+else
+  echo "    Backups kept at: $BACKUP_DIR"
+fi
