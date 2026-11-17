@@ -2,6 +2,12 @@
 
 This directory contains images, keybind previews, theme showcase screenshots, and other visual assets for the Prodi9al Hyprland Config.
 
+## Files
+
+| File | Purpose |
+|------|---------|
+| `prodi-logo.png` | Prodi9al project logo (1536×1024 PNG) |
+
 ## Subdirectories
 
 - `keybinds/` — Keybinding diagram images

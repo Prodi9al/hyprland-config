@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="Source/assets/prodi-logo.png" alt="Prodi9al Logo" width="200"/>
+
 # Prodi9al Hyprland Config
 
 [![Hyprland](https://img.shields.io/badge/Hyprland-0.45+-blue?logo=wayland)](https://hyprland.org/)
