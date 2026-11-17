@@ -16,6 +16,7 @@ DRY_RUN=false
 
 # Source shared backup naming utility
 # shellcheck source=./backup-utils.sh
+# shellcheck disable=SC1091
 . "$SCRIPTS_DIR/backup-utils.sh"
 
 # Parse arguments
@@ -70,7 +71,7 @@ safe_write_file() {
 # 1. Verify Arch-based Linux
 if [[ ! -f /etc/arch-release ]]; then
   echo "ERROR: This installer is designed for Arch and Arch-based distros only."
-  echo "   Detected: $(cat /etc/os-release 2>/dev/null | grep '^PRETTY_NAME=' | cut -d'=' -f2 | tr -d '"' || 'unknown')"
+  echo "   Detected: $(grep '^PRETTY_NAME=' /etc/os-release 2>/dev/null | cut -d'=' -f2 | tr -d '"' || echo 'unknown')"
   exit 1
 fi
 
@@ -292,7 +293,7 @@ if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
   if [[ "$DRY_RUN" == true ]]; then
     echo "    [DRY RUN] echo 'export PATH=\"$HOME/.local/bin:$PATH\"' >> \"$HOME/.bashrc\""
   else
-    echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
+    echo "export PATH=\"\$HOME/.local/bin:\$PATH\"" >> "$HOME/.bashrc"
     echo "    Added ~/.local/bin to PATH in ~/.bashrc"
   fi
 fi

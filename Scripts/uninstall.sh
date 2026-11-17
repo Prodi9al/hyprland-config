@@ -21,6 +21,7 @@ done
 
 # Source shared backup naming utility
 # shellcheck source=./backup-utils.sh
+# shellcheck disable=SC1091
 . "$SCRIPTS_DIR/backup-utils.sh"
 
 echo "==> Prodi9al Hyprland Config Uninstaller"
@@ -205,10 +206,12 @@ done
 # Remove PATH addition from .bashrc
 RC_FILE="$HOME/.bashrc"
 if [ -f "$RC_FILE" ]; then
+  # shellcheck disable=SC2016
   if grep -q 'export PATH="\$HOME\/.local\/bin:\$PATH"' "$RC_FILE" 2>/dev/null; then
     if [[ "$DRY_RUN" == true ]]; then
       echo "    [DRY RUN] Would clean PATH from $RC_FILE"
     else
+      # shellcheck disable=SC2016
       sed -i '/export PATH="\$HOME\/.local\/bin:\$PATH"/d' "$RC_FILE" 2>/dev/null || true
       echo "    Cleaned up PATH from $RC_FILE"
     fi

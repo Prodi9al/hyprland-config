@@ -41,8 +41,17 @@ backup_lookup() {
     eval "$shopt_state" >/dev/null 2>&1
 
     if [[ ${#matches[@]} -gt 0 ]]; then
-        local newest
-        newest="$(ls -dt "${matches[@]}" 2>/dev/null | head -1)"
+        local newest=""
+        local newest_time=0
+        local m
+        for m in "${matches[@]}"; do
+            local mtime
+            mtime="$(stat -c %Y "$m" 2>/dev/null || echo 0)"
+            if (( mtime > newest_time )); then
+                newest_time=$mtime
+                newest="$m"
+            fi
+        done
         if [[ -n "$newest" ]]; then
             echo "$newest"
             return 0

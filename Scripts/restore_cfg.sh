@@ -20,6 +20,7 @@ done
 
 # Source shared backup naming utility
 # shellcheck source=./backup-utils.sh
+# shellcheck disable=SC1091
 . "$SCRIPTS_DIR/backup-utils.sh"
 
 echo "==> Prodi9al Config Restore"
