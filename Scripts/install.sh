@@ -159,8 +159,8 @@ for f in dolphinrc kdeglobals xdg-terminals.list electron-flags.conf baloofilerc
   fi
 done
 
-# Back up nested .config files (path components with subdirectories)
-if [ -f "$HOME/.config/dconf/profile" ]; then
+# Back up nested .config files/dirs (path components with subdirectories)
+if [[ -e "$HOME/.config/dconf/profile" || -L "$HOME/.config/dconf/profile" ]]; then
   safe_backup "$HOME/.config/dconf/profile" "$(backup_path_unique ".config/dconf/profile")"
   echo "    backed up .config/dconf/profile"
 fi

@@ -91,6 +91,7 @@ restore_managed_item() {
     [[ -d "$backup_path" ]] && backup_is_dir=true
 
     # Copy backup to staging first (verify it works before touching target)
+    mkdir -p "$(dirname "$target_path")"
     staging="$(mktemp -d "$(dirname "$target_path")/.restore-staging-XXXXXX")"
     if $backup_is_dir; then
       if ! cp -a "$backup_path"/. "$staging"/ 2>/dev/null; then
@@ -108,18 +109,19 @@ restore_managed_item() {
       fi
     fi
 
-    # Rename current target to rollback — abort if this fails (same filesystem)
-    rollback="$(mktemp "$(dirname "$target_path")/.uninstall-rollback-$(backup_name "$source_rel")-XXXXXX")"
+    # Rename original to rollback directory (same filesystem, unique via mktemp -d)
+    rollback_dir="$(mktemp -d "$(dirname "$target_path")/.uninstall-rollback-$(backup_name "$source_rel")-XXXXXX")"
+    rollback="$rollback_dir/$(basename "$target_path")"
     if [[ -e "$target_path" || -L "$target_path" ]]; then
       if ! mv "$target_path" "$rollback"; then
         echo "ERROR: Could not move $target_path to rollback — aborting to prevent data loss."
         rm -rf "$staging" 2>/dev/null || true
+        rm -rf "$rollback_dir" 2>/dev/null || true
         exit 1
       fi
     fi
 
     # Move staged content into place
-    mkdir -p "$(dirname "$target_path")"
     if $backup_is_dir; then
       if ! mv "$staging" "$target_path"; then
         echo "ERROR: Failed to restore $target_path from backup — attempting rollback."
@@ -130,6 +132,7 @@ restore_managed_item() {
           echo "Restored original target from rollback: $target_path"
         fi
         rm -rf "$staging" 2>/dev/null || true
+        rm -rf "$rollback_dir" 2>/dev/null || true
         return 1
       fi
     else
@@ -144,13 +147,14 @@ restore_managed_item() {
           echo "Restored original target from rollback: $target_path"
         fi
         rm -rf "$staging" 2>/dev/null || true
+        rm -rf "$rollback_dir" 2>/dev/null || true
         return 1
       fi
 
       rmdir "$staging"
     fi
 
-    rm -rf "$rollback" 2>/dev/null || true
+    rm -rf "$rollback_dir" 2>/dev/null || true
     echo "Restored from backup: $target_path"
     return 0
   elif [[ -e "$target_path" || -L "$target_path" ]]; then
