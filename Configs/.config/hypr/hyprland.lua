@@ -1,9 +1,9 @@
 -- Hyprland loads this file when it is started without a config, and it prefers
 -- it over hyprland.conf. Prodi9al loads it too, last, as the override layer below.
--- The block keeps the two apart: prodi9al.lua sets `prodi9al` on its first line, so it
+-- The block keeps the two apart: prodi.lua sets `prodi` on its first line, so it
 -- runs only when this file is the entry point and Prodi9al has not been loaded.
 -- Removing it leaves a session with a cursor and nothing else.
-if not prodi9al then
+if not prodi then
 	local share = os.getenv("XDG_DATA_HOME") or (os.getenv("HOME") .. "/.local/share")
 	local entry = share .. "/hypr/prodi.lua"
 	local handle = io.open(entry, "r")
@@ -288,8 +288,8 @@ hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
-hl.bind(mainMod .. " + D", hl.dsp.exec_cmd("rofi -show drun -theme ~/.local/share/prodi/rofi/themes/launchpad.rasi -show-icons"), {description = "[Prodi9al] home screen launchpad"})
-hl.bind(mainMod .. " + A", hl.dsp.exec_cmd("prodi-shell rofilaunch d"), {description = "[Prodi9al] app selector"})
+hl.bind(mainMod .. " + D", hl.dsp.exec_cmd("rofi -show drun -theme ~/.local/share/prodi/rofi/themes/launchpad.rasi -show-icons"), {description = "[Prodi] home screen launchpad"})
+hl.bind(mainMod .. " + A", hl.dsp.exec_cmd("prodi-shell rofilaunch d"), {description = "[Prodi] app selector"})
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))    -- dwindle only
 
@@ -387,14 +387,14 @@ hl.window_rule({
 
 
 -- Prodigal local comfort overrides (Prodi9al remains the base configuration)
-local prodigalMod = prodi9al.config.modifiers.main
+local prodigalMod = prodi.config.modifiers.main
 hl.bind(prodigalMod .. " + SHIFT + LEFT", hl.dsp.window.move({direction = "left"}), {description = "[Prodigal] move window left", repeating = true})
 hl.bind(prodigalMod .. " + SHIFT + RIGHT", hl.dsp.window.move({direction = "right"}), {description = "[Prodigal] move window right", repeating = true})
 hl.bind(prodigalMod .. " + SHIFT + UP", hl.dsp.window.move({direction = "up"}), {description = "[Prodigal] move window up", repeating = true})
 hl.bind(prodigalMod .. " + SHIFT + DOWN", hl.dsp.window.move({direction = "down"}), {description = "[Prodigal] move window down", repeating = true})
-hl.bind(prodigalMod .. " + Return", prodi9al.config.exec("app.terminal"), {description = "[Prodigal] terminal"})
+hl.bind(prodigalMod .. " + Return", prodi.config.exec("app.terminal"), {description = "[Prodigal] terminal"})
 hl.bind(prodigalMod .. " + C", hl.dsp.window.close(), {description = "[Prodigal] close window"})
-hl.bind(prodigalMod .. " + SHIFT + C", prodi9al.config.exec("app.editor"), {description = "[Prodigal] text editor"})
+hl.bind(prodigalMod .. " + SHIFT + C", prodi.config.exec("app.editor"), {description = "[Prodigal] text editor"})
 hl.bind(prodigalMod .. " + SPACE", hl.dsp.window.float({action = "toggle"}), {description = "[Prodigal] toggle floating"})
 hl.bind(prodigalMod .. " + F", hl.dsp.window.fullscreen({action = "toggle"}), {description = "[Prodigal] toggle fullscreen"})
 
