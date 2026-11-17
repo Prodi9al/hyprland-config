@@ -174,6 +174,7 @@ while IFS= read -r line; do
         if ! mv "$target_path" "$rollback"; then
           echo "ERROR: Could not rename $target_path to rollback"
           rm -rf "$staging" 2>/dev/null || true
+          rm -rf "$rollback_dir" 2>/dev/null || true
           exit 1
         fi
       fi
