@@ -1,0 +1,21 @@
+[core]
+rofi = { enabled = true, description = "Rofi application launcher" }
+swaync = { enabled = true, description = "SwayNC notification daemon" }
+wlogout = { enabled = true, description = "Wlogout power menu" }
+fastfetch = { enabled = true, description = "System information tool" }
+nwg-look = { enabled = true, description = "GTK look and feel" }
+pypr = { enabled = true, description = "Hyprland wrapper" }
+qt5ct = { enabled = true, description = "Qt5 configuration tool" }
+qt6ct = { enabled = true, description = "Qt6 configuration tool" }
+xsettingsd = { enabled = true, description = "X settings daemon" }
+hyde = { enabled = true, description = "HyDE theme system" }
+
+[local]
+themes = { enabled = true, description = "GTK/Kvantum themes" }
+icons = { enabled = true, description = "Icon themes" }
+fonts = { enabled = true, description = "Font files" }
+waybar-share = { enabled = true, description = "Waybar shared data" }
+sddm = { enabled = true, description = "SDDM display manager" }
+rofi-share = { enabled = true, description = "Rofi themes" }
+hyde-share = { enabled = true, description = "HyDE shared data" }
+wallbash = { enabled = true, description = "Wallbash color system" }

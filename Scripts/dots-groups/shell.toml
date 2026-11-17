@@ -1,0 +1,4 @@
+[shell]
+fish = { enabled = true, description = "Fish shell configuration" }
+zsh = { enabled = true, description = "Zsh shell configuration" }
+starship = { enabled = true, description = "Starship prompt" }

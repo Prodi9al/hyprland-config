@@ -1,0 +1,3 @@
+[notification-daemon]
+dunst = { enabled = true, description = "Dunst notification daemon" }
+swaync = { enabled = true, description = "SwayNC notification daemon" }

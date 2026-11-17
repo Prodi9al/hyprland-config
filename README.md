@@ -446,8 +446,8 @@ All hardcoded paths use `$HOME` or `$XDG_*` placeholders — no personal data is
 
 | Path | Purpose |
 |------|---------|
-| `Configs/.config/` | Dotfiles restored to `~/.config/` |
-| `Configs/.local/` | Dotfiles restored to `~/.local/` |
+| `Configs/.config/` | Dotfiles restored to `~/.config/` (hypr, waybar, gtk, kitty, rofi, zsh, fish, etc.) |
+| `Configs/.local/` | Dotfiles restored to `~/.local/` (prodi, themes, waybar, rofi, sddm, etc.) |
 | `Scripts/install.sh` | Arch Linux install script |
 | `Scripts/pkg_core.lst` | Core package list (pacman) |
 | `Scripts/pkg_extra.lst` | Extra package list (AUR) |
@@ -456,9 +456,17 @@ All hardcoded paths use `$HOME` or `$XDG_*` placeholders — no personal data is
 | `Scripts/install_aur.sh` | AUR package installer |
 | `Scripts/restore_cfg.sh` | Config restore script |
 | `Scripts/version.sh` | Version info |
+| `Scripts/hypr_autogen.sh` | Hyprland config autogenerator |
+| `Scripts/themepatcher.lst` | Available themes list |
+| `Scripts/dots-groups/` | Dotfile group manifests (core, extra, shell, etc.) |
 | `dots.toml` | Dotfile manifest |
-| `Source/assets/` | Wallpapers and images |
+| `Source/assets/` | Wallpapers and showcase images |
+| `Source/docs/` | Documentation (migration guide, etc.) |
+| `Source/misc/` | Miscellaneous source files |
 | `LICENSE` | MIT License |
+| `CONTRIBUTING.md` | Contribution guidelines |
+| `KEYBINDINGS.md` | Keybinding reference |
+| `CHANGELOG.md` | Release history |
 
 ---
 

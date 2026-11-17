@@ -1,0 +1,6 @@
+[optionals]
+swaylock = { enabled = true, description = "Swaylock screen locker" }
+lsd = { enabled = true, description = "Modern ls replacement" }
+vim = { enabled = true, description = "Vim editor" }
+satty = { enabled = true, description = "Disk usage visualizer" }
+menus = { enabled = true, description = "Application menus" }

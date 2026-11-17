@@ -1,0 +1,16 @@
+[core]
+hypr = { enabled = true, description = "Hyprland window manager config" }
+waybar = { enabled = true, description = "Waybar status bar" }
+kitty = { enabled = true, description = "Kitty terminal emulator" }
+dunst = { enabled = true, description = "Dunst notification daemon" }
+gtk-3.0 = { enabled = true, description = "GTK 3 theming" }
+gtk-4.0 = { enabled = true, description = "GTK 4 theming" }
+Kvantum = { enabled = true, description = "Kvantum Qt theming" }
+qt5ct = { enabled = true, description = "Qt5 configuration tool" }
+qt6ct = { enabled = true, description = "Qt6 configuration tool" }
+
+[local]
+lib-prodi = { enabled = true, description = "Prodi shared library" }
+share-prodi = { enabled = true, description = "Prodi shared data" }
+bin-prodi-shell = { enabled = true, description = "Prodi shell CLI" }
+share-hypr = { enabled = true, description = "Prodi Hyprland data" }
