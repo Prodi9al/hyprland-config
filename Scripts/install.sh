@@ -47,10 +47,10 @@ safe_backup() {
   local src="$1"
   local dst="$2"
   if [[ "$DRY_RUN" == true ]]; then
-    echo "    [DRY RUN] cp -r \"$src\" \"$dst\""
+    echo "    [DRY RUN] cp -a \"$src\" \"$dst\""
     return 0
   fi
-  if ! cp -r "$src" "$dst" 2>/dev/null; then
+  if ! cp -a "$src" "$dst" 2>/dev/null; then
     echo "FATAL: Failed to back up $src to $dst — aborting before any data loss."
     exit 1
   fi
@@ -193,9 +193,9 @@ echo "==> Restoring configs..."
 # Restore .config/ dirs
 if [ -d "$CONFIGS_DIR/.config" ]; then
   if [[ "$DRY_RUN" == true ]]; then
-    echo "    [DRY RUN] cp -r \"$CONFIGS_DIR/.config/\"* \"$HOME/.config/\""
+    echo "    [DRY RUN] cp -a \"$CONFIGS_DIR/.config/\"* \"$HOME/.config/\""
   else
-    cp -r "$CONFIGS_DIR/.config/"* "$HOME/.config/"
+    cp -a "$CONFIGS_DIR/.config/"* "$HOME/.config/"
     echo "    Restored .config/*"
   fi
 fi
@@ -203,9 +203,9 @@ fi
 # Restore .local/share/ dirs
 if [ -d "$CONFIGS_DIR/.local/share" ]; then
   if [[ "$DRY_RUN" == true ]]; then
-    echo "    [DRY RUN] cp -r \"$CONFIGS_DIR/.local/share/\"* \"$HOME/.local/share/\""
+    echo "    [DRY RUN] cp -a \"$CONFIGS_DIR/.local/share/\"* \"$HOME/.local/share/\""
   else
-    cp -r "$CONFIGS_DIR/.local/share/"* "$HOME/.local/share/"
+    cp -a "$CONFIGS_DIR/.local/share/"* "$HOME/.local/share/"
     echo "    Restored .local/share/*"
   fi
 fi
@@ -213,10 +213,10 @@ fi
 # Restore .local/lib/prodi
 if [ -d "$CONFIGS_DIR/.local/lib/prodi" ]; then
   if [[ "$DRY_RUN" == true ]]; then
-    echo "    [DRY RUN] cp -r \"$CONFIGS_DIR/.local/lib/prodi/\"* \"$HOME/.local/lib/prodi/\""
+    echo "    [DRY RUN] cp -a \"$CONFIGS_DIR/.local/lib/prodi/\"* \"$HOME/.local/lib/prodi/\""
   else
     mkdir -p "$HOME/.local/lib/prodi"
-    cp -r "$CONFIGS_DIR/.local/lib/prodi/"* "$HOME/.local/lib/prodi/"
+    cp -a "$CONFIGS_DIR/.local/lib/prodi/"* "$HOME/.local/lib/prodi/"
     echo "    Restored .local/lib/prodi/*"
   fi
 fi
@@ -237,10 +237,10 @@ fi
 # Restore .local/share/hypr
 if [ -d "$CONFIGS_DIR/.local/share/hypr" ]; then
   if [[ "$DRY_RUN" == true ]]; then
-    echo "    [DRY RUN] cp -r \"$CONFIGS_DIR/.local/share/hypr/\"* \"$HOME/.local/share/hypr/\""
+    echo "    [DRY RUN] cp -a \"$CONFIGS_DIR/.local/share/hypr/\"* \"$HOME/.local/share/hypr/\""
   else
     mkdir -p "$HOME/.local/share/hypr"
-    cp -r "$CONFIGS_DIR/.local/share/hypr/"* "$HOME/.local/share/hypr/"
+    cp -a "$CONFIGS_DIR/.local/share/hypr/"* "$HOME/.local/share/hypr/"
     echo "    Restored .local/share/hypr/*"
   fi
 fi

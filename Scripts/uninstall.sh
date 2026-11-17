@@ -71,11 +71,67 @@ while IFS= read -r line; do
   fi
 done < "$RESTORE_LIST"
 
-# Restore each managed item from its backup (if a backup exists)
+# Helper: restore a managed item from its backup using staging-and-rename
+#   $1 = target_path, $2 = source_rel (for backup lookup)
+restore_managed_item() {
+  local target_path="$1"
+  local source_rel="$2"
+
+  backup_path="$(backup_lookup "$source_rel" 2>/dev/null)" || true
+
+  if [[ -n "$backup_path" && -e "$backup_path" ]]; then
+    if [[ "$DRY_RUN" == true ]]; then
+      echo "    [DRY RUN] Would restore backup: $backup_path → $target_path"
+      return 0
+    fi
+
+    # Copy backup to staging first (verify it works before touching target)
+    staging="$(mktemp -d "$BACKUP_DIR/.restore-staging-XXXXXX")"
+    if ! cp -a "$backup_path"/. "$staging"/ 2>/dev/null; then
+      echo "ERROR: Failed to read backup $backup_path — leaving target intact."
+      rm -rf "$staging" 2>/dev/null || true
+      return 1
+    fi
+
+    # Rename current target to rollback
+    rollback="$BACKUP_DIR/.uninstall-rollback-$(backup_name "$source_rel")-$$"
+    if [[ -e "$target_path" ]]; then
+      mv "$target_path" "$rollback" 2>/dev/null || true
+    fi
+
+    # Move staged content into place
+    mkdir -p "$(dirname "$target_path")"
+    if ! mv "$staging" "$target_path"; then
+      echo "ERROR: Failed to restore $target_path from backup — attempting rollback."
+      rm -rf "$target_path" 2>/dev/null || true
+      if [[ -e "$rollback" ]]; then
+        mv "$rollback" "$target_path" || cp -a "$rollback" "$target_path"
+        echo "Restored original target from rollback: $target_path"
+      fi
+      rm -rf "$staging" 2>/dev/null || true
+      return 1
+    fi
+
+    rm -rf "$rollback" 2>/dev/null || true
+    echo "Restored from backup: $target_path"
+    return 0
+  elif [[ -e "$target_path" ]]; then
+    if [[ "$DRY_RUN" == true ]]; then
+      echo "    [DRY RUN] Would remove: $target_path (no backup available)"
+    else
+      rm -rf "$target_path"
+      echo "Removed (no backup): $target_path"
+    fi
+    return 0
+  fi
+
+  return 0
+}
+
+# Restore each managed directory from its backup (if a backup exists)
 echo "==> Restoring backed-up configs..."
 
 for target_path in "${MANAGED_DIRS[@]}"; do
-  # Find the source_rel that maps to this target
   while IFS= read -r line; do
     [[ "$line" =~ ^[[:space:]]*# ]] && continue
     [[ -z "${line// }" ]] && continue
@@ -88,26 +144,7 @@ for target_path in "${MANAGED_DIRS[@]}"; do
       continue
     fi
 
-    backup_path="$(backup_path "$source_rel")"
-
-    if [[ -e "$backup_path" ]]; then
-      if [[ "$DRY_RUN" == true ]]; then
-        echo "    [DRY RUN] Would restore backup: $backup_path → $target_path"
-      else
-        # Remove existing target first to avoid nested directories
-        rm -rf "$target_path"
-        mkdir -p "$(dirname "$target_path")"
-        cp -a "$backup_path" "$target_path"
-        echo "Restored from backup: $target_path"
-      fi
-    elif [[ -e "$target_path" ]]; then
-      if [[ "$DRY_RUN" == true ]]; then
-        echo "    [DRY RUN] Would remove: $target_path (no backup available)"
-      else
-        rm -rf "$target_path"
-        echo "Removed (no backup): $target_path"
-      fi
-    fi
+    restore_managed_item "$target_path" "$source_rel"
     break
   done < "$RESTORE_LIST"
 done
@@ -125,24 +162,7 @@ for target_path in "${MANAGED_FILES[@]}"; do
       continue
     fi
 
-    backup_path="$(backup_path "$source_rel")"
-
-    if [[ -e "$backup_path" ]]; then
-      if [[ "$DRY_RUN" == true ]]; then
-        echo "    [DRY RUN] Would restore backup: $backup_path → $target_path"
-      else
-        mkdir -p "$(dirname "$target_path")"
-        cp -a "$backup_path" "$target_path"
-        echo "Restored from backup: $target_path"
-      fi
-    elif [[ -e "$target_path" ]]; then
-      if [[ "$DRY_RUN" == true ]]; then
-        echo "    [DRY RUN] Would remove: $target_path (no backup available)"
-      else
-        rm -f "$target_path"
-        echo "Removed (no backup): $target_path"
-      fi
-    fi
+    restore_managed_item "$target_path" "$source_rel"
     break
   done < "$RESTORE_LIST"
 done

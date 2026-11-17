@@ -19,3 +19,35 @@ backup_path() {
     local rel="$1"
     echo "${BACKUP_DIR}/$(backup_name "$rel")"
 }
+
+# Find the exact backup path for a given source relative path.
+# Checks the base name first, then timestamped variants (newest first).
+# Returns 0 and prints the path if found, returns 1 if no backup exists.
+backup_lookup() {
+    local rel="$1"
+    local base
+    base="$(backup_path "$rel")"
+
+    if [[ -e "$base" ]]; then
+        echo "$base"
+        return 0
+    fi
+
+    # Safely glob for timestamped variants without failing on no matches
+    local shopt_state
+    shopt_state="$(shopt -p nullglob)"
+    shopt -s nullglob
+    local -a matches=("$base".*)
+    eval "$shopt_state" >/dev/null 2>&1
+
+    if [[ ${#matches[@]} -gt 0 ]]; then
+        local newest
+        newest="$(ls -dt "${matches[@]}" 2>/dev/null | head -1)"
+        if [[ -n "$newest" ]]; then
+            echo "$newest"
+            return 0
+        fi
+    fi
+
+    return 1
+}
