@@ -76,14 +76,14 @@ fi
 
 # 2. Install system dependencies
 echo "==> Installing system dependencies..."
-PKG_LIST=$(grep -v '^\s*#' "$SCRIPTS_DIR/pkg_core.lst" | tr '\n' ' ')
-echo "    Packages: $PKG_LIST"
+mapfile -t PKG_LIST < <(grep -v '^\s*#' "$SCRIPTS_DIR/pkg_core.lst")
+echo "    Packages: ${PKG_LIST[*]}"
 
 if [[ "$SKIP_SYS_UPDATE" == true ]]; then
   echo "    Skipping system update (--skip-sys-update)."
 else
   if [[ "$DRY_RUN" == true ]]; then
-    echo "    [DRY RUN] sudo pacman -Syu --needed --noconfirm $PKG_LIST"
+    echo "    [DRY RUN] sudo pacman -Syu --needed --noconfirm ${PKG_LIST[*]}"
   else
     read -r -p "    Run 'sudo pacman -Syu' to update system first? [y/N] " confirm_sysupdate
     if [[ "$confirm_sysupdate" =~ ^[Yy]$ ]]; then
@@ -95,22 +95,22 @@ else
 fi
 
 if [[ "$DRY_RUN" == true ]]; then
-  echo "    [DRY RUN] sudo pacman -S --needed --noconfirm $PKG_LIST"
+  echo "    [DRY RUN] sudo pacman -S --needed --noconfirm ${PKG_LIST[*]}"
 else
-  sudo pacman -S --needed --noconfirm $PKG_LIST
+  sudo pacman -S --needed --noconfirm "${PKG_LIST[@]}"
 fi
 
 echo "    Core dependencies installed."
 
 if [[ -f "$SCRIPTS_DIR/pkg_extra.lst" ]]; then
   echo "==> Installing extra packages (pacman)..."
-  EXTRA_LIST=$(grep -v '^\s*#' "$SCRIPTS_DIR/pkg_extra.lst" | tr '\n' ' ')
-  echo "    Packages: $EXTRA_LIST"
+  mapfile -t EXTRA_LIST < <(grep -v '^\s*#' "$SCRIPTS_DIR/pkg_extra.lst")
+  echo "    Packages: ${EXTRA_LIST[*]}"
 
   if [[ "$DRY_RUN" == true ]]; then
-    echo "    [DRY RUN] sudo pacman -S --needed --noconfirm $EXTRA_LIST"
+    echo "    [DRY RUN] sudo pacman -S --needed --noconfirm ${EXTRA_LIST[*]}"
   else
-    sudo pacman -S --needed --noconfirm $EXTRA_LIST
+    sudo pacman -S --needed --noconfirm "${EXTRA_LIST[@]}"
   fi
   echo "    Extra packages installed."
 fi

@@ -16,12 +16,15 @@ The `SUPER` key (Windows key) is the primary modifier. A secondary `prodigalMod`
 | SUPER + E | File manager (dolphin) |
 | SUPER + V | Toggle floating |
 | SUPER + R | Open menu (wofi) |
+| SUPER + D | App launcher (rofi drun) |
 | SUPER + A | App selector (prodi-shell rofilaunch) |
 | SUPER + P | Pseudo tile window |
-| SUPER + SHIFT + S | Toggle special workspace |
+| SUPER + J | Toggle split layout |
+| SUPER + S | Toggle special workspace |
+| SUPER + SHIFT + S | Move focused window to special workspace |
+| SUPER + LEFT/RIGHT/UP/DOWN | Focus window in direction |
 | SUPER + 1-10 | Switch to workspace |
 | SUPER + SHIFT + 1-10 | Move window to workspace |
-| SUPER + TAB | Previous workspace |
 
 ## Prodigal Mod Keybindings
 
@@ -56,6 +59,7 @@ The `SUPER` key (Windows key) is the primary modifier. A secondary `prodigalMod`
 
 | Keybinding | Action |
 |------------|--------|
+| F1 | Cycle display mode |
 | F5 | Toggle audio mute |
 
 See `Configs/.config/hypr/hyprland.lua` for the full keybinding configuration.

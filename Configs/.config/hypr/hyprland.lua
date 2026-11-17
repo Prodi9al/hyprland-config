@@ -5,7 +5,7 @@
 -- Removing it leaves a session with a cursor and nothing else.
 if not prodi9al then
 	local share = os.getenv("XDG_DATA_HOME") or (os.getenv("HOME") .. "/.local/share")
-	local entry = share .. "/hypr/prodi9al.lua"
+	local entry = share .. "/hypr/prodi.lua"
 	local handle = io.open(entry, "r")
 	if not handle then
 		error("Prodi9al is not installed at " .. entry .. ". Run install.sh -r, or point Hyprland at your own config.")
@@ -406,4 +406,4 @@ hl.bind(prodigalMod .. " + SPACE", hl.dsp.window.float({action = "toggle"}), {de
 hl.bind(prodigalMod .. " + F", hl.dsp.window.fullscreen({action = "toggle"}), {description = "[Prodigal] toggle fullscreen"})
 
 -- F1: Cycle display/projection modes (laptop-only → mirror → extend → external-only)
-hl.bind("F1", hl.dsp.exec_cmd("bash ~/.local/lib/prodi9al/display-cycle.sh"), {description = "[Prodigal] cycle display mode"})
+hl.bind("F1", hl.dsp.exec_cmd("bash ~/.local/lib/prodi/display-cycle.sh"), {description = "[Prodigal] cycle display mode"})

@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ludeeus/action-shellcheck@master
+      - uses: ludeeus/action-shellcheck@v2.0.0
         with:
           scandir: Scripts
           exclude: Configs
@@ -23,7 +23,7 @@ jobs:
       - name: Install Ruff
         run: pip install ruff
       - name: Run Ruff on Python scripts
-        run: ruff check Configs/.local/lib/prodi/ --select E,F,W,C --output-format grouped || true
+        run: ruff check Configs/.local/lib/prodi/ --select E,F,W,C --output-format grouped
 
   lua-syntax:
     runs-on: ubuntu-latest
