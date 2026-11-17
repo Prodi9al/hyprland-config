@@ -159,6 +159,12 @@ for f in dolphinrc kdeglobals xdg-terminals.list electron-flags.conf baloofilerc
   fi
 done
 
+# Back up nested .config files (path components with subdirectories)
+if [ -f "$HOME/.config/dconf/profile" ]; then
+  safe_backup "$HOME/.config/dconf/profile" "$(backup_path ".config/dconf/profile")"
+  echo "    backed up .config/dconf/profile"
+fi
+
 # Back up .local/share dirs that will be overwritten
 for d in themes icons fonts waybar sddm rofi hyde wallbash kio kxmlgui5 xdg-desktop-portal dolphin; do
   if [ -d "$HOME/.local/share/$d" ]; then

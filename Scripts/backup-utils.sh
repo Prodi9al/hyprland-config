@@ -10,8 +10,15 @@
 #   .local/lib/prodi      → local-lib-prodi
 backup_name() {
     local rel="$1"
-    # Strip leading dot, replace slashes with dashes
-    echo "${rel#.}" | sed 's/\//-/g'
+    # Strip leading dot, then encode path unambiguously:
+    #   '-' → '-.'  (escape literal dash)
+    #   '/' → '--'  (path separator)
+    # This keeps .config/a-b and .config/a/b distinct.
+    local encoded
+    encoded="${rel#.}"
+    encoded="${encoded//-/-.}"
+    encoded="${encoded//\//--}"
+    echo "$encoded"
 }
 
 # Return the full backup path for a given source relative path.
@@ -28,7 +35,7 @@ backup_lookup() {
     local base
     base="$(backup_path "$rel")"
 
-    if [[ -e "$base" ]]; then
+    if [[ -e "$base" || -L "$base" ]]; then
         echo "$base"
         return 0
     fi
