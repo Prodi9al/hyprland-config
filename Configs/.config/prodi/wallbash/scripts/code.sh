@@ -19,10 +19,9 @@ for i in "${!codeVsix[@]}"; do
     [[ -z "${codeVsix[i]}" ]] && continue
     file=$(find -L "${codeVsix[i]}" -type f -path "*extensions/thehydeproject*" -name "wallbash.json")
     if [ -z "${file}" ]; then
+        : "${CODE_WALLBASH_SHA256:?CODE_WALLBASH_SHA256 must be set to the SHA-256 of Code_Wallbash.vsix}"
         [ -f "${cacheDir}/landing/Code_Wallbash.vsix" ] || curl -L -o "${cacheDir}/landing/Code_Wallbash.vsix" https://github.com/HyDE-Project/code-wallbash/raw/refs/heads/master/release/Code_Wallbash.vsix
-        if [ -n "${CODE_WALLBASH_SHA256:-}" ]; then
-            echo "${CODE_WALLBASH_SHA256}  ${cacheDir}/landing/Code_Wallbash.vsix" | sha256sum -c - || { echo "[wallbashcode] VSIX checksum mismatch"; exit 1; }
-        fi
+        echo "${CODE_WALLBASH_SHA256}  ${cacheDir}/landing/Code_Wallbash.vsix" | sha256sum -c - || { echo "[wallbashcode] VSIX checksum mismatch"; exit 1; }
         case ${codeVsix[i]} in
         *".cursor"*)
             echo "[wallbashcode] Cursor IDE: Manual intervention required for extension installation."

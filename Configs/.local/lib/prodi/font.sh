@@ -19,6 +19,8 @@ download_and_extract() {
         if [ -n "$downloaded_file" ]; then
             echo "$expected_sha256  $downloaded_file" | sha256sum -c - || { echo "[font] Checksum mismatch for $name"; return 1; }
         fi
+    else
+        echo "[font] WARNING: no SHA-256 for $name; download is unverified" >&2
     fi
     find "$temp_dir" -type f | while read -r file; do
         case "$file" in
