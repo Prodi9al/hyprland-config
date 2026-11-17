@@ -1,0 +1,1620 @@
+#!/usr/bin/env python3
+# TODO:Refactor. This what happens when you just want it to work lol.
+import contextlib
+import fcntl
+import json
+import os
+import glob
+import subprocess
+import re
+import argparse
+import shutil
+import time
+import sys
+import hashlib
+import signal
+import tempfile
+
+from pathlib import Path
+
+import pyutils.wrapper.libnotify as notify
+import pyutils.compositor as HYPRLAND
+import pyutils.logger as logger
+
+from pyutils.wrapper.rofi import rofi_dmenu
+from pyutils.xdg_base_dirs import (
+    xdg_config_home,
+    xdg_data_home,
+    xdg_state_home,
+    xdg_cache_home,
+    xdg_runtime_dir,
+)
+
+
+logger = logger.get_logger()
+
+if shutil.which("waybar") is None:
+    logger.info("Waybar binary not found! Is waybar installed? Exiting...")
+    print("Waybar binary not found! Is waybar installed? Exiting...")
+    sys.exit(0)
+
+
+HAS_SYSTEMD = os.path.isdir("/run/systemd/system")
+
+
+# The system entries were written without a leading "/", so they resolved
+# against the current directory instead of /usr: system-wide modules, layouts
+# and includes were never found, and a stray ./usr/share/waybar tree in the
+# directory waybar.py ran from was read instead.
+MODULE_DIRS = [
+    os.path.join(str(xdg_config_home()), "waybar", "modules"),
+    os.path.join(str(xdg_data_home()), "waybar", "modules"),
+    os.path.join("/usr", "local", "share", "waybar", "modules"),
+    os.path.join("/usr", "share", "waybar", "modules"),
+]
+
+LAYOUT_DIRS = [
+    os.path.join(str(xdg_config_home()), "waybar", "layouts"),
+    os.path.join(str(xdg_data_home()), "waybar", "layouts"),
+    os.path.join("/usr", "local", "share", "waybar", "layouts"),
+    os.path.join("/usr", "share", "waybar", "layouts"),
+]
+
+LAYOUT_IGNORE = ["test.jsonc", "dock#sample.jsonc"]
+
+STYLE_DIRS = [
+    os.path.join(str(xdg_config_home()), "waybar", "styles"),
+    os.path.join(str(xdg_data_home()), "waybar", "styles"),
+]
+
+INCLUDES_DIRS = [
+    os.path.join(str(xdg_config_home()), "waybar", "includes"),
+    os.path.join(str(xdg_data_home()), "waybar", "includes"),
+    os.path.join("/usr", "local", "share", "waybar", "includes"),
+    os.path.join("/usr", "share", "waybar", "includes"),
+]
+
+CONFIG_JSONC = Path(os.path.join(str(xdg_config_home()), "waybar", "config.jsonc"))
+STATE_FILE = Path(os.path.join(str(xdg_state_home()), "prodi", "staterc"))
+PRODI_CONFIG = Path(os.path.join(str(xdg_state_home()), "prodi", "config"))
+_desktop = os.environ.get('XDG_CURRENT_DESKTOP') or os.environ.get('XDG_SESSION_DESKTOP') or 'Hyprland'
+if _desktop in ('Prodi', 'unknown', ''):
+    _desktop = 'Hyprland'
+UNIT_NAME = f"prodi-{_desktop}-bar.service"
+
+
+def source_env_file(filepath):
+    """Source environment variables from a file."""
+    if os.path.exists(filepath):
+        with open(filepath) as file:
+            for line in file:
+                if line.strip() and not line.startswith("#"):
+                    key, value = line.strip().split("=", 1)
+                    os.environ[key] = value.strip("'")
+
+
+def get_file_hash(filepath):
+    """Calculate the SHA256 hash of a file."""
+    sha256 = hashlib.sha256()
+    with open(filepath, "rb") as file:
+        while chunk := file.read(8192):
+            sha256.update(chunk)
+    return sha256.hexdigest()
+
+
+def in_backup_dir(path, root):
+    """Whether path lies in a "backup" directory below root.
+
+    Only the part below root counts: a home that itself sits under a directory
+    named backup must not turn every layout into a backup (#2133).
+    """
+    relative = os.path.relpath(path, start=root)
+    return "backup" in Path(relative).parts[:-1]
+
+
+def find_layout_files(include_backups=False):
+    """Recursively find all layout files in the specified directories.
+
+    backup_layout() writes its copies to layouts/backup/ inside a layout
+    directory, so a plain walk returns them as layouts. They sort before most
+    names ("backup/..."), which made the fallbacks that take layouts[0] or
+    match config.jsonc by hash settle on a backup, and --next/--prev then
+    crashed on it (Prodi-Project/Prodi#2133). Only list_layouts(), which shows
+    backups as their own entry, asks for them.
+    """
+    layouts = []
+    for layout_dir in LAYOUT_DIRS:
+        for root, dirs, files in os.walk(layout_dir):
+            if not include_backups:
+                dirs[:] = [d for d in dirs if d != "backup"]
+            for file in files:
+                if file.endswith(".jsonc") and file not in LAYOUT_IGNORE:
+                    layouts.append(os.path.join(root, file))
+    return sorted(layouts)
+
+
+def _quote_state_value(value):
+    """Quote value for staterc the way staterc.sh does.
+
+    staterc is read with `source`, so \\ " $ and the backtick are escaped
+    with a backslash, which bash undoes inside double quotes; a value with
+    $(...) in it is read back as text, not run (Prodi-Project/Prodi#2197).
+    """
+    value = str(value)
+    if "\n" in value or "\r" in value:
+        raise ValueError(f"staterc value contains a newline: {value!r}")
+    return '"' + re.sub(r'([\\"$`])', r"\\\1", value) + '"'
+
+
+def _unquote_state_value(raw):
+    """Read a staterc value back as `source` would.
+
+    An unquoted value, as older waybar.py versions wrote, is kept as is.
+    """
+    raw = raw.strip()
+    if len(raw) >= 2 and raw[0] == raw[-1] == '"':
+        return re.sub(r'\\([\\"$`])', r"\1", raw[1:-1])
+    return raw
+
+
+def get_state_value(key, default=None):
+    """Get a value from the state file."""
+    if not STATE_FILE.exists():
+        return default
+
+    with open(STATE_FILE, "r") as file:
+        for line in file:
+            if line.startswith(f"{key}="):
+                return _unquote_state_value(line.split("=", 1)[1])
+    return default
+
+
+def get_config_value(key, default=None):
+    """Get a value from the config file or state file."""
+    if PRODI_CONFIG.exists():
+        with open(PRODI_CONFIG, "r") as file:
+            for line in file:
+                clean_line = line.strip()
+                if clean_line.startswith("export "):
+                    clean_line = clean_line[7:]  # Remove "export "
+                if clean_line.startswith(f"{key}="):
+                    return clean_line.split("=", 1)[1].strip()
+    return default
+
+
+@contextlib.contextmanager
+def _staterc_lock():
+    """Hold the flock on staterc.lock that staterc.sh (set_conf, Lua) takes too.
+
+    Unlocked, two writers rewriting staterc at once could wipe it down to one
+    line (Prodi-Project/Prodi#2194). fcntl.flock is the same lock as the
+    flock command. A writer still waiting after 10s writes anyway: losing the
+    setting is worse than the rare race. Never delete staterc.lock.
+    """
+    STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        lock = open(STATE_FILE.with_name("staterc.lock"), "a")
+    except OSError as exc:
+        # e.g. left root-owned by a sudo run; staterc.sh writes on too.
+        logger.warning(f"cannot open staterc.lock ({exc}), writing without the lock")
+        yield
+        return
+    with lock:
+        deadline = time.monotonic() + 10
+        while True:
+            try:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except BlockingIOError:
+                if time.monotonic() >= deadline:
+                    logger.warning("staterc is still locked after 10s, writing without the lock")
+                    break
+                time.sleep(0.05)
+            except OSError as exc:
+                logger.warning(f"cannot lock staterc.lock ({exc}), writing without the lock")
+                break
+        yield
+
+
+def _replace_state_file(text):
+    """Replace staterc with text in one step, so no reader sees it half written."""
+    fd, tmp_path = tempfile.mkstemp(dir=STATE_FILE.parent, prefix=".staterc.")
+    try:
+        with os.fdopen(fd, "w") as file:
+            file.write(text)
+        # mkstemp creates the file as 0600; keep the old mode, or give a new
+        # file what open(..., "w") would (0666 minus the umask).
+        if STATE_FILE.exists():
+            shutil.copymode(STATE_FILE, tmp_path)
+        else:
+            umask = os.umask(0)
+            os.umask(umask)
+            os.chmod(tmp_path, 0o666 & ~umask)
+        os.replace(tmp_path, STATE_FILE)
+    except BaseException:
+        if os.path.exists(tmp_path):
+            os.unlink(tmp_path)
+        raise
+
+
+def _add_missing_state_values(values):
+    """Add the keys of values that staterc still lacks, in one locked step.
+
+    Returns the keys added. A key another writer set in the meantime is kept.
+    """
+    quoted = {key: _quote_state_value(value) for key, value in values.items()}
+    with _staterc_lock():
+        text = STATE_FILE.read_text() if STATE_FILE.exists() else ""
+        present = {line.split("=", 1)[0] for line in text.splitlines() if "=" in line}
+        added = [key for key in values if key not in present]
+        if added:
+            if text and not text.endswith("\n"):
+                text += "\n"
+            _replace_state_file(text + "".join(f"{key}={quoted[key]}\n" for key in added))
+    return added
+
+
+def set_state_value(key, value):
+    """Set or update a value in the state file, removing any duplicates."""
+    quoted = _quote_state_value(value)
+    with _staterc_lock():
+        existing_lines = []
+        seen_keys = set()
+        if STATE_FILE.exists():
+            with open(STATE_FILE, "r") as file:
+                for line in file:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        current_key = line.split("=", 1)[0]
+                        if current_key not in seen_keys and current_key != key:
+                            existing_lines.append(line)
+                            seen_keys.add(current_key)
+                    except Exception:
+                        existing_lines.append(line)
+
+        existing_lines.append(f"{key}={quoted}")
+        _replace_state_file("\n".join(existing_lines) + "\n")
+
+    return True
+
+
+def get_current_layout_from_config():
+    """Get the current layout from state file or by comparing hash of layout files with current config.jsonc."""
+    logger.debug("Getting current layout")
+
+    layout_path = get_state_value("WAYBAR_LAYOUT_PATH")
+    if layout_path and os.path.exists(layout_path):
+        logger.debug(f"Found current layout in state file: {layout_path}")
+        return layout_path
+
+    layout_name = get_state_value("WAYBAR_LAYOUT_NAME")
+    if layout_name:
+        layouts = find_layout_files()
+        for layout in layouts:
+            if os.path.basename(layout).replace(".jsonc", "") == layout_name:
+                logger.debug(f"Found current layout by name in state file: {layout}")
+                return layout
+
+    logger.debug("Fallback to legacy hash comparison method")
+    logger.debug(f"Checking config: {CONFIG_JSONC}")
+
+    layouts = find_layout_files()
+    if not layouts:
+        logger.error("No layout files found")
+        return None
+
+    # If config.jsonc doesn't exist, just use the first available layout
+    if not CONFIG_JSONC.exists():
+        logger.debug("Config file not found, using first available layout")
+        CONFIG_JSONC.parent.mkdir(parents=True, exist_ok=True)
+
+        layout = layouts[0]
+        layout_name = os.path.basename(layout).replace(".jsonc", "")
+        set_state_value("WAYBAR_LAYOUT_PATH", layout)
+        set_state_value("WAYBAR_LAYOUT_NAME", layout_name)
+
+        _atomic_copy(layout, CONFIG_JSONC)
+        logger.debug(f"Created config.jsonc with first layout: {layout}")
+        return layout
+
+    # Try hash comparison for existing config
+    config_hash = get_file_hash(CONFIG_JSONC)
+    layout = None
+
+    for layout_file in layouts:
+        if get_file_hash(layout_file) == config_hash:
+            logger.debug(f"Found current layout by hash: {layout_file}")
+            layout_name = os.path.basename(layout_file).replace(".jsonc", "")
+            set_state_value("WAYBAR_LAYOUT_PATH", layout_file)
+            set_state_value("WAYBAR_LAYOUT_NAME", layout_name)
+            layout = layout_file
+            return layout
+
+    # If no hash match found, use first layout as fallback
+    if not layout:
+        logger.debug("No current layout found by hash comparison, using first layout")
+        current_layout_name = "unknown"
+        backup_layout(current_layout_name)
+        layout = layouts[0]
+
+        layout_name = os.path.basename(layout).replace(".jsonc", "")
+        set_state_value("WAYBAR_LAYOUT_PATH", layout)
+        set_state_value("WAYBAR_LAYOUT_NAME", layout_name)
+
+        _atomic_copy(layout, CONFIG_JSONC)
+        logger.debug(f"Updated config.jsonc with layout: {layout}")
+
+    return layout
+
+
+def ensure_state_file():
+    """Ensure the state file has the necessary entries.
+
+    The values are worked out first, then added in one locked step that skips
+    any key another writer set in the meantime. Holding the lock while working
+    them out would deadlock: get_current_layout_from_config() writes staterc
+    too (Prodi-Project/Prodi#2194).
+    """
+    STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+    logger.debug(f"Ensuring state file exists at: {STATE_FILE}")
+
+    keys = ("WAYBAR_LAYOUT_PATH", "WAYBAR_LAYOUT_NAME", "WAYBAR_STYLE_PATH")
+    if not STATE_FILE.exists():
+        logger.debug("State file does not exist, creating it")
+        current_layout = get_current_layout_from_config()
+        if not current_layout:
+            STATE_FILE.touch()
+            logger.warning("No layout found to write to state file")
+            return
+        missing = set(keys)
+    else:
+        with open(STATE_FILE, "r") as file:
+            lines = file.readlines()
+        missing = {key for key in keys if not any(line.startswith(f"{key}=") for line in lines)}
+        if not missing:
+            return
+        logger.debug("State file is missing entries, updating it")
+        # A layout already in staterc is the one to describe; look it up only
+        # when the path itself is missing.
+        current_layout = (
+            get_current_layout_from_config()
+            if "WAYBAR_LAYOUT_PATH" in missing
+            else get_state_value("WAYBAR_LAYOUT_PATH")
+        )
+        if not current_layout:
+            return
+
+    values = {
+        "WAYBAR_LAYOUT_PATH": current_layout,
+        "WAYBAR_LAYOUT_NAME": os.path.basename(current_layout).replace(".jsonc", ""),
+        "WAYBAR_STYLE_PATH": resolve_style_path(current_layout),
+    }
+    for key in _add_missing_state_values({key: values[key] for key in keys if key in missing}):
+        logger.debug(f"Added {key}={values[key]}")
+
+
+def resolve_style_path(layout_path):
+    """Resolve the style path based on the layout path."""
+    name = os.path.basename(layout_path).replace(".jsonc", "")
+    dir_name = os.path.basename(os.path.dirname(layout_path))
+
+    for style_dir in STYLE_DIRS:
+        style_path = glob.glob(os.path.join(style_dir, f"{name}*.css"))
+
+        if style_path:
+            logger.debug(f"Resolved style path: {style_path[0]}")
+            return style_path[0]
+
+        basename_without_hash = name.split("#")[0]
+        style_path = glob.glob(os.path.join(style_dir, f"{basename_without_hash}*.css"))
+        if style_path:
+            logger.debug(f"Resolved style path with #: {style_path[0]}")
+            return style_path[0]
+
+        if dir_name:
+            style_path = glob.glob(os.path.join(style_dir, f"{dir_name}*.css"))
+            if style_path:
+                logger.debug(f"Resolved style path from directory name: {style_path[0]}")
+                return style_path[0]
+
+    for style_dir in STYLE_DIRS:
+        default_path = os.path.join(style_dir, "defaults.css")
+        if os.path.exists(default_path):
+            logger.debug(f"Using default style: {default_path}")
+            return default_path
+
+    logger.warning("No default style found in any style directory")
+    return os.path.join(STYLE_DIRS[0], "defaults.css")
+
+
+# Set once _apply_layout() has regenerated the files and restarted Waybar, so
+# main() doesn't do both again for the same run.
+_layout_applied = False
+
+
+def _apply_layout(layout_path, style_path, notify_label):
+    """Shared: copy layout, update state, regenerate CSS/includes, notify, restart."""
+    global _layout_applied
+    layout_name = os.path.basename(layout_path).replace(".jsonc", "")
+    set_state_value("WAYBAR_LAYOUT_PATH", layout_path)
+    set_state_value("WAYBAR_LAYOUT_NAME", layout_name)
+    set_state_value("WAYBAR_STYLE_PATH", style_path)
+
+    style_filepath = os.path.join(str(xdg_config_home()), "waybar", "style.css")
+    _atomic_copy(layout_path, CONFIG_JSONC)
+    ensure_user_style()
+    write_style_file(style_filepath, style_path)
+    update_icon_size()
+    update_border_radius()
+    generate_includes()
+    update_global_css()
+    notify.send("Waybar", f"Layout changed to {notify_label}", replace_id=9)
+    restart_waybar()
+    _layout_applied = True
+
+
+def set_layout(layout):
+    """Set the layout and corresponding style."""
+    layouts_data = list_layouts()
+
+    for pair in layouts_data["layouts"]:
+        if layout == pair["layout"] or layout == pair["name"]:
+            _apply_layout(pair["layout"], pair["style"], layout)
+            return
+
+    logger.error(f"Layout {layout} not found")
+    sys.exit(1)
+
+
+def apply_theme_layout():
+    """Temporarily apply a theme preset, preserving the user's layout/CSS pair."""
+    theme_layout = get_value_from_hypr_theme("$WAYBAR_LAYOUT")
+    saved_layout = get_state_value("WAYBAR_PRE_THEME_LAYOUT")
+    if theme_layout:
+        # Validate before saving anything; a missing preset must not claim the bar.
+        pair = next((p for p in list_layouts()["layouts"]
+                     if theme_layout in (p["name"], p["layout"]) and p["style"]), None)
+        if not pair:
+            logger.warning(f"Theme Waybar layout not found: {theme_layout}")
+            return
+        if not saved_layout:
+            # Save only on entry, not on wallpaper reloads or preset-to-preset switches.
+            set_state_value("WAYBAR_PRE_THEME_LAYOUT", get_current_layout_from_config())
+            set_state_value("WAYBAR_PRE_THEME_STYLE", get_state_value("WAYBAR_STYLE_PATH") or
+                            resolve_style_path(get_current_layout_from_config()))
+        _apply_layout(pair["layout"], pair["style"], theme_layout)
+    elif saved_layout:
+        if not os.path.isfile(saved_layout):
+            logger.warning(f"Cannot restore missing Waybar layout: {saved_layout}")
+            return
+        saved_style = get_state_value("WAYBAR_PRE_THEME_STYLE")
+        if not saved_style or not os.path.isfile(saved_style):
+            saved_style = resolve_style_path(saved_layout)
+        _apply_layout(saved_layout, saved_style, os.path.basename(saved_layout))
+        # Clear only after restoration succeeds; the next entry saves a fresh pair.
+        set_state_value("WAYBAR_PRE_THEME_LAYOUT", "")
+        set_state_value("WAYBAR_PRE_THEME_STYLE", "")
+
+
+def handle_layout_navigation(option):
+    """Handle --next, --prev, and --set options."""
+    layouts_data = list_layouts()
+    layout_list = [
+        layout["layout"] for layout in layouts_data["layouts"] if not layout.get("is_backup_entry")
+    ]
+    # get_state_value splits on the first "=" only, so a path containing one
+    # stays whole, and a missing state file is not an error (#2133).
+    current_layout = get_state_value("WAYBAR_LAYOUT_PATH")
+
+    # Checked first: with no layouts there is nothing to cycle, whatever the
+    # state file says.
+    if not layout_list:
+        logger.error("No layouts found.")
+        return
+
+    if not current_layout:
+        logger.error("Current layout not found in state file.")
+        return
+
+    # The re-cache result is the current layout: a hash match is the layout
+    # config.jsonc really holds, and without one the fallback has just copied
+    # the first layout into config.jsonc. Either way cycling continues from it.
+    if current_layout not in layout_list:
+        logger.warning("Current layout file not found, re-caching layouts.")
+        current_layout = get_current_layout_from_config()
+        if not current_layout:
+            logger.error("Failed to recache current layout.")
+            return
+
+    # A backup applied from the backup menu is the current layout but not in
+    # the cycle, so start the cycle from its ends rather than crash (#2133).
+    if current_layout in layout_list:
+        current_index = layout_list.index(current_layout)
+    else:
+        current_index = -1 if option == "--next" else 0
+    if option == "--next":
+        next_index = (current_index + 1) % len(layout_list)
+        set_layout(layout_list[next_index])
+    elif option == "--prev":
+        prev_index = (current_index - 1 + len(layout_list)) % len(layout_list)
+        set_layout(layout_list[prev_index])
+    elif option == "--set":
+        if len(sys.argv) < 3:
+            logger.error("Usage: --set <layout>")
+            return
+        set_layout(sys.argv[2])
+
+
+def list_layouts():
+    """List all layouts with their matching styles and backups."""
+    layouts = find_layout_files(include_backups=True)
+    layout_style_pairs = []
+    backup_layouts = []
+
+    for layout in layouts:
+        for layout_dir in LAYOUT_DIRS:
+            if layout.startswith(layout_dir):
+                relative_path = os.path.relpath(layout, start=layout_dir)
+                if in_backup_dir(layout, layout_dir):
+                    name = relative_path.replace(".jsonc", "")
+                    backup_layouts.append(
+                        {
+                            "layout": layout,
+                            "name": name,
+                        }
+                    )
+                    continue
+
+                name = relative_path.replace(".jsonc", "")
+                style_path = resolve_style_path(layout)
+                layout_style_pairs.append({"layout": layout, "name": name, "style": style_path})
+                break
+
+    result = {"layouts": layout_style_pairs, "backups": backup_layouts}
+
+    if len(backup_layouts) > 0:
+        layout_style_pairs.append(
+            {
+                "name": f"List all {len(backup_layouts)} Backup(s) saved",
+                "style": "",
+                "layout": "",
+                "is_backup_entry": True,
+            }
+        )
+
+    return result
+
+
+def modify_json_key(data, key, value):
+    """Recursively modify the specified key with the given value in the JSON data."""
+    if isinstance(data, dict):
+        for k, v in data.items():
+            if k == key:
+                data[k] = value
+            elif isinstance(v, dict):
+                modify_json_key(v, key, value)
+            elif isinstance(v, list):
+                for item in v:
+                    if isinstance(item, dict):
+                        modify_json_key(item, key, value)
+    return data
+
+
+def _atomic_write(path, data):
+    """Replace path with data in one step: write a temp file next to it, then rename.
+
+    Waybar reads its config and CSS files while Prodi rewrites them; a plain
+    open(..., "w") lets it see an empty or half-written file (Prodi-Project/Prodi#2184).
+    """
+    # Write through a symlinked config instead of replacing the link.
+    path = os.path.realpath(path)
+    fd, tmp_path = tempfile.mkstemp(dir=os.path.dirname(path), prefix=f".{os.path.basename(path)}.")
+    try:
+        if isinstance(data, bytes):
+            with os.fdopen(fd, "wb") as file:
+                file.write(data)
+        else:
+            with os.fdopen(fd, "w", encoding="utf-8") as file:
+                file.write(data)
+        # mkstemp creates the file as 0600; keep the mode the old file had, or
+        # give a new file the mode open(..., "w") would (0666 minus the umask).
+        if os.path.exists(path):
+            shutil.copymode(path, tmp_path)
+        else:
+            umask = os.umask(0)
+            os.umask(umask)
+            os.chmod(tmp_path, 0o666 & ~umask)
+        os.replace(tmp_path, path)
+    except BaseException:
+        if os.path.exists(tmp_path):
+            os.unlink(tmp_path)
+        raise
+
+
+def _atomic_copy(src, dst):
+    """shutil.copyfile() through _atomic_write()."""
+    with open(src, "rb") as file:
+        _atomic_write(dst, file.read())
+
+
+def write_style_file(style_filepath, source_filepath):
+    """Override the style file with the given source style."""
+    wallbash_gtk_css_file = os.path.join(str(xdg_cache_home()), "prodi", "wallbash", "gtk.css")
+    wallbash_gtk_css_file_str = (
+        f'@import "{wallbash_gtk_css_file}";'
+        if os.path.exists(wallbash_gtk_css_file)
+        else "/* wallbash gtk.css not found   */"
+    )
+    style_css = f"""
+    /*!  DO NOT EDIT THIS FILE */
+    /*
+    *   ░▒▒▒░░░▓▓           ___________
+    * ░░▒▒▒░░░░░▓▓        //___________/
+    * ░░▒▒▒░░░░░▓▓     _   _ _    _ _____
+    * ░░▒▒░░░░░▓▓▓▓▓ | | | | |  | |  __/
+    * ░▒▒░░░░▓▓   ▓▓ | |_| | |_/ /| |___
+    *  ░▒▒░▓▓   ▓▓   |__  |____/ |____/
+    *    ░▒▓▓   ▓▓  //____/
+    */
+
+    /* Modified by Prodi */
+
+    /* Modify/add style in ~/.config/waybar/styles/ */
+    @import "{source_filepath}";
+
+    /* Imports wallbash colors */
+    {wallbash_gtk_css_file_str}
+
+    /* Colors and theme configuration is generated through the `theme.css` file */
+    @import "theme.css";
+
+    /* Users who want to override the current style add/edit 'user-style.css' */
+    @import "user-style.css";
+    """
+    _atomic_write(style_filepath, style_css)
+    logger.debug(f"Successfully wrote style to '{style_filepath}'")
+
+
+def signal_handler(sig, frame):
+    kill_waybar()
+    sys.exit(0)
+
+
+def _signal_waybar(sig):
+    """Send a signal to the waybar process/unit (systemd or pkill)."""
+    if HAS_SYSTEMD:
+        # --kill-who=main: systemctl kill defaults to "all", which signals every
+        # process in the unit's cgroup (bwrap, image loaders, module scripts, ...),
+        # not just Waybar. Those don't handle SIGUSR2 and get killed. Fixes #2184.
+        subprocess.run(["systemctl", "--user", "kill", "--kill-who=main", "-s", sig, UNIT_NAME])
+    else:
+        subprocess.run(["pkill", f"-{sig}", "-u", str(os.getuid()), "-x", "waybar"])
+
+
+def is_waybar_running_for_current_user():
+    """Check if Waybar is running for the current user."""
+    if HAS_SYSTEMD:
+        try:
+            result = subprocess.run(
+                ["systemctl", "--user", "is-active", UNIT_NAME],
+                capture_output=True, text=True
+            )
+            if result.returncode == 0 and "active" in result.stdout:
+                logger.debug("Waybar is running via systemd.")
+                return True
+        except Exception as e:
+            logger.error(f"Error checking Waybar systemd status: {e}")
+    else:
+        try:
+            result = subprocess.run(
+                ["pgrep", "-u", str(os.getuid()), "-x", "waybar"],
+                capture_output=True
+            )
+            if result.returncode == 0:
+                logger.debug("Waybar is running (non-systemd).")
+                return True
+        except Exception as e:
+            logger.error(f"Error checking Waybar pgrep status: {e}")
+
+    return False
+
+
+def run_waybar():
+    """Run Waybar."""
+    if is_waybar_running_for_current_user():
+        logger.debug("Waybar already active.")
+        return
+
+    if HAS_SYSTEMD:
+        result = subprocess.run(["systemctl", "--user", "start", UNIT_NAME], capture_output=True)
+        if result.returncode == 0:
+            logger.debug(f"Started existing unit {UNIT_NAME}")
+            return
+
+        subprocess.run([
+            "systemd-run", "--user", f"--unit={UNIT_NAME}", "--slice=app-graphical.slice",
+            "--property=Type=exec", "--property=ExitType=cgroup",
+            "--property=PartOf=graphical-session.target",
+            # Without --collect a unit that lands in `failed` (e.g.
+            # start-limit-hit) keeps the name, so this same systemd-run call
+            # fails next time with "Unit already exists" (Prodi-Project/Prodi#2160).
+            "--collect", "--quiet", "--", "waybar"
+        ])
+        logger.debug(f"Launched {UNIT_NAME} via systemd")
+    else:
+        subprocess.Popen(["waybar"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        logger.debug("Launched waybar via Popen (non-systemd)")
+
+
+def kill_waybar():
+    """Stop Waybar for current session."""
+    if HAS_SYSTEMD:
+        for u in [UNIT_NAME, "prodi-Prodi-bar.service", "prodi-Hyprland-bar.service"]: subprocess.run(["systemctl", "--user", "--no-block", "stop", u])
+    else:
+        subprocess.run(["pkill", "-u", str(os.getuid()), "-x", "waybar"])
+    logger.debug("Stopped Waybar processes.")
+
+
+def restart_waybar():
+    """Restart Waybar to load the new config, or start it if it isn't running.
+
+    With systemd the unit is restarted instead of hot-reloaded with SIGUSR2
+    (Prodi-Project/Prodi#2184): systemctl kill signals every process in the unit's
+    cgroup, not only Waybar; Waybar's reload handler can crash and leaks memory
+    on each reload; and a Waybar started a moment earlier by a concurrent call
+    is killed by the signal before it installs its handler. systemd serializes
+    concurrent restarts. reset-failed clears the start limit (5 starts in 10 s),
+    which fast layout switching would otherwise hit, leaving no bar.
+    """
+    if HAS_SYSTEMD:
+        logger.debug(f"Restarting {UNIT_NAME}...")
+        subprocess.run(["systemctl", "--user", "reset-failed", UNIT_NAME], capture_output=True)
+        result = subprocess.run(["systemctl", "--user", "restart", UNIT_NAME], capture_output=True)
+        # The unit is transient and --collect'ed, so it may not exist anymore.
+        if result.returncode != 0:
+            run_waybar()
+        return
+
+    if is_waybar_running_for_current_user():
+        logger.debug("Hot-reloading Waybar config via SIGUSR2...")
+        _signal_waybar("SIGUSR2")
+    else:
+        run_waybar()
+
+
+def rofi_file_selector(
+    dirs,
+    extension,
+    prompt,
+    current_selection=None,
+    extra_flags=None,
+    display_func=None,
+    recursive=True,
+):
+    """
+    Generic rofi file selector for files in given dirs with given extension.
+    Returns the selected file's path, or None if cancelled.
+    display_func: function(path, root_dir) -> str, for custom display names
+    recursive: if True, search recursively; if False, only depth 1
+    """
+    files = []
+    file_roots = []
+    for d in dirs:
+        pattern = os.path.join(d, f"**/*{extension}") if recursive else os.path.join(d, f"*{extension}")
+        found = [
+            f for f in glob.glob(pattern, recursive=recursive)
+            if not in_backup_dir(f, d)
+        ]
+        files.extend(found)
+        file_roots.extend([d] * len(found))
+
+    # Remove duplicates while preserving order
+    seen = set()
+    unique_pairs = [(f, r) for f, r in zip(files, file_roots) if not (f in seen or seen.add(f))]
+    if not unique_pairs:
+        logger.error(f"No files found for extension {extension} in {dirs}")
+        return None
+    files, file_roots = zip(*unique_pairs)
+
+    def strip_prefix(s):
+        return os.path.splitext(os.path.basename(s))[0]
+
+    names = [display_func(f, r) for f, r in zip(files, file_roots)] if display_func else [strip_prefix(f) for f in files]
+
+    if current_selection:
+        if display_func:
+            current_name = next(
+                (display_func(f, r) for f, r in zip(files, file_roots) if os.path.abspath(f) == os.path.abspath(current_selection)),
+                names[0]
+            )
+        else:
+            current_name = strip_prefix(current_selection)
+    else:
+        current_name = names[0]
+
+    hyprland = HYPRLAND.HyprctlWrapper()
+    try:
+        override_string = hyprland.get_rofi_override_string()
+        rofi_pos_string = hyprland.get_rofi_pos()
+        rofi_flags = [
+            "-p", prompt,
+            "-select", current_name,
+            "-theme", "clipboard",
+            "-theme-str", override_string,
+            "-theme-str", rofi_pos_string,
+        ]
+    except (OSError, EnvironmentError):
+        rofi_flags = ["-p", prompt, "-select", current_name, "-theme", "clipboard"]
+
+    if extra_flags:
+        rofi_flags.extend(extra_flags)
+
+    selected = rofi_dmenu(names, rofi_flags)
+    logger.debug(f"Selected {prompt}: {selected}")
+    if selected:
+        for f, n in zip(files, names):
+            if n == selected:
+                return f
+    return None
+
+
+def style_selector(current_layout=None):
+    """Show all styles in rofi and apply the selected one."""
+    current_style_path = get_state_value("WAYBAR_STYLE_PATH")
+    selected_style = rofi_file_selector(
+        STYLE_DIRS, ".css", "Select style:", current_style_path, recursive=False
+    )
+    if selected_style:
+        style_filepath = os.path.join(str(xdg_config_home()), "waybar", "style.css")
+        write_style_file(style_filepath, selected_style)
+        set_state_value("WAYBAR_STYLE_PATH", selected_style)
+        update_icon_size()
+        update_border_radius()
+        generate_includes()
+        update_global_css()
+        notify.send(
+            "Waybar",
+            f"Style changed to {os.path.basename(selected_style)}",
+            replace_id=9,
+        )
+        restart_waybar()
+    sys.exit(0)
+
+
+def layout_selector():
+    """Show all layouts in rofi and apply the selected one."""
+    layouts_data = list_layouts()
+    layout_files = [pair["layout"] for pair in layouts_data["layouts"]]
+    layout_roots = []
+    for f in layout_files:
+        for layout_dir in LAYOUT_DIRS:
+            if f.startswith(layout_dir):
+                layout_roots.append(layout_dir)
+                break
+        else:
+            layout_roots.append("")
+    current_layout_path = get_state_value("WAYBAR_LAYOUT_PATH")
+
+    def display_func(f, root):
+        rel = os.path.relpath(f, root) if root else os.path.basename(f)
+        return rel.replace(".jsonc", "")
+
+    selected_layout = rofi_file_selector(
+        LAYOUT_DIRS,
+        ".jsonc",
+        "Select layout:",
+        current_layout_path,
+        display_func=display_func,
+    )
+    if selected_layout:
+        for pair in layouts_data["layouts"]:
+            if pair["layout"] == selected_layout:
+                if pair.get("is_backup_entry", False):
+                    handle_backup_display()
+                    return
+                style_path = pair["style"]
+                break
+        else:
+            style_path = resolve_style_path(selected_layout)
+
+        notify_label = display_func(selected_layout, os.path.dirname(selected_layout))
+        _apply_layout(selected_layout, style_path, notify_label)
+
+    ensure_state_file()
+    return None
+
+
+def select_layout_and_style():
+    """Select layout, then style."""
+    selected_layout = layout_selector()
+    if selected_layout:
+        style_selector(selected_layout)
+    else:
+        sys.exit(0)
+
+
+def backup_layout(layout_name):
+    """Backup the current config.jsonc file to a layout-specific named backup.
+
+    Args:
+        layout_name: Name of the layout to use in backup filename
+    Returns:
+        str: Path to the created backup file
+    """
+    if not CONFIG_JSONC.exists():
+        logger.debug("No config file to backup")
+        return None
+
+    config_dir = CONFIG_JSONC.parent
+    backup_dir = os.path.join(str(config_dir), "layouts", "backup")
+    os.makedirs(backup_dir, exist_ok=True)
+
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    backup_path = os.path.join(backup_dir, f"{layout_name}_{timestamp}.jsonc")
+
+    try:
+        shutil.copyfile(CONFIG_JSONC, backup_path)
+        logger.debug(f"Created backup at {backup_path}")
+        return str(backup_path)
+    except Exception as e:
+        logger.error(f"Failed to create backup: {e}")
+        return None
+
+
+def handle_backup_display():
+    """Show a menu of backup layouts and allow trying them before applying."""
+    layouts_data = list_layouts()
+    backup_layouts = layouts_data["backups"]
+
+    if not backup_layouts:
+        notify.send("Waybar", "No backup layouts found", replace_id=9)
+        return
+
+    backup_names = [pair["name"] for pair in backup_layouts]
+
+    hyprland = HYPRLAND.HyprctlWrapper()
+    override_string = hyprland.get_rofi_override_string()
+    rofi_pos_string = hyprland.get_rofi_pos()
+
+    rofi_flags = [
+        "-p", "Select a backup to try:",
+        "-theme", "clipboard",
+        "-theme-str", override_string,
+        "-theme-str", rofi_pos_string,
+    ]
+
+    rofi_dmenu(backup_names, rofi_flags)
+    sys.exit(0)
+
+
+def update_icon_size():
+    includes_file = os.path.join(str(xdg_config_home()), "waybar", "includes", "includes.json")
+
+    Path(includes_file).parent.mkdir(parents=True, exist_ok=True)
+
+    if os.path.exists(includes_file):
+        try:
+            with open(includes_file, "r") as file:
+                includes_data = json.load(file)
+        except (json.JSONDecodeError, FileNotFoundError):
+            includes_data = {"include": []}
+    else:
+        includes_data = {"include": []}
+
+    icon_size = get_waybar_icon_size()
+
+    updated_entries = {}
+
+    for directory in MODULE_DIRS:
+        for json_file in glob.glob(os.path.join(directory, "*.json")):
+            with open(json_file, "r") as file:
+                data = json.load(file)
+
+            for key, value in data.items():
+                if isinstance(value, dict):
+                    icon_size_multiplier = value.get("icon-size-multiplier", 1)
+                    final_icon_size = int(icon_size * icon_size_multiplier)
+
+                    data[key] = modify_json_key(value, "icon-size", final_icon_size)
+                    data[key] = modify_json_key(value, "tooltip-icon-size", final_icon_size)
+                    data[key] = modify_json_key(value, "size", final_icon_size)
+
+            updated_entries.update(data)
+
+    includes_data.update(updated_entries)
+
+    _atomic_write(includes_file, json.dumps(includes_data, indent=4))
+    logger.debug(
+        f"Successfully updated icon sizes and appended to '{includes_file}' with {len(updated_entries)} entries."
+    )
+
+
+def update_global_css():
+    """Generate dynamic global.css with font family and size based on theme and state file."""
+    global_css_path = os.path.join(str(xdg_config_home()), "waybar", "includes", "global.css")
+    logger.debug(f"Updating global CSS in {global_css_path}")
+
+    Path(global_css_path).parent.mkdir(parents=True, exist_ok=True)
+
+    font_family = get_waybar_font_family()
+    font_size = get_waybar_font_size()
+
+    if font_family:
+        font_family = font_family.strip().strip('"').strip("'")
+
+    logger.debug(f"Final font family: {font_family}")
+    logger.debug(f"Final font size: {font_size}")
+
+    global_css_content = f"""/*
+ Dynamic Style Configuration *
+ This is handled by Prodi
+
+ To generate a dynamic configuration
+ base on theme and user settings
+
+*/
+
+* {{
+    border-radius: 0em;
+    font-family: "{font_family}","JetBrainsMono Nerd Font";
+    font-size: {font_size}px;
+}}
+"""
+
+    _atomic_write(global_css_path, global_css_content)
+    logger.debug(f"Successfully generated global CSS at '{global_css_path}'")
+
+
+def get_waybar_value_from_sources(value_name, default_value, sources):
+    def _try_parse_value(raw_value, source_name):
+        if type(default_value) is str:
+            return _try_parse_str_value(raw_value, source_name)
+        if type(default_value) is int:
+            return _try_parse_int_value(raw_value, source_name)
+
+    def _try_parse_str_value(raw_value, source_name):
+        """Helper function to parse str value and log appropriately."""
+        if not raw_value:
+            return None
+
+        sanitized_value = raw_value.strip().strip('"').strip("'")
+        logger.debug(f"Got {value_name} from {source_name}: {sanitized_value}")
+        return sanitized_value
+
+    def _try_parse_int_value(raw_value, source_name):
+        """Helper function to parse int value and log appropriately."""
+        if not raw_value:
+            return None
+
+        try:
+            int_value = int(raw_value)
+            logger.debug(f"Got {value_name} from {source_name}: {int_value}")
+            return int_value
+        except ValueError:
+            logger.debug(f"Invalid {value_name} from {source_name}: {raw_value}")
+            return None
+
+    for get_source_func, source_name in sources:
+        raw_value = get_source_func()
+        parsed_value = _try_parse_value(raw_value, source_name)
+        if parsed_value is not None:
+            return parsed_value
+
+    logger.debug(f"Using default {value_name}: {default_value}")
+    return default_value
+
+
+def get_waybar_font_family():
+    """Get font family for waybar following the priority stack."""
+
+    font_family_sources = [
+        (lambda: get_config_value("WAYBAR_FONT"), "WAYBAR_FONT config"),
+        (lambda: get_value_from_hypr_theme("$BAR_FONT"), "hypr.theme"),
+        (lambda: get_state_value("BAR_FONT"), "state file"),
+    ]
+
+    return get_waybar_value_from_sources(
+        "font family", "JetBrainsMono Nerd Font", font_family_sources
+    )
+
+
+def get_waybar_font_size():
+    """Get font size for waybar following the priority stack."""
+
+    font_size_sources = [
+        (lambda: get_config_value("WAYBAR_SCALE"), "WAYBAR_SCALE config"),
+        (lambda: get_state_value("BAR_FONT_SIZE"), "state file"),
+        (lambda: get_value_from_hypr_theme("$BAR_FONT_SIZE"), "hypr.theme"),
+    ]
+
+    return get_waybar_value_from_sources("font size", 10, font_size_sources)
+
+
+def get_waybar_icon_size():
+    """Get icon size for waybar following the priority stack."""
+
+    icon_sources = [
+        (lambda: get_config_value("WAYBAR_ICON_SIZE"), "WAYBAR_ICON_SIZE config"),
+        (lambda: get_config_value("WAYBAR_SCALE"), "WAYBAR_SCALE config"),
+        (lambda: get_state_value("BAR_ICON_SIZE"), "state file"),
+        (lambda: get_value_from_hypr_theme("$BAR_ICON_SIZE"), "hypr.theme"),
+    ]
+
+    return get_waybar_value_from_sources("icon size", 10, icon_sources)
+
+
+def get_value_from_hypr_theme(variable_name):
+    """Get named setting from hypr.theme file using hyq."""
+    theme_name = None
+    if STATE_FILE.exists():
+        try:
+            with open(STATE_FILE, "r") as file:
+                for line in file:
+                    if line.startswith("PRODI_THEME="):
+                        theme_name = line.strip().split("=", 1)[1].strip('"').strip("'")
+                        logger.debug(f"Found theme name in state file: {theme_name}")
+                        break
+        except Exception as e:
+            logger.error(f"Error reading state file: {e}")
+            return None
+
+    if not theme_name:
+        logger.debug("No theme name found in state file")
+        return None
+
+    hypr_theme_path = os.path.join(str(xdg_config_home()), "prodi", "themes", theme_name, "hypr.theme")
+    logger.debug(f"Looking for hypr.theme at: {hypr_theme_path}")
+
+    if not os.path.exists(hypr_theme_path):
+        logger.debug(f"hypr.theme not found at {hypr_theme_path}")
+        return None
+
+    logger.debug(f"Found hypr.theme at {hypr_theme_path}")
+
+    try:
+        # argv already preserves spaces in theme names such as "Mac OS".
+        cmd = ["hyq", hypr_theme_path, "--query", variable_name]
+        logger.debug(f"Running command: {' '.join(cmd)}")
+
+        result = subprocess.run(cmd, capture_output=True, text=True)
+
+        logger.debug(f"hyq command output: {result.stdout.strip()}")
+        logger.debug(f"hyq command stderr: {result.stderr.strip() if result.stderr else 'None'}")
+        logger.debug(f"hyq exit code: {result.returncode}")
+
+        if result.returncode == 0 and result.stdout:
+            output_lines = result.stdout.strip().split("\n")
+            for line in reversed(output_lines):
+                clean_line = line.strip()
+                if clean_line and not clean_line.startswith("#"):
+                    logger.debug(f"Successfully parsed {variable_name} from hyq: {clean_line}")
+                    return clean_line
+
+        logger.debug(f"No valid output from hyq for {variable_name}")
+        return None
+    except Exception as e:
+        logger.error(f"Error running hyq command: {e}")
+        return None
+
+
+def update_border_radius():
+    css_filepath = os.path.join(str(xdg_config_home()), "waybar", "includes", "border-radius.css")
+    logger.debug(f"Updating border radius in {css_filepath}")
+
+    Path(css_filepath).parent.mkdir(parents=True, exist_ok=True)
+    logger.debug("Directory for border-radius.css ensured")
+
+    # An earlier stub (no template available then) is replaced once one exists.
+    if not os.path.exists(css_filepath) or "pt" not in Path(css_filepath).read_text(
+        encoding="utf-8", errors="replace"
+    ):
+        for includes_dir in INCLUDES_DIRS:
+            template_path = os.path.join(includes_dir, "border-radius.css")
+            if template_path == css_filepath:
+                continue
+            if os.path.exists(template_path):
+                logger.debug(f"Found template at {template_path}, copying to {css_filepath}")
+                _atomic_copy(template_path, css_filepath)
+                break
+        else:
+            logger.error("Template for border-radius.css not found in INCLUDES_DIRS")
+            # defaults.css @imports this file and Waybar exits on a missing
+            # import, so leave an empty stylesheet (square corners) rather than
+            # nothing (Prodi-Project/Prodi#2160).
+            _atomic_write(css_filepath, "/* border-radius template not found; Prodi writes this file */\n")
+            return
+
+    border_radius = os.getenv("WAYBAR_BORDER_RADIUS")
+    logger.debug(f"WAYBAR_BORDER_RADIUS environment variable: {border_radius}")
+    # The env value is a string; a non-numeric one falls through to the lookups
+    # below instead of crashing the comparison further down.
+    try:
+        border_radius = int(border_radius) if border_radius else None
+    except ValueError:
+        logger.debug(f"Ignoring non-numeric WAYBAR_BORDER_RADIUS: '{border_radius}'")
+        border_radius = None
+
+    if not border_radius:
+        # Try hypr.theme via the shared helper (uses "decoration:rounding" as the query key)
+        raw = get_value_from_hypr_theme("decoration:rounding")
+        if raw:
+            try:
+                # hyq may return multiple lines; pick the last numeric one
+                for line in reversed(raw.strip().split("\n")):
+                    clean = line.strip()
+                    if clean.isdigit():
+                        border_radius = int(clean)
+                        logger.debug(f"Successfully parsed border radius from hypr.theme: {border_radius}")
+                        break
+                else:
+                    border_radius = int(raw.strip().split("\n")[-1].strip())
+            except ValueError:
+                logger.debug(f"Failed to parse border radius from hypr.theme output: '{raw}'")
+                border_radius = None
+
+    if not border_radius:
+        logger.debug("Trying to get border radius from Hyprland IPC")
+        try:
+            border_radius = HYPRLAND.HyprctlWrapper.getoption("decoration:rounding")
+            logger.debug(f"Parsed border radius from Hyprland IPC: {border_radius}")
+        except (ValueError, EnvironmentError, OSError) as e:
+            logger.error(f"Failed to get border radius from Hyprland IPC: {e}")
+            border_radius = 2
+
+    if border_radius is None or border_radius < 1:
+        border_radius = 2
+        logger.debug(f"Border radius is invalid, using default: {border_radius}")
+
+    logger.debug(f"Final border radius value: {border_radius}")
+
+    with open(css_filepath, "r", encoding="utf-8", errors="replace") as file:
+        content = file.read()
+    logger.debug(f"Read {len(content)} bytes from {css_filepath}")
+
+    updated_content = re.sub(r"\d+pt", f"{border_radius}pt", content)
+    logger.debug("Applied border radius value to CSS content")
+
+    _atomic_write(css_filepath, updated_content)
+    logger.debug(f"Successfully updated border radius in {css_filepath}")
+
+
+def generate_includes():
+    includes_file = os.path.join(str(xdg_config_home()), "waybar", "includes", "includes.json")
+
+    Path(includes_file).parent.mkdir(parents=True, exist_ok=True)
+
+    # An empty, truncated or non-object includes.json is rebuilt from scratch;
+    # this now runs on the --watch autostart path, where raising would keep
+    # Waybar from starting at all (Prodi-Project/Prodi#2160).
+    includes_data = {"include": []}
+    try:
+        with open(includes_file, "r") as file:
+            loaded = json.load(file)
+        if isinstance(loaded, dict):
+            includes_data = loaded
+    except (json.JSONDecodeError, UnicodeDecodeError, FileNotFoundError):
+        pass
+
+    includes = []
+    for directory in MODULE_DIRS:
+        if not os.path.isdir(directory):
+            logger.debug(f"Directory '{directory}' does not exist, skipping...")
+            continue
+        includes.extend(glob.glob(os.path.join(directory, "*.json")))
+        includes.extend(glob.glob(os.path.join(directory, "*.jsonc")))
+
+    includes_data["include"] = list(dict.fromkeys(includes))
+
+    position = get_config_value("WAYBAR_POSITION")
+    position = position.strip().strip('"').strip("'") if position else "top"
+    includes_data["position"] = position
+
+    _atomic_write(includes_file, json.dumps(includes_data, indent=4))
+    logger.debug(
+        f"Successfully updated '{includes_file}' with {len(includes)} entries and position '{position}'."
+    )
+
+
+def update_config(config_path):
+    config_jsonc = os.path.join(str(xdg_config_home()), "waybar", "config.jsonc")
+    _atomic_copy(config_path, config_jsonc)
+    logger.debug(f"Successfully copied config from '{config_path}' to '{config_jsonc}'")
+
+
+def ensure_user_style():
+    """Create the user-style.css that style.css imports, if it is missing."""
+    user_style_filepath = os.path.join(str(xdg_config_home()), "waybar", "user-style.css")
+    Path(user_style_filepath).parent.mkdir(parents=True, exist_ok=True)
+
+    if not os.path.exists(user_style_filepath):
+        _atomic_write(user_style_filepath, "/* User custom styles */\n")
+        logger.debug(f"Created '{user_style_filepath}'")
+
+
+def update_style(style_path):
+    style_filepath = os.path.join(str(xdg_config_home()), "waybar", "style.css")
+    theme_style_filepath = os.path.join(str(xdg_config_home()), "waybar", "theme.css")
+
+    ensure_user_style()
+
+    if not os.path.exists(theme_style_filepath):
+        logger.error(
+            f"Missing '{theme_style_filepath}', Please run 'prodi-shell reload' to generate it."
+        )
+
+    if not style_path:
+        # Keep explicitly selected/restored CSS instead of deriving it from the layout.
+        style_path = get_state_value("WAYBAR_STYLE_PATH")
+        if style_path and not os.path.isfile(style_path):
+            style_path = None
+    if not style_path:
+        current_layout = get_current_layout_from_config()
+        logger.debug(f"Detected current layout: '{current_layout}'")
+        if not current_layout:
+            logger.error("Failed to get current layout from config.")
+            sys.exit(1)
+        style_path = resolve_style_path(current_layout)
+    if not os.path.exists(style_path):
+        logger.error(f"Cannot reconcile style path: {style_path}")
+        sys.exit(1)
+    write_style_file(style_filepath, style_path)
+
+    set_state_value("WAYBAR_STYLE_PATH", style_path)
+
+
+def watch_waybar():
+    """Launch Waybar persistently."""
+    if is_waybar_running_for_current_user():
+        logger.debug("Waybar already active.")
+        return
+
+    # Session autostart only ever runs --watch. defaults.css imports
+    # border-radius.css and global.css from ~/.config/waybar/includes, and this
+    # is the one place they get generated on a clean install; without them
+    # waybar exits 1 and systemd gives up with start-limit-hit
+    # (Prodi-Project/Prodi#2160).
+    try:
+        update_border_radius()
+        generate_includes()
+        update_global_css()
+    except OSError as e:
+        # e.g. a read-only config directory: still start the bar, the CSS
+        # may already be in place from an earlier run.
+        logger.error(f"Could not prepare the Waybar includes: {e}")
+
+    if HAS_SYSTEMD:
+        subprocess.run([
+            "systemd-run", "--user", f"--unit={UNIT_NAME}", "--slice=app-graphical.slice",
+            "--property=Type=exec", "--property=ExitType=cgroup", "--property=Restart=always",
+            "--property=RestartSec=1", "--property=PartOf=graphical-session.target",
+            # See the matching --collect note in run_waybar() (Prodi-Project/Prodi#2160):
+            # a unit that hits start-limit-hit must free its name immediately, or the
+            # next watch_waybar()/run_waybar() call fails with "Unit already exists".
+            "--collect", "--quiet", "--", "waybar"
+        ])
+        logger.debug(f"Launched {UNIT_NAME} with Restart=always")
+    else:
+        logger.debug("Starting Waybar in watch mode (non-systemd loop)")
+        while True:
+            proc = subprocess.Popen(["waybar"])
+            proc.wait()
+            time.sleep(1)
+
+
+def main():
+    logger.debug("Starting waybar.py")
+    logger.debug(f"Looking for state file at: {STATE_FILE}")
+
+    source_env_file(os.path.join(str(xdg_runtime_dir()), "prodi", "environment"))
+    source_env_file(os.path.join(str(xdg_state_home()), "prodi", "config"))
+
+    if STATE_FILE.exists():
+        logger.debug(f"State file found: {STATE_FILE}")
+        layout_path = get_state_value("WAYBAR_LAYOUT_PATH")
+
+        if layout_path and os.path.exists(layout_path):
+            # If config.jsonc doesn't exist, create it from the layout
+            if not CONFIG_JSONC.exists():
+                logger.debug("Config file missing, creating from layout path")
+                CONFIG_JSONC.parent.mkdir(parents=True, exist_ok=True)
+                _atomic_copy(layout_path, CONFIG_JSONC)
+                logger.debug("Created config.jsonc from state file layout")
+            else:
+                config_hash = get_file_hash(CONFIG_JSONC)
+                layout_hash = get_file_hash(layout_path)
+
+                if config_hash != layout_hash:
+                    logger.debug("Config hash differs from layout hash, creating backup")
+                    layout_name = os.path.basename(layout_path).replace(".jsonc", "")
+                    backup_layout(layout_name)
+
+                try:
+                    _atomic_copy(layout_path, CONFIG_JSONC)
+                    logger.debug("Updated config.jsonc with layout from state file")
+                except Exception as e:
+                    logger.error(f"Failed to update config.jsonc: {e}")
+
+        elif layout_path and not os.path.exists(layout_path):
+            logger.warning(f"Layout path in state file doesn't exist: {layout_path}")
+            layout_name = get_state_value("WAYBAR_LAYOUT_NAME")
+            if layout_name:
+                logger.debug(f"Looking for layout by name: {layout_name}")
+                found_layout = next(
+                    (l for l in find_layout_files()
+                     if os.path.basename(l).replace(".jsonc", "") == layout_name),
+                    None
+                )
+
+                if found_layout:
+                    set_state_value("WAYBAR_LAYOUT_PATH", found_layout)
+                    CONFIG_JSONC.parent.mkdir(parents=True, exist_ok=True)
+
+                    if CONFIG_JSONC.exists():
+                        if get_file_hash(CONFIG_JSONC) != get_file_hash(found_layout):
+                            backup_layout(layout_name)
+
+                    _atomic_copy(found_layout, CONFIG_JSONC)
+                    logger.debug("Updated config.jsonc with layout by name")
+                else:
+                    logger.error(f"Could not find layout by name: {layout_name}")
+                    # Fall back to first available layout
+                    layouts = find_layout_files()
+                    if layouts:
+                        first_layout = layouts[0]
+                        first_layout_name = os.path.basename(first_layout).replace(".jsonc", "")
+                        set_state_value("WAYBAR_LAYOUT_PATH", first_layout)
+                        set_state_value("WAYBAR_LAYOUT_NAME", first_layout_name)
+                        CONFIG_JSONC.parent.mkdir(parents=True, exist_ok=True)
+                        _atomic_copy(first_layout, CONFIG_JSONC)
+                        logger.debug(f"Used first available layout: {first_layout}")
+        else:
+            # No layout path in state file or layout path is empty
+            logger.debug("No valid layout path in state file, determining current layout")
+            current_layout = get_current_layout_from_config()
+            if current_layout:
+                CONFIG_JSONC.parent.mkdir(parents=True, exist_ok=True)
+                _atomic_copy(current_layout, CONFIG_JSONC)
+                logger.debug(f"Created config.jsonc from determined layout: {current_layout}")
+    else:
+        logger.debug("State file not found, creating it")
+        ensure_state_file()
+
+    parser = argparse.ArgumentParser(description="Waybar configuration management")
+    parser.add_argument("--set", type=str, help="Set a specific layout")
+    parser.add_argument("-n", "--next", action="store_true", help="Switch to the next layout")
+    parser.add_argument("-p", "--prev", action="store_true", help="Switch to the previous layout")
+    parser.add_argument(
+        "-g", "--update-global-css", action="store_true", help="Update global.css file"
+    )
+    parser.add_argument("-c", "--config", type=str, help="Path to the source config.jsonc file")
+    parser.add_argument("-s", "--style", type=str, help="Path to the source style.css file")
+    parser.add_argument(
+        "-w", "--watch", action="store_true", help="Watch and restart Waybar if it dies"
+    )
+    parser.add_argument("--json", "-j", action="store_true", help="List all layouts in JSON format")
+    parser.add_argument(
+        "--select-layout", "-L", action="store_true", help="Select a layout using rofi"
+    )
+    parser.add_argument(
+        "--select-style", "-Y", action="store_true", help="Select a style using rofi"
+    )
+    parser.add_argument("--select", "-S", action="store_true", help="Select layout and then style")
+    parser.add_argument(
+        "-G",
+        "--generate-includes",
+        action="store_true",
+        help="Generate includes.json file",
+    )
+    parser.add_argument(
+        "--kill",
+        "-k",
+        action="store_true",
+        help="Kill all Waybar instances and watcher script",
+    )
+    parser.add_argument(
+        "--hide",
+        action="store_true",
+        help="Send SIGUSR1 to Waybar systemd unit to toggle hide",
+    )
+    parser.add_argument(
+        "-u",
+        "--update",
+        action="store_true",
+        help="Update all (icon size, border radius, includes, config, style)",
+    )
+    parser.add_argument(
+        "-i",
+        "--update-icon-size",
+        action="store_true",
+        help="Update icon size in JSON files",
+    )
+    parser.add_argument(
+        "-b",
+        "--update-border-radius",
+        action="store_true",
+        help="Update border radius in CSS file",
+    )
+
+    if not STATE_FILE.exists() or STATE_FILE.stat().st_size == 0:
+        logger.debug("State file doesn't exist or is empty, creating it")
+        ensure_state_file()
+    else:
+        logger.debug(f"Using existing state file: {STATE_FILE}")
+
+    args = parser.parse_args()
+
+    ensure_state_file()
+
+    if args.hide:
+        logger.info("Sending SIGUSR1 to toggle Waybar visibility")
+        _signal_waybar("SIGUSR1")
+        sys.exit(0)
+
+    if args.update:
+        # The color/theme hook uses --update; a theme may opt into a paired
+        # layout and stylesheet (Mac OS: Prodi #2089 / prodi-gallery #127).
+        apply_theme_layout()
+        if not _layout_applied:
+            # A preset already refreshed the files and restarted Waybar.
+            update_icon_size()
+            update_border_radius()
+            generate_includes()
+            update_global_css()
+            logger.debug("Updating config and style...")
+    if args.update_global_css:
+        update_global_css()
+    if args.update_icon_size:
+        update_icon_size()
+    if args.update_border_radius:
+        update_border_radius()
+    if args.generate_includes:
+        generate_includes()
+    if args.config:
+        update_config(args.config)
+    if args.style:
+        update_style(args.style)
+    if args.next or args.prev or args.set:
+        handle_layout_navigation("--next" if args.next else "--prev" if args.prev else "--set")
+    if args.json:
+        print(json.dumps(list_layouts(), indent=4))
+        sys.exit(0)
+    if args.select_layout:
+        layout_selector()
+    if args.select_style:
+        style_selector()
+    if args.select:
+        select_layout_and_style()
+
+    if args.kill:
+        kill_waybar()
+        logger.debug("Killed Waybar processes for current user.")
+        sys.exit(0)
+
+    if args.watch:
+        watch_waybar()
+    elif _layout_applied and not args.style:
+        # --set/--next/--prev, --select-layout and a theme preset (--update)
+        # already did this in _apply_layout(), user-style.css included. Doing
+        # it again restarted Waybar twice per switch, and with the old SIGUSR2
+        # reload the second round of writes hit the files while Waybar was
+        # still reading them (#2184).
+        return
+    else:
+        update_icon_size()
+        update_border_radius()
+        generate_includes()
+        update_global_css()
+        update_style(args.style)
+        restart_waybar()
+        return
+
+    if not any(vars(args).values()):
+        parser.print_help()
+        sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()

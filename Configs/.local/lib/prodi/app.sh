@@ -1,0 +1,35 @@
+#!/usr/bin/env sh
+# @name: app
+# @ver: 0.1.0
+# @short: Wrapper for scripts to optionally use systemd
+# @cmd: service
+# @cmd.desc: Run a script as a systemd service
+
+# app2unit and xdg-terminal-exec fall back to the generic DEBUG variable,
+# which may contain non-boolean build modes such as "release".
+# Give both helpers an explicit, scoped default while preserving any
+# user-provided values on both execution paths.
+APP2UNIT_DEBUG=${APP2UNIT_DEBUG:-0}
+XTE_DEBUG=${XTE_DEBUG:-0}
+export APP2UNIT_DEBUG XTE_DEBUG
+
+if [ -d "/run/systemd/system" ]; then
+    exec app2unit "$@"
+fi
+# no systemd: drop args before -- and run only the command after --
+while [ "$#" -gt 0 ] && [ "$1" != "--" ]; do
+    shift
+done
+[ "$#" -gt 0 ] && shift
+# A Waybar module destroyed and recreated by a SIGUSR2 hot-reload (the only
+# reload path left without systemd, Prodi-Project/Prodi#2216) kills the process
+# group of any on-click command it started. `setsid` takes this command out
+# of that group, so a reload can no longer reach it (Prodi-Project/Prodi#2217,
+# the non-systemd counterpart to the #2141 fix). `-f` is required: this
+# process is the group leader Waybar's fork made it, and plain `setsid`
+# refuses to run on one. `-w` makes this wrapper wait for the command and
+# relay its exit status, matching the "-S both" systemd path on the other
+# branch above; without it, callers like hyprlock.sh's `--test` path that
+# run app.sh synchronously and clean up right after it returns (e.g. deleting
+# a temp config) raced the detached command, which hadn't started yet.
+exec setsid -f -w "$@"
