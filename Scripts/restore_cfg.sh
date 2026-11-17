@@ -87,9 +87,9 @@ while IFS= read -r line; do
 
   # Back up existing target if it exists (backup failure is fatal)
   target_existed=false
-  if [[ -e "$target_path" ]]; then
+  if [[ -e "$target_path" || -L "$target_path" ]]; then
     target_existed=true
-    if [[ -e "$backup_path" ]]; then
+    if [[ -e "$backup_path" || -L "$backup_path" ]]; then
       backup_path="${backup_path}.$(date +%s)"
     fi
     safe_backup "$target_path" "$backup_path"
@@ -113,7 +113,7 @@ while IFS= read -r line; do
 
       # Rename original to rollback location
       rollback="$BACKUP_DIR/.rollback-$(backup_name "$source_rel")-$$"
-      if [[ -e "$target_path" ]]; then
+      if [[ -e "$target_path" || -L "$target_path" ]]; then
         if ! mv "$target_path" "$rollback"; then
           echo "ERROR: Could not rename $target_path to rollback"
           rm -rf "$staging" 2>/dev/null || true
@@ -125,10 +125,12 @@ while IFS= read -r line; do
       if ! mv "$staging" "$target_path"; then
         echo "ERROR: mv failed for $target_path — restoring from backup"
         rm -rf "$staging" 2>/dev/null || true
-        if $target_existed && [[ -e "$rollback" ]]; then
-          mv "$rollback" "$target_path" || cp -a "$rollback" "$target_path"
+        if $target_existed && [[ -e "$rollback" || -L "$rollback" ]]; then
+          rm -rf "$target_path" 2>/dev/null || true
+          mv "$rollback" "$target_path"
           echo "Restored from rollback: $target_path"
-        elif $target_existed && [[ -e "$backup_path" ]]; then
+        elif $target_existed && [[ -e "$backup_path" || -L "$backup_path" ]]; then
+          rm -rf "$target_path" 2>/dev/null || true
           cp -a "$backup_path" "$target_path"
           echo "Restored from backup: $target_path"
         fi
@@ -153,7 +155,7 @@ while IFS= read -r line; do
 
       # Rename original to rollback location
       rollback="$BACKUP_DIR/.rollback-$(backup_name "$source_rel")-$$"
-      if [[ -e "$target_path" ]]; then
+      if [[ -e "$target_path" || -L "$target_path" ]]; then
         if ! mv "$target_path" "$rollback"; then
           echo "ERROR: Could not rename $target_path to rollback"
           rm -rf "$staging" 2>/dev/null || true
@@ -165,10 +167,12 @@ while IFS= read -r line; do
       if ! mv "$staging/$source_name" "$target_path"; then
         echo "ERROR: mv failed for $target_path — restoring from backup"
         rm -rf "$staging" 2>/dev/null || true
-        if $target_existed && [[ -e "$rollback" ]]; then
-          mv "$rollback" "$target_path" || cp -a "$rollback" "$target_path"
+        if $target_existed && [[ -e "$rollback" || -L "$rollback" ]]; then
+          rm -f "$target_path" 2>/dev/null || true
+          mv "$rollback" "$target_path"
           echo "Restored from rollback: $target_path"
-        elif $target_existed && [[ -e "$backup_path" ]]; then
+        elif $target_existed && [[ -e "$backup_path" || -L "$backup_path" ]]; then
+          rm -f "$target_path" 2>/dev/null || true
           cp -a "$backup_path" "$target_path"
           echo "Restored from backup: $target_path"
         fi

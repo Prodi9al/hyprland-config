@@ -44,20 +44,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Validate JSON/JSONC files
-        run: |
-          for f in $(find Configs -name "*.json" -o -name "*.jsonc" | grep -v node_modules); do
-            echo "Checking $f..."
-            [ -s "$f" ] || { echo "SKIP (empty): $f"; continue; }
-            python3 -c "
-import json, re, sys
-with open('$f') as fh:
-    content = fh.read()
-# Strip // comments and /* ... */ blocks (JSONC)
-content = re.sub(r'//.*', '', content)
-content = re.sub(r'/\*.*?\*/', '', content, flags=re.DOTALL)
-json.loads(content)
-" || exit 1
-          done
+        run: python3 Scripts/validate_json.py
 
   manifest-consistency:
     runs-on: ubuntu-latest

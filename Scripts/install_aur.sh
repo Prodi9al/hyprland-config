@@ -34,15 +34,15 @@ if [[ ! -f "$EXTRA_LIST" ]]; then
   exit 0
 fi
 
-PACKAGES=$(grep -v '^\s*#' "$EXTRA_LIST" | grep -v '^\s*$' | tr '\n' ' ')
+mapfile -t PACKAGES < <(grep -Ev '^[[:space:]]*(#|$)' "$EXTRA_LIST")
 
-if [[ -z "$PACKAGES" ]]; then
+if [[ ${#PACKAGES[@]} -eq 0 ]]; then
   echo "No extra packages listed."
   exit 0
 fi
 
-echo "==> Installing extra packages: $PACKAGES"
-$AUR_HELPER -S --needed --noconfirm $PACKAGES
+echo "==> Installing extra packages: ${PACKAGES[*]}"
+"$AUR_HELPER" -S --needed --noconfirm "${PACKAGES[@]}"
 
 echo ""
 echo "==> AUR package install complete!"

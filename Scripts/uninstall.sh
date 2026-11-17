@@ -79,7 +79,7 @@ restore_managed_item() {
 
   backup_path="$(backup_lookup "$source_rel" 2>/dev/null)" || true
 
-  if [[ -n "$backup_path" && -e "$backup_path" ]]; then
+  if [[ -n "$backup_path" && (-e "$backup_path" || -L "$backup_path") ]]; then
     if [[ "$DRY_RUN" == true ]]; then
       echo "    [DRY RUN] Would restore backup: $backup_path → $target_path"
       return 0
@@ -109,7 +109,7 @@ restore_managed_item() {
 
     # Rename current target to rollback — abort if this fails
     rollback="$BACKUP_DIR/.uninstall-rollback-$(backup_name "$source_rel")-$RANDOM-$$"
-    if [[ -e "$target_path" ]]; then
+    if [[ -e "$target_path" || -L "$target_path" ]]; then
       if ! mv "$target_path" "$rollback"; then
         echo "ERROR: Could not move $target_path to rollback — aborting to prevent data loss."
         rm -rf "$staging" 2>/dev/null || true
@@ -123,8 +123,9 @@ restore_managed_item() {
       if ! mv "$staging" "$target_path"; then
         echo "ERROR: Failed to restore $target_path from backup — attempting rollback."
         rm -rf "$target_path" 2>/dev/null || true
-        if [[ -e "$rollback" ]]; then
-          mv "$rollback" "$target_path" || cp -a "$rollback" "$target_path"
+        if [[ -e "$rollback" || -L "$rollback" ]]; then
+          rm -rf "$target_path" 2>/dev/null || true
+          mv "$rollback" "$target_path"
           echo "Restored original target from rollback: $target_path"
         fi
         rm -rf "$staging" 2>/dev/null || true
@@ -136,8 +137,9 @@ restore_managed_item() {
       if ! mv "$staging/$source_name" "$target_path"; then
         echo "ERROR: Failed to restore $target_path from backup — attempting rollback."
         rm -rf "$target_path" 2>/dev/null || true
-        if [[ -e "$rollback" ]]; then
-          mv "$rollback" "$target_path" || cp -a "$rollback" "$target_path"
+        if [[ -e "$rollback" || -L "$rollback" ]]; then
+          rm -f "$target_path" 2>/dev/null || true
+          mv "$rollback" "$target_path"
           echo "Restored original target from rollback: $target_path"
         fi
         rm -rf "$staging" 2>/dev/null || true
@@ -148,7 +150,7 @@ restore_managed_item() {
     rm -rf "$rollback" 2>/dev/null || true
     echo "Restored from backup: $target_path"
     return 0
-  elif [[ -e "$target_path" ]]; then
+  elif [[ -e "$target_path" || -L "$target_path" ]]; then
     if [[ "$DRY_RUN" == true ]]; then
       echo "    [DRY RUN] Would remove: $target_path (no backup available)"
     else
