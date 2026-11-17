@@ -112,8 +112,8 @@ while IFS= read -r line; do
         exit 1
       fi
 
-      # Rename original to rollback location (same filesystem as target)
-      rollback="$(dirname "$target_path")/.rollback-$(backup_name "$source_rel")-$$"
+      # Rename original to rollback location (same filesystem as target, unique via mktemp)
+      rollback="$(mktemp "$(dirname "$target_path")/.rollback-$(backup_name "$source_rel")-XXXXXX")"
       if [[ -e "$target_path" || -L "$target_path" ]]; then
         if ! mv "$target_path" "$rollback"; then
           echo "ERROR: Could not rename $target_path to rollback"
@@ -139,7 +139,7 @@ while IFS= read -r line; do
       fi
 
       # Remove rollback now that restore is confirmed
-      if [[ -e "$rollback" ]]; then
+      if [[ -e "$rollback" || -L "$rollback" ]]; then
         rm -rf "$rollback" 2>/dev/null || true
       fi
 
@@ -154,8 +154,8 @@ while IFS= read -r line; do
         exit 1
       fi
 
-      # Rename original to rollback location (same filesystem as target)
-      rollback="$(dirname "$target_path")/.rollback-$(backup_name "$source_rel")-$$"
+      # Rename original to rollback location (same filesystem as target, unique via mktemp)
+      rollback="$(mktemp "$(dirname "$target_path")/.rollback-$(backup_name "$source_rel")-XXXXXX")"
       if [[ -e "$target_path" || -L "$target_path" ]]; then
         if ! mv "$target_path" "$rollback"; then
           echo "ERROR: Could not rename $target_path to rollback"
@@ -183,7 +183,7 @@ while IFS= read -r line; do
       rmdir "$staging"
 
       # Remove rollback now that restore is confirmed
-      if [[ -e "$rollback" ]]; then
+      if [[ -e "$rollback" || -L "$rollback" ]]; then
         rm -rf "$rollback" 2>/dev/null || true
       fi
 

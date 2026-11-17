@@ -77,7 +77,7 @@ fi
 
 # 2. Install system dependencies
 echo "==> Installing system dependencies..."
-mapfile -t PKG_LIST < <(grep -v '^\s*#' "$SCRIPTS_DIR/pkg_core.lst")
+mapfile -t PKG_LIST < <(grep -Ev '^[[:space:]]*(#|$)' "$SCRIPTS_DIR/pkg_core.lst")
 echo "    Packages: ${PKG_LIST[*]}"
 
 if [[ "$SKIP_SYS_UPDATE" == true ]]; then
@@ -105,7 +105,7 @@ echo "    Core dependencies installed."
 
 if [[ -f "$SCRIPTS_DIR/pkg_extra.lst" ]]; then
   echo "==> Installing extra packages (pacman)..."
-  mapfile -t EXTRA_LIST < <(grep -v '^\s*#' "$SCRIPTS_DIR/pkg_extra.lst")
+  mapfile -t EXTRA_LIST < <(grep -Ev '^[[:space:]]*(#|$)' "$SCRIPTS_DIR/pkg_extra.lst")
   echo "    Packages: ${EXTRA_LIST[*]}"
 
   if [[ "$DRY_RUN" == true ]]; then
@@ -146,7 +146,7 @@ else
 # Back up .config dirs that will be overwritten
 for d in hypr waybar dunst fastfetch gtk-3.0 gtk-4.0 kitty Kvantum nwg-look pypr qt5ct qt6ct swaync wlogout xsettingsd hyde rofi zsh uwsm fish starship swaylock lsd vim satty menus; do
   if [ -d "$HOME/.config/$d" ]; then
-    safe_backup "$HOME/.config/$d" "$(backup_path ".config/$d")"
+    safe_backup "$HOME/.config/$d" "$(backup_path_unique ".config/$d")"
     echo "    backed up .config/$d"
   fi
 done
@@ -154,40 +154,40 @@ done
 # Back up .config/ files that will be overwritten
 for f in dolphinrc kdeglobals xdg-terminals.list electron-flags.conf baloofilerc libinput-gestures.conf spotify-flags.conf starship.toml; do
   if [ -f "$HOME/.config/$f" ]; then
-    safe_backup "$HOME/.config/$f" "$(backup_path ".config/$f")"
+    safe_backup "$HOME/.config/$f" "$(backup_path_unique ".config/$f")"
     echo "    backed up .config/$f"
   fi
 done
 
 # Back up nested .config files (path components with subdirectories)
 if [ -f "$HOME/.config/dconf/profile" ]; then
-  safe_backup "$HOME/.config/dconf/profile" "$(backup_path ".config/dconf/profile")"
+  safe_backup "$HOME/.config/dconf/profile" "$(backup_path_unique ".config/dconf/profile")"
   echo "    backed up .config/dconf/profile"
 fi
 
 # Back up .local/share dirs that will be overwritten
 for d in themes icons fonts waybar sddm rofi hyde wallbash kio kxmlgui5 xdg-desktop-portal dolphin; do
   if [ -d "$HOME/.local/share/$d" ]; then
-    safe_backup "$HOME/.local/share/$d" "$(backup_path ".local/share/$d")"
+    safe_backup "$HOME/.local/share/$d" "$(backup_path_unique ".local/share/$d")"
     echo "    backed up .local/share/$d"
   fi
 done
 
 # Back up prodi framework if exists (use unique names to avoid collisions)
 if [ -e "$HOME/.local/lib/prodi" ]; then
-  safe_backup "$HOME/.local/lib/prodi" "$(backup_path ".local/lib/prodi")"
+  safe_backup "$HOME/.local/lib/prodi" "$(backup_path_unique ".local/lib/prodi")"
   echo "    backed up .local/lib/prodi"
 fi
 if [ -e "$HOME/.local/share/prodi" ]; then
-  safe_backup "$HOME/.local/share/prodi" "$(backup_path ".local/share/prodi")"
+  safe_backup "$HOME/.local/share/prodi" "$(backup_path_unique ".local/share/prodi")"
   echo "    backed up .local/share/prodi"
 fi
 if [ -e "$HOME/.local/bin/prodi-shell" ]; then
-  safe_backup "$HOME/.local/bin/prodi-shell" "$(backup_path ".local/bin/prodi-shell")"
+  safe_backup "$HOME/.local/bin/prodi-shell" "$(backup_path_unique ".local/bin/prodi-shell")"
   echo "    backed up .local/bin/prodi-shell"
 fi
 if [ -e "$HOME/.local/share/hypr" ]; then
-  safe_backup "$HOME/.local/share/hypr" "$(backup_path ".local/share/hypr")"
+  safe_backup "$HOME/.local/share/hypr" "$(backup_path_unique ".local/share/hypr")"
   echo "    backed up .local/share/hypr"
 fi
 
