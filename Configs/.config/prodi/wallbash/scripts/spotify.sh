@@ -3,16 +3,16 @@
 # Function to set permissions for Spotify path
 set_permissions() {
     local path=$1
-    chmod a+wr "$path"
-    chmod a+wr -R "$path/Apps"
+    chown -R "$USER:$USER" "$path"
+    chmod g+wr -R "$path"
 }
 
 # Function to notify and set permissions using pkexec
 notify_and_set_permissions() {
     local path=$1
-    notify-send -a "HyDE Alert" "Permission needed for Wallbash Spotify theme"
-    pkexec chmod a+wr "$path"
-    pkexec chmod a+wr -R "$path/Apps"
+    notify-send -a "Prodi Alert" "Permission needed for Wallbash Spotify theme"
+    pkexec chown -R "$USER:$USER" "$path"
+    pkexec chmod g+wr -R "$path"
 }
 
 # Function to configure Spicetify

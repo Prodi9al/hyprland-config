@@ -108,7 +108,7 @@ take_screenshot() {
 
     command=("$LIB_DIR/prodi/screenshot/grimblast" "${extra_args[@]}" "copysave" "${mode}" "${target_file}")
     print_log -g "Executing screenshot command: ${command[*]}"
-    if eval "${command[*]}"; then
+    if "${command[@]}"; then
         [[ ${SCREENSHOT_ANNOTATION_ENABLED} == false ]] && return 0
         if ! run_annotation_tool; then
             send_notifs -r 9 -a "Prodi Alert" "Screenshot Error" "Failed to open annotation tool"

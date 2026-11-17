@@ -4,6 +4,7 @@ Prototype support via niri msg --json.
 
 import json
 import os
+import shlex
 import subprocess
 from typing import Any
 
@@ -28,8 +29,8 @@ class NiriBackend:
         Checks the `NIRI_SOCKET` env var first, then falls back to whether
         the `niri` helper is on PATH.
         """
-        import shutil
         import os as _os
+        import shutil
 
         if _os.getenv("NIRI_SOCKET"):
             return True
@@ -63,7 +64,7 @@ class NiriBackend:
 
     def launch(self, command: str, client: dict, ws_target: str) -> None:
 
-        subprocess.Popen(command, shell=True)
+        subprocess.Popen(shlex.split(command), shell=False)
 
     def launch_forking(self, command: str, client: dict, ws_target: str) -> None:
 
@@ -71,7 +72,7 @@ class NiriBackend:
 
     def dispatch_plugin_cmd(self, cmd: str, client: dict) -> None:
 
-        subprocess.Popen(cmd, shell=True)
+        subprocess.Popen(shlex.split(cmd), shell=False)
 
     def reposition(self, addr: str, saved: dict) -> None:
 

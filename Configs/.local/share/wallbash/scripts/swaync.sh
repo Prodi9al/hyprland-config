@@ -13,7 +13,7 @@
 # they are overwritten every time this runs). The config.json margins are
 # managed the same way: control-center-margin-* is overwritten every reload,
 # everything else in config.json is left untouched.
-[[ $HYDE_SHELL_INIT -ne 1 ]] && eval "$(hyde-shell init)"
+[[ $PRODI_SHELL_INIT -ne 1 ]] && eval "$(prodi-shell init)"
 
 theme_css="${confDir}/swaync/theme.css"
 config_json="${confDir}/swaync/config.json"

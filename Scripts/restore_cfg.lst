@@ -16,7 +16,7 @@
 .config/swaync -> ~/.config/swaync
 .config/wlogout -> ~/.config/wlogout
 .config/xsettingsd -> ~/.config/xsettingsd
-.config/hyde -> ~/.config/hyde
+.config/prodi -> ~/.config/prodi
 .config/rofi -> ~/.config/rofi
 .config/zsh -> ~/.config/zsh
 .config/fish -> ~/.config/fish

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-# shellcheck source=/home/khing/.local/bin/hyde-shell
+# shellcheck source=/home/khing/.local/bin/prodi-shell
 # shellcheck disable=SC1091
-if ! source "$(command -v hyde-shell)"; then
-    echo "[wallbash] code :: Error: hyde-shell not found."
+if ! source "$(command -v prodi-shell)"; then
+    echo "[wallbash] code :: Error: prodi-shell not found."
     echo "[wallbash] code :: Is HyDE installed?"
     exit 1
 fi

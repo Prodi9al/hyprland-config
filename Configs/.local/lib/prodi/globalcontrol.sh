@@ -150,11 +150,11 @@ get_hashmap() {
             print_log -err "ERROR: wallSource is empty"
             return 1
         fi
-        local find_command
-        find_command="find -H \"$wallSource\" -type f \\( $(list_extensions) \\) $(list_skipped_path) -exec \"$hashMech\" {} +"
-        [ "$LOG_LEVEL" == "debug" ] && print_log -g "DEBUG:" -b "Running command:" "$find_command"
+        local exts skip
+        exts=$(list_extensions | sed 's/ -o $//')
+        skip=$(list_skipped_path | sed 's/ $//')
         tmpfile=$(mktemp)
-        eval "$find_command" 2>"$tmpfile" | sort -k2
+        find -H "$wallSource" -type f \( $exts \) $skip -exec "$hashMech" {} + 2>"$tmpfile" | sort -k2
         error_output=$(<"$tmpfile") && rm -f "$tmpfile"
         [ -n "$error_output" ] && print_log -err "ERROR:" -b "found an error: " -r "$error_output" -y " skipping..."
     }

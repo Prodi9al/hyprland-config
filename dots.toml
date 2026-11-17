@@ -17,7 +17,7 @@ qt6ct = { source = "Configs/.config/qt6ct", target = "~/.config/qt6ct" }
 swaync = { source = "Configs/.config/swaync", target = "~/.config/swaync" }
 wlogout = { source = "Configs/.config/wlogout", target = "~/.config/wlogout" }
 xsettingsd = { source = "Configs/.config/xsettingsd", target = "~/.config/xsettingsd" }
-hyde = { source = "Configs/.config/hyde", target = "~/.config/hyde" }
+prodi = { source = "Configs/.config/prodi", target = "~/.config/prodi" }
 rofi = { source = "Configs/.config/rofi", target = "~/.config/rofi" }
 zsh = { source = "Configs/.config/zsh", target = "~/.config/zsh" }
 fish = { source = "Configs/.config/fish", target = "~/.config/fish" }

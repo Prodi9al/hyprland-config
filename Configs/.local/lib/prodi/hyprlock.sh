@@ -104,12 +104,12 @@ mpris_thumb() {
     reload_hyprlock
 }
 fn_cava() {
-    local tempFile=/tmp/hyprlock-cava
+    local tempFile="${XDG_RUNTIME_DIR:-/tmp}/hyprlock-cava"
     [ -f "$tempFile" ] && tail -n 1 "$tempFile"
     config_file="$XDG_RUNTIME_DIR/prodi/cava.hyprlock"
     if [ "$(pgrep -c -f "cava -p $config_file")" -eq 0 ]; then
         trap 'rm -f ${tempFile}' EXIT
-        "${LIB_DIR}/prodi/cava.py" hyprlock >$tempFile 2>&1
+        "${LIB_DIR}/prodi/cava.py" hyprlock >"$tempFile" 2>&1
     fi
 }
 fn_art() {
