@@ -11,16 +11,25 @@ CONFIGS_DIR="$REPO_DIR/Configs"
 
 BACKUP_DIR="$HOME/.config/cfg_backups"
 INSTALL_AUR=false
+SKIP_SYS_UPDATE=false
+DRY_RUN=false
 
 # Parse arguments
 for arg in "$@"; do
   case "$arg" in
     --aur) INSTALL_AUR=true ;;
+    --skip-sys-update) SKIP_SYS_UPDATE=true ;;
+    --dry-run) DRY_RUN=true ;;
   esac
 done
 
 echo "==> Prodi9al Hyprland Config Installer"
 echo ""
+
+if [[ "$DRY_RUN" == true ]]; then
+  echo "==> DRY RUN MODE — no changes will be made"
+  echo ""
+fi
 
 # 1. Verify Arch-based Linux
 if [[ ! -f /etc/arch-release ]]; then
@@ -31,24 +40,56 @@ fi
 
 # 2. Install system dependencies
 echo "==> Installing system dependencies..."
-sudo pacman -Syu --needed --noconfirm \
-  $(grep -v '^\s*#' "$SCRIPTS_DIR/pkg_core.lst" | tr '\n' ' ') \
-  >/dev/null 2>&1
+PKG_LIST=$(grep -v '^\s*#' "$SCRIPTS_DIR/pkg_core.lst" | tr '\n' ' ')
+echo "    Packages: $PKG_LIST"
+
+if [[ "$SKIP_SYS_UPDATE" == true ]]; then
+  echo "    Skipping system update (--skip-sys-update)."
+else
+  read -r -p "    Run 'sudo pacman -Syu' to update system first? [y/N] " confirm_sysupdate
+  if [[ "$confirm_sysupdate" =~ ^[Yy]$ ]]; then
+    if [[ "$DRY_RUN" == true ]]; then
+      echo "    [DRY RUN] sudo pacman -Syu --needed --noconfirm $PKG_LIST"
+    else
+      sudo pacman -Syu --needed --noconfirm
+    fi
+  else
+    echo "    Skipping system update."
+  fi
+fi
+
+if [[ "$DRY_RUN" == true ]]; then
+  echo "    [DRY RUN] sudo pacman -S --needed --noconfirm $PKG_LIST"
+else
+  sudo pacman -S --needed --noconfirm $PKG_LIST
+fi
+
+echo "    Core dependencies installed."
 
 if [[ -f "$SCRIPTS_DIR/pkg_extra.lst" ]]; then
   echo "==> Installing extra packages (pacman)..."
-  sudo pacman -S --needed --noconfirm \
-    $(grep -v '^\s*#' "$SCRIPTS_DIR/pkg_extra.lst" | tr '\n' ' ') \
-    >/dev/null 2>&1 || true
+  EXTRA_LIST=$(grep -v '^\s*#' "$SCRIPTS_DIR/pkg_extra.lst" | tr '\n' ' ')
+  echo "    Packages: $EXTRA_LIST"
+
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "    [DRY RUN] sudo pacman -S --needed --noconfirm $EXTRA_LIST"
+  else
+    sudo pacman -S --needed --noconfirm $EXTRA_LIST
+  fi
+  echo "    Extra packages installed."
 fi
 
-echo "    Dependencies installed."
+echo ""
 
 # 3. Optional AUR packages
 if [[ "$INSTALL_AUR" == true ]]; then
   echo "==> Installing AUR packages..."
   if command -v yay &>/dev/null || command -v paru &>/dev/null || command -v pamac &>/dev/null; then
-    bash "$SCRIPTS_DIR/install_aur.sh"
+    if [[ "$DRY_RUN" == true ]]; then
+      echo "    [DRY RUN] bash $SCRIPTS_DIR/install_aur.sh"
+    else
+      bash "$SCRIPTS_DIR/install_aur.sh"
+    fi
   else
     echo "    No AUR helper found (yay, paru, pamac). Skipping AUR packages."
     echo "    Install one first, then run: ./Scripts/install_aur.sh"
@@ -85,13 +126,23 @@ for d in themes icons fonts waybar sddm rofi hyde wallbash kio kxmlgui5 xdg-desk
   fi
 done
 
-# Back up prodi framework if exists
-for d in .local/lib/prodi .local/share/prodi .local/bin/prodi-shell .local/share/hypr; do
-  if [ -e "$HOME/$d" ]; then
-    cp -r "$HOME/$d" "$BACKUP_DIR/$(basename $d)" 2>/dev/null || true
-    echo "    backed up $d"
-  fi
-done
+# Back up prodi framework if exists (use unique names to avoid collisions)
+if [ -e "$HOME/.local/lib/prodi" ]; then
+  cp -r "$HOME/.local/lib/prodi" "$BACKUP_DIR/prodi-lib" 2>/dev/null || true
+  echo "    backed up .local/lib/prodi"
+fi
+if [ -e "$HOME/.local/share/prodi" ]; then
+  cp -r "$HOME/.local/share/prodi" "$BACKUP_DIR/prodi-share" 2>/dev/null || true
+  echo "    backed up .local/share/prodi"
+fi
+if [ -e "$HOME/.local/bin/prodi-shell" ]; then
+  cp -r "$HOME/.local/bin/prodi-shell" "$BACKUP_DIR/prodi-bin-shell" 2>/dev/null || true
+  echo "    backed up .local/bin/prodi-shell"
+fi
+if [ -e "$HOME/.local/share/hypr" ]; then
+  cp -r "$HOME/.local/share/hypr" "$BACKUP_DIR/prodi-share-hypr" 2>/dev/null || true
+  echo "    backed up .local/share/hypr"
+fi
 
 echo "    Backup complete."
 

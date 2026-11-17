@@ -54,25 +54,45 @@ for d in .local/lib/prodi .local/share/prodi .local/bin/prodi-shell .local/share
   fi
 done
 
+# Restore prodi framework from backup
+if [ -d "$BACKUP_DIR/prodi-lib" ]; then
+  mkdir -p "$HOME/.local/lib"
+  cp -r "$BACKUP_DIR/prodi-lib" "$HOME/.local/lib/prodi"
+  echo "    restored .local/lib/prodi"
+fi
+if [ -d "$BACKUP_DIR/prodi-share" ]; then
+  mkdir -p "$HOME/.local/share"
+  cp -r "$BACKUP_DIR/prodi-share" "$HOME/.local/share/prodi"
+  echo "    restored .local/share/prodi"
+fi
+if [ -d "$BACKUP_DIR/prodi-bin-shell" ]; then
+  mkdir -p "$HOME/.local/bin"
+  cp -r "$BACKUP_DIR/prodi-bin-shell" "$HOME/.local/bin/prodi-shell"
+  echo "    restored .local/bin/prodi-shell"
+fi
+if [ -d "$BACKUP_DIR/prodi-share-hypr" ]; then
+  mkdir -p "$HOME/.local/share"
+  cp -r "$BACKUP_DIR/prodi-share-hypr" "$HOME/.local/share/hypr"
+  echo "    restored .local/share/hypr"
+fi
+
 # Restore from backup if available
 if [ -d "$BACKUP_DIR" ]; then
-  echo "==> Restoring from backup at $BACKUP_DIR..."
-  for backup in "$BACKUP_DIR"/config-* "$BACKUP_DIR"/share-* "$BACKUP_DIR"/prodi-* "$BACKUP_DIR"/hypr; do
+  echo "==> Restoring remaining backups from $BACKUP_DIR..."
+  for backup in "$BACKUP_DIR"/config-* "$BACKUP_DIR"/share-*; do
     [ -e "$backup" ] || continue
     name=$(basename "$backup")
     if [[ "$name" == config-* ]]; then
       target="$HOME/.config/${name#config-}"
     elif [[ "$name" == share-* ]]; then
       target="$HOME/.local/share/${name#share-}"
-    elif [[ "$name" == prodi-* ]]; then
-      target="$HOME/.local/${name#prodi-}"
-    else
-      target="$HOME/.local/share/hypr"
     fi
     if [ -d "$backup" ]; then
+      mkdir -p "$(dirname "$target")"
       cp -r "$backup" "$target"
       echo "    restored $target"
     elif [ -f "$backup" ]; then
+      mkdir -p "$(dirname "$target")"
       cp "$backup" "$target"
       echo "    restored $target"
     fi

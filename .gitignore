@@ -13,3 +13,5 @@ Configs/.config/waybar/scripts/*.env
 Configs/.local/share/hyde/
 Configs/.local/share/fonts/
 Configs/.local/share/icons/
+Configs/.config/zsh/.zcompdump*
+Configs/.config/zsh/.zsh_history

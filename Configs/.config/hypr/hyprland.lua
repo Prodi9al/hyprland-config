@@ -295,8 +295,8 @@ hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
-hl.bind(mainMod .. " + D", hl.dsp.exec_cmd("rofi -show drun -theme ~/.local/share/prodi9al/rofi/themes/launchpad.rasi -show-icons"), {description = "[Prodi9al] home screen launchpad"})
-hl.bind(mainMod .. " + A", hl.dsp.exec_cmd("prodi9al-shell rofilaunch d"), {description = "[Prodi9al] app selector"})
+hl.bind(mainMod .. " + D", hl.dsp.exec_cmd("rofi -show drun -theme ~/.local/share/prodi/rofi/themes/launchpad.rasi -show-icons"), {description = "[Prodi9al] home screen launchpad"})
+hl.bind(mainMod .. " + A", hl.dsp.exec_cmd("prodi-shell rofilaunch d"), {description = "[Prodi9al] app selector"})
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))    -- dwindle only
 

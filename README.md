@@ -4,7 +4,7 @@
 
 # Prodi9al Hyprland Config
 
-[![Hyprland](https://img.shields.io/badge/Hyprland-0.45+-blue?logo=wayland)](https://hyprland.org/)
+[![Hyprland](https://img.shields.io/badge/Hyprland-blue?logo=wayland)](https://hyprland.org/)
 [![Lua](https://img.shields.io/badge/Lua-5.4-blue?logo=lua)](https://www.lua.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -55,7 +55,7 @@
 Set the active layout in `hyprlock.conf`:
 
 ```bash
-$LAYOUT_PATH=/home/prodi9al/.config/hypr/hyprlock/Prodi9al.conf
+$LAYOUT_PATH=$XDG_CONFIG_HOME/hypr/hyprlock/Prodi9al.conf
 ```
 
 ---
@@ -490,6 +490,8 @@ The installer handles dependency installation, backs up existing configs to `~/.
 **Options:**
 - `./Scripts/install.sh` — Standard install (pacman packages only)
 - `./Scripts/install.sh --aur` — Also install AUR packages (requires yay/paru/pamac)
+- `./Scripts/install.sh --skip-sys-update` — Skip `pacman -Syu` system update
+- `./Scripts/install.sh --dry-run` — Show what would be done without making changes
 
 **Other scripts:**
 - `./Scripts/uninstall.sh` — Remove all restored dotfiles
