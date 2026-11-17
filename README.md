@@ -131,7 +131,7 @@ Switch themes with `prodi-shell theme.switch` or `theme.select.sh`.
 
 **High School DxD** — Issei Hyoudou's rise as a devil in a world of angels, fallen angels, and dragons *(23 wallpapers)*
 
-<img src="Configs/.config/hypr/assets/wallpapers/High School DxD/danbooru_High_School_DxD_p137_6.jpg" width="300"/>
+<img src="Configs/.config/hypr/assets/wallpapers/High School DxD/wp5554324-high-school-dxd-anime-4k-pc-wallpapers.jpg" width="300"/>
 
 **Hunter x Hunter** — Gon Freecss's quest to find his father and become a top-tier Hunter *(20 wallpapers)*
 
