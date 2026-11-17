@@ -32,7 +32,7 @@ FZF_CMD = "fzf"
 
 
 def __check_fzf_in_path() -> bool:
-    return which(FZF_CMD) != None
+    return which(FZF_CMD) is not None
 
 
 def prompt(choices: List[str], fzf_options: List[str] = []) -> List[str]:

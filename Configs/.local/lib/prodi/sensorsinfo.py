@@ -18,7 +18,6 @@ and let the bar poll it. Might cause more CPU calls. but frees up RAM.
 
 import json
 import subprocess
-import os
 import argparse
 import time
 import sys

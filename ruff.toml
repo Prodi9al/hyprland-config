@@ -1,0 +1,6 @@
+[lint]
+select = ["E", "F", "W", "C"]
+ignore = ["E501", "C901"]
+
+[lint.per-file-ignores]
+"Configs/.local/lib/prodi/**" = ["E501", "C901", "W", "C"]

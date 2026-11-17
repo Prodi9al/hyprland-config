@@ -509,7 +509,7 @@ class ColorShuffleQt(QtWidgets.QWidget):
             hbox.addWidget(txt_btn)
             acc_btns = []
             for j in range(9):
-                color = getattr(self.color_rows[i], f"accent{j + 1}")
+                _color = getattr(self.color_rows[i], f"accent{j + 1}")
                 acc_btn = QtWidgets.QPushButton()
                 acc_btn.setFixedSize(35, 25)  # Smaller color boxes for compact layout
                 acc_btn.setSizePolicy(
@@ -1105,8 +1105,8 @@ class ColorShuffleQt(QtWidgets.QWidget):
                 i = int(m.group(1)) - 1
                 j = accent_idx[i]
                 if i < 4 and j < 9:
-                    color = getattr(self.color_rows[i], f"accent{j + 1}")
-                    new_lines.append(f'dcol_{i + 1}xa{j + 1}="{color}"\n')
+                    _color = getattr(self.color_rows[i], f"accent{j + 1}")
+                    new_lines.append(f'dcol_{i + 1}xa{j + 1}="{_color}"\n')
                     accent_idx[i] += 1
                 else:
                     new_lines.append(line)

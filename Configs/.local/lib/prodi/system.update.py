@@ -16,7 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-import pm
+import pm  # noqa: E402
 
 XDG_RUNTIME_DIR = Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp"))
 STATE_DIR = XDG_RUNTIME_DIR / "prodi"

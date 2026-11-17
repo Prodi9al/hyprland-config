@@ -10,7 +10,6 @@ fish
 # File manager enhancements
 lsd
 bat
-fzf
 
 # Editor
 vim
@@ -28,7 +27,6 @@ ydotool
 nwg-look
 qt5ct
 qt6ct
-kvantum
 
 # Screenshot/selection
 slurp

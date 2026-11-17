@@ -12,7 +12,6 @@ import shutil
 import time
 import sys
 import hashlib
-import signal
 import tempfile
 
 from pathlib import Path
@@ -752,7 +751,8 @@ def run_waybar():
 def kill_waybar():
     """Stop Waybar for current session."""
     if HAS_SYSTEMD:
-        for u in [UNIT_NAME, "prodi-Prodi-bar.service", "prodi-Hyprland-bar.service"]: subprocess.run(["systemctl", "--user", "--no-block", "stop", u])
+        for u in [UNIT_NAME, "prodi-Prodi-bar.service", "prodi-Hyprland-bar.service"]:
+            subprocess.run(["systemctl", "--user", "--no-block", "stop", u])
     else:
         subprocess.run(["pkill", "-u", str(os.getuid()), "-x", "waybar"])
     logger.debug("Stopped Waybar processes.")
@@ -1443,8 +1443,12 @@ def main():
             if layout_name:
                 logger.debug(f"Looking for layout by name: {layout_name}")
                 found_layout = next(
-                    (l for l in find_layout_files()
-                     if os.path.basename(l).replace(".jsonc", "") == layout_name),
+                    (
+                        layout_file
+                        for layout_file in find_layout_files()
+                        if os.path.basename(layout_file).replace(".jsonc", "")
+                        == layout_name
+                    ),
                     None
                 )
 

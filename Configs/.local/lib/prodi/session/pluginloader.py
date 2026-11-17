@@ -5,7 +5,6 @@ Each plugin declares MATCH_CLASSES and optional hooks for save/restore.
 """
 
 import importlib
-import os
 import sys
 from pathlib import Path
 from types import ModuleType

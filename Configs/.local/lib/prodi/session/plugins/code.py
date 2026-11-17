@@ -12,7 +12,6 @@ reports the same PID.  This plugin:
 """
 
 import json
-import os
 import re
 import shlex
 from pathlib import Path
