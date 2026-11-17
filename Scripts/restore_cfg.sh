@@ -89,6 +89,9 @@ while IFS= read -r line; do
     echo "    [DRY RUN] Would restore: $source_rel → $target_path"
   else
     mkdir -p "$(dirname "$target_path")"
+    # Remove existing target first so cp -r doesn't create a nested directory
+    # (cp -r source target/ would create target/source/ if target already exists)
+    rm -rf "$target_path"
     cp -r "$source_path" "$target_path"
     echo "Restored: $target_path"
   fi

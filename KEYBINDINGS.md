@@ -15,8 +15,9 @@ The `SUPER` key (Windows key) is the primary modifier. A secondary `prodigalMod`
 | SUPER + M | Exit/shutdown (hyprshutdown or Hyprland exit) |
 | SUPER + E | File manager (dolphin) |
 | SUPER + V | Toggle floating |
-| SUPER + R | Open menu (rofi) |
-| SUPER + SHIFT + P | Pseudo tile window |
+| SUPER + R | Open menu (wofi) |
+| SUPER + A | App selector (prodi-shell rofilaunch) |
+| SUPER + P | Pseudo tile window |
 | SUPER + SHIFT + S | Toggle special workspace |
 | SUPER + 1-10 | Switch to workspace |
 | SUPER + SHIFT + 1-10 | Move window to workspace |
@@ -55,7 +56,6 @@ The `SUPER` key (Windows key) is the primary modifier. A secondary `prodigalMod`
 
 | Keybinding | Action |
 |------------|--------|
-| SUPER + SHIFT + P | Pseudo tile |
 | F5 | Toggle audio mute |
 
 See `Configs/.config/hypr/hyprland.lua` for the full keybinding configuration.
