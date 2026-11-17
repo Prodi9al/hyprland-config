@@ -1,0 +1,13 @@
+{
+  "custom/htb": {
+    "exec": "$XDG_CONFIG_HOME/waybar/scripts/htb.py",
+    "return-type": "json",
+    "format": "{}",
+    "rotate": 0,
+    "on-click": "xdg-open https://app.hackthebox.com/users/YOUR_HTB_USER_ID",
+    "on-click-right": "$XDG_CONFIG_HOME/waybar/scripts/htb.py --refresh",
+    "on-click-middle": "$XDG_CONFIG_HOME/waybar/scripts/htb.py --notify",
+    "interval": 900,
+    "tooltip": true
+  }
+}
