@@ -31,6 +31,14 @@ if [[ "$DRY_RUN" == true ]]; then
   echo ""
 fi
 
+run() {
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "    [DRY RUN] $*"
+  else
+    "$@"
+  fi
+}
+
 # 1. Verify Arch-based Linux
 if [[ ! -f /etc/arch-release ]]; then
   echo "ERROR: This installer is designed for Arch and Arch-based distros only."
@@ -46,15 +54,15 @@ echo "    Packages: $PKG_LIST"
 if [[ "$SKIP_SYS_UPDATE" == true ]]; then
   echo "    Skipping system update (--skip-sys-update)."
 else
-  read -r -p "    Run 'sudo pacman -Syu' to update system first? [y/N] " confirm_sysupdate
-  if [[ "$confirm_sysupdate" =~ ^[Yy]$ ]]; then
-    if [[ "$DRY_RUN" == true ]]; then
-      echo "    [DRY RUN] sudo pacman -Syu --needed --noconfirm $PKG_LIST"
-    else
-      sudo pacman -Syu --needed --noconfirm
-    fi
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "    [DRY RUN] sudo pacman -Syu --needed --noconfirm $PKG_LIST"
   else
-    echo "    Skipping system update."
+    read -r -p "    Run 'sudo pacman -Syu' to update system first? [y/N] " confirm_sysupdate
+    if [[ "$confirm_sysupdate" =~ ^[Yy]$ ]]; then
+      sudo pacman -Syu --needed --noconfirm
+    else
+      echo "    Skipping system update."
+    fi
   fi
 fi
 
@@ -100,96 +108,162 @@ echo ""
 
 # 4. Back up existing configs
 echo "==> Backing up existing configs to $BACKUP_DIR..."
-mkdir -p "$BACKUP_DIR"
+if [[ "$DRY_RUN" == true ]]; then
+  echo "    [DRY RUN] Would create backup directory: $BACKUP_DIR"
+  echo "    [DRY RUN] Would back up existing config files/directories"
+else
+  mkdir -p "$BACKUP_DIR"
 
 # Back up .config dirs that will be overwritten
 for d in hypr waybar dunst fastfetch gtk-3.0 gtk-4.0 kitty Kvantum nwg-look pypr qt5ct qt6ct swaync wlogout xsettingsd hyde rofi zsh uwsm fish starship swaylock lsd vim satty menus; do
   if [ -d "$HOME/.config/$d" ]; then
-    cp -r "$HOME/.config/$d" "$BACKUP_DIR/config-$d" 2>/dev/null || true
-    echo "    backed up .config/$d"
+    if [[ "$DRY_RUN" == true ]]; then
+      echo "    [DRY RUN] cp -r \"$HOME/.config/$d\" \"$BACKUP_DIR/config-$d\""
+    else
+      cp -r "$HOME/.config/$d" "$BACKUP_DIR/config-$d" 2>/dev/null || true
+      echo "    backed up .config/$d"
+    fi
   fi
 done
 
 # Back up .config/ files that will be overwritten
 for f in dolphinrc kdeglobals xdg-terminals.list electron-flags.conf baloofilerc libinput-gestures.conf spotify-flags.conf starship.toml; do
   if [ -f "$HOME/.config/$f" ]; then
-    cp "$HOME/.config/$f" "$BACKUP_DIR/$f" 2>/dev/null || true
-    echo "    backed up .config/$f"
+    if [[ "$DRY_RUN" == true ]]; then
+      echo "    [DRY RUN] cp \"$HOME/.config/$f\" \"$BACKUP_DIR/$f\""
+    else
+      cp "$HOME/.config/$f" "$BACKUP_DIR/$f" 2>/dev/null || true
+      echo "    backed up .config/$f"
+    fi
   fi
 done
 
 # Back up .local/share dirs that will be overwritten
 for d in themes icons fonts waybar sddm rofi hyde wallbash kio kxmlgui5 xdg-desktop-portal dolphin; do
   if [ -d "$HOME/.local/share/$d" ]; then
-    cp -r "$HOME/.local/share/$d" "$BACKUP_DIR/share-$d" 2>/dev/null || true
-    echo "    backed up .local/share/$d"
+    if [[ "$DRY_RUN" == true ]]; then
+      echo "    [DRY RUN] cp -r \"$HOME/.local/share/$d\" \"$BACKUP_DIR/share-$d\""
+    else
+      cp -r "$HOME/.local/share/$d" "$BACKUP_DIR/share-$d" 2>/dev/null || true
+      echo "    backed up .local/share/$d"
+    fi
   fi
 done
 
 # Back up prodi framework if exists (use unique names to avoid collisions)
 if [ -e "$HOME/.local/lib/prodi" ]; then
-  cp -r "$HOME/.local/lib/prodi" "$BACKUP_DIR/prodi-lib" 2>/dev/null || true
-  echo "    backed up .local/lib/prodi"
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "    [DRY RUN] cp -r \"$HOME/.local/lib/prodi\" \"$BACKUP_DIR/prodi-lib\""
+  else
+    cp -r "$HOME/.local/lib/prodi" "$BACKUP_DIR/prodi-lib" 2>/dev/null || true
+    echo "    backed up .local/lib/prodi"
+  fi
 fi
 if [ -e "$HOME/.local/share/prodi" ]; then
-  cp -r "$HOME/.local/share/prodi" "$BACKUP_DIR/prodi-share" 2>/dev/null || true
-  echo "    backed up .local/share/prodi"
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "    [DRY RUN] cp -r \"$HOME/.local/share/prodi\" \"$BACKUP_DIR/prodi-share\""
+  else
+    cp -r "$HOME/.local/share/prodi" "$BACKUP_DIR/prodi-share" 2>/dev/null || true
+    echo "    backed up .local/share/prodi"
+  fi
 fi
 if [ -e "$HOME/.local/bin/prodi-shell" ]; then
-  cp -r "$HOME/.local/bin/prodi-shell" "$BACKUP_DIR/prodi-bin-shell" 2>/dev/null || true
-  echo "    backed up .local/bin/prodi-shell"
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "    [DRY RUN] cp -r \"$HOME/.local/bin/prodi-shell\" \"$BACKUP_DIR/prodi-bin-shell\""
+  else
+    cp -r "$HOME/.local/bin/prodi-shell" "$BACKUP_DIR/prodi-bin-shell" 2>/dev/null || true
+    echo "    backed up .local/bin/prodi-shell"
+  fi
 fi
 if [ -e "$HOME/.local/share/hypr" ]; then
-  cp -r "$HOME/.local/share/hypr" "$BACKUP_DIR/prodi-share-hypr" 2>/dev/null || true
-  echo "    backed up .local/share/hypr"
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "    [DRY RUN] cp -r \"$HOME/.local/share/hypr\" \"$BACKUP_DIR/prodi-share-hypr\""
+  else
+    cp -r "$HOME/.local/share/hypr" "$BACKUP_DIR/prodi-share-hypr" 2>/dev/null || true
+    echo "    backed up .local/share/hypr"
+  fi
 fi
 
 echo "    Backup complete."
+fi
 
 # 5. Restore configs from Configs/ to target locations
 echo "==> Restoring configs..."
 
 # Restore .config/ dirs
 if [ -d "$CONFIGS_DIR/.config" ]; then
-  cp -r "$CONFIGS_DIR/.config/"* "$HOME/.config/"
-  echo "    Restored .config/*"
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "    [DRY RUN] cp -r \"$CONFIGS_DIR/.config/\"* \"$HOME/.config/\""
+  else
+    cp -r "$CONFIGS_DIR/.config/"* "$HOME/.config/"
+    echo "    Restored .config/*"
+  fi
 fi
 
 # Restore .local/share/ dirs
 if [ -d "$CONFIGS_DIR/.local/share" ]; then
-  cp -r "$CONFIGS_DIR/.local/share/"* "$HOME/.local/share/"
-  echo "    Restored .local/share/*"
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "    [DRY RUN] cp -r \"$CONFIGS_DIR/.local/share/\"* \"$HOME/.local/share/\""
+  else
+    cp -r "$CONFIGS_DIR/.local/share/"* "$HOME/.local/share/"
+    echo "    Restored .local/share/*"
+  fi
 fi
 
 # Restore .local/lib/prodi
 if [ -d "$CONFIGS_DIR/.local/lib/prodi" ]; then
-  mkdir -p "$HOME/.local/lib/prodi"
-  cp -r "$CONFIGS_DIR/.local/lib/prodi/"* "$HOME/.local/lib/prodi/"
-  echo "    Restored .local/lib/prodi/*"
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "    [DRY RUN] cp -r \"$CONFIGS_DIR/.local/lib/prodi/\"* \"$HOME/.local/lib/prodi/\""
+  else
+    mkdir -p "$HOME/.local/lib/prodi"
+    cp -r "$CONFIGS_DIR/.local/lib/prodi/"* "$HOME/.local/lib/prodi/"
+    echo "    Restored .local/lib/prodi/*"
+  fi
 fi
 
 # Restore .local/bin/prodi-shell
 if [ -f "$CONFIGS_DIR/.local/bin/prodi-shell" ]; then
-  mkdir -p "$HOME/.local/bin"
-  cp "$CONFIGS_DIR/.local/bin/prodi-shell" "$HOME/.local/bin/prodi-shell"
-  chmod +x "$HOME/.local/bin/prodi-shell"
-  echo "    Restored .local/bin/prodi-shell"
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "    [DRY RUN] cp \"$CONFIGS_DIR/.local/bin/prodi-shell\" \"$HOME/.local/bin/prodi-shell\""
+    echo "    [DRY RUN] chmod +x \"$HOME/.local/bin/prodi-shell\""
+  else
+    mkdir -p "$HOME/.local/bin"
+    cp "$CONFIGS_DIR/.local/bin/prodi-shell" "$HOME/.local/bin/prodi-shell"
+    chmod +x "$HOME/.local/bin/prodi-shell"
+    echo "    Restored .local/bin/prodi-shell"
+  fi
 fi
 
 # Restore .local/share/hypr
 if [ -d "$CONFIGS_DIR/.local/share/hypr" ]; then
-  mkdir -p "$HOME/.local/share/hypr"
-  cp -r "$CONFIGS_DIR/.local/share/hypr/"* "$HOME/.local/share/hypr/"
-  echo "    Restored .local/share/hypr/*"
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "    [DRY RUN] cp -r \"$CONFIGS_DIR/.local/share/hypr/\"* \"$HOME/.local/share/hypr/\""
+  else
+    mkdir -p "$HOME/.local/share/hypr"
+    cp -r "$CONFIGS_DIR/.local/share/hypr/"* "$HOME/.local/share/hypr/"
+    echo "    Restored .local/share/hypr/*"
+  fi
 fi
 
 echo "    Config restore complete."
 
 # 6. Make scripts executable
-chmod +x "$HOME/.config/waybar/scripts/htb.py" 2>/dev/null || true
-chmod +x "$HOME/.local/bin/prodi-shell" 2>/dev/null || true
+if [[ "$DRY_RUN" == true ]]; then
+  echo "    [DRY RUN] chmod +x \"$HOME/.config/waybar/scripts/htb.py\""
+  echo "    [DRY RUN] chmod +x \"$HOME/.local/bin/prodi-shell\""
+else
+  chmod +x "$HOME/.config/waybar/scripts/htb.py" 2>/dev/null || true
+  chmod +x "$HOME/.local/bin/prodi-shell" 2>/dev/null || true
+fi
 
 # 7. HTB token setup (Hack The Box waybar module - optional)
+if [[ "$DRY_RUN" == true ]]; then
+  echo ""
+  echo "==> Hack The Box Waybar Module Setup (optional) [DRY RUN]"
+  echo "    Would prompt for HTB User ID and API token."
+  echo "    Would write to $HOME/.config/waybar/scripts/htb_token.env"
+  echo "    Would add env vars to $HOME/.bashrc"
+else
 echo ""
 echo "==> Hack The Box Waybar Module Setup (optional)"
 echo "    The waybar includes a Hack The Box rank module."
@@ -227,11 +301,16 @@ if [[ -n "${HTB_TOKEN:-}" ]] || [[ -n "${HTB_USER_ID:-}" ]]; then
     echo "    Added HTB env vars to $RC_FILE"
   fi
 fi
+fi
 
 # 8. Ensure PATH includes local bin
 if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
-  echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
-  echo "    Added ~/.local/bin to PATH in ~/.bashrc"
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "    [DRY RUN] echo 'export PATH=\"$HOME/.local/bin:$PATH\"' >> \"$HOME/.bashrc\""
+  else
+    echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
+    echo "    Added ~/.local/bin to PATH in ~/.bashrc"
+  fi
 fi
 
 echo ""

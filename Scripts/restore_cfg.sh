@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Prodi9al Hyprland Config — Config Restore Script
-# Restores dotfiles from Configs/ to target locations with backup.
+# Restores dotfiles from Configs/ to target locations with safe backup.
 
 set -euo pipefail
 
@@ -9,12 +9,37 @@ REPO_DIR="$(cd "$(dirname "${SCRIPTS_DIR}")" && pwd)"
 CONFIGS_DIR="$REPO_DIR/Configs"
 
 BACKUP_DIR="$HOME/.config/cfg_backups"
+DRY_RUN=false
+
+# Parse arguments
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=true ;;
+  esac
+done
 
 echo "==> Prodi9al Config Restore"
 echo ""
 
+if [[ "$DRY_RUN" == true ]]; then
+  echo "==> DRY RUN MODE — no changes will be made"
+  echo ""
+fi
+
+run() {
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "    [DRY RUN] $*"
+  else
+    "$@"
+  fi
+}
+
 # Create backup directory
-mkdir -p "$BACKUP_DIR"
+if [[ "$DRY_RUN" == true ]]; then
+  echo "    [DRY RUN] Would create backup directory: $BACKUP_DIR"
+else
+  mkdir -p "$BACKUP_DIR"
+fi
 
 # Restore each mapping from restore_cfg.lst
 RESTORE_LIST="$SCRIPTS_DIR/restore_cfg.lst"
@@ -40,21 +65,40 @@ while IFS= read -r line; do
     continue
   fi
 
-  # Back up existing target if it exists
+  # Derive a unique, collision-free backup name from the relative path
+  # .config/hypr → config-hypr, .local/lib/prodi → local-lib-prodi
+  backup_name="$(echo "$source_rel" | sed 's/^\.//; s/\//-/g')"
+  backup_path="$BACKUP_DIR/$backup_name"
+
+  # Back up existing target if it exists (non-destructive: keep original + backup)
   if [[ -e "$target_path" ]]; then
-    backup_name="$(basename "$target_path")"
-    cp -r "$target_path" "$BACKUP_DIR/$backup_name" 2>/dev/null || true
-    echo "Backed up: $target_path"
-    rm -rf "$target_path"
+    if [[ "$DRY_RUN" == true ]]; then
+      echo "    [DRY RUN] Would back up existing target: $target_path → $backup_path"
+    else
+      # If backup already exists, append a timestamp to avoid overwriting
+      if [[ -e "$backup_path" ]]; then
+        backup_path="${backup_path}.$(date +%s)"
+      fi
+      cp -r "$target_path" "$backup_path" 2>/dev/null || true
+      echo "Backed up: $target_path → $backup_path"
+    fi
   fi
 
   # Restore
-  mkdir -p "$(dirname "$target_path")"
-  cp -r "$source_path" "$target_path"
-  echo "Restored: $target_path"
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "    [DRY RUN] Would restore: $source_rel → $target_path"
+  else
+    mkdir -p "$(dirname "$target_path")"
+    cp -r "$source_path" "$target_path"
+    echo "Restored: $target_path"
+  fi
 
 done < "$RESTORE_LIST"
 
 echo ""
 echo "==> Restore complete!"
-echo "    Backups saved at: $BACKUP_DIR"
+if [[ "$DRY_RUN" == true ]]; then
+  echo "    (No changes were made — dry run mode)"
+else
+  echo "    Backups saved at: $BACKUP_DIR"
+fi
