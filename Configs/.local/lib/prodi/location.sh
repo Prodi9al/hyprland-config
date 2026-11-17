@@ -18,6 +18,6 @@ if [ $time_diff -lt $expiry_time ] && [ -n "$cached_data" ]; then
 	exit
 fi
 
-response=$(curl -s ipinfo.io 2>/dev/null | jq -r '.country + ", " + .city' 2>/dev/null)
+response=$(curl -s https://ipinfo.io 2>/dev/null | jq -r '.country + ", " + .city' 2>/dev/null)
 city=$response
 echo "$city" >"$cache_file"

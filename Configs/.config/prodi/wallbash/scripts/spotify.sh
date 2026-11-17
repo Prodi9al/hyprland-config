@@ -34,6 +34,9 @@ configure_spicetify() {
     spicetify_themes_dir="$HOME/.config/spicetify/Themes"
     if [ ! -d "${spicetify_themes_dir}/Sleek" ]; then
         curl -L -o "${cache_dir}/landing/Spotify_Sleek.tar.gz" "https://github.com/HyDE-Project/HyDE/raw/master/Source/arcs/Spotify_Sleek.tar.gz"
+        if [ -n "${SPOTIFY_SLEEK_SHA256:-}" ]; then
+            echo "${SPOTIFY_SLEEK_SHA256}  ${cache_dir}/landing/Spotify_Sleek.tar.gz" | sha256sum -c - || { echo "[spotify] tar.gz checksum mismatch"; exit 1; }
+        fi
         tar -xzf "${cache_dir}/landing/Spotify_Sleek.tar.gz" -C "$spicetify_themes_dir"
     fi
     spicetify backup apply
@@ -45,7 +48,7 @@ configure_spicetify() {
 }
 
 # Main script
-cacheDir="${cacheDir:-$XDG_CACHE_HOME/hyde}"
+cacheDir="${cacheDir:-$XDG_CACHE_HOME/prodi}"
 shareDir=${XDG_DATA_HOME:-$HOME/.local/share}
 
 if [ -n "${SPOTIFY_PATH}" ]; then

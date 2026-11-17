@@ -10,6 +10,7 @@ require('luautils.init')
 local xdg = require('luautils.xdg')
 local notify_mod = require('luautils.global.notify')
 local notify_send = notify_mod.send
+local sh_quote = notify_mod.sh_quote
 
 -- optional libs
 local lgi_ok, lgi_mod_or_err = pcall(require, 'lgi')
@@ -64,7 +65,7 @@ local function run_cmd_shell(cmd)
     if GLib then
         pcall(GLib.spawn_command_line_async, cmd); return
     end
-    os.execute('sh -c ' .. string.format('%q', cmd .. ' &'))
+    os.execute('sh -c ' .. sh_quote(cmd .. ' &'))
 end
 
 -- GIO/UPower device proxies ------------------------------------------------

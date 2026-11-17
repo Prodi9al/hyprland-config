@@ -81,5 +81,5 @@ if ok_term and term then
 end
 
 if os.getenv("HYPRLAND_INSTANCE_SIGNATURE") then
-    os.execute(string.format("hyprctl setcursor '%s' %d", CURSOR_THEME, CURSOR_SIZE))
+    os.execute(string.format("hyprctl setcursor %s %d", shell_quote(CURSOR_THEME), CURSOR_SIZE))
 end

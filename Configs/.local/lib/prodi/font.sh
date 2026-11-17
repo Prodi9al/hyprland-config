@@ -5,18 +5,20 @@ mkdir -p "$font_dir" "$landing_dir"
 download_and_extract() {
     local name="$1"
     local url="$2"
+    local expected_sha256="${3:-}"
     local temp_dir="$landing_dir/$name"
-    domain=${url#*://}
-    domain=${domain%%/*}
-    if ! ping -c 1 "$domain" &> /dev/null; then
-        echo "[font] Ping to $domain failed"
-        exit 1
-    fi
     mkdir -p "$temp_dir"
     if cd "$temp_dir"; then
         curl -s -O -L "$url" || return 1
     else
         return 1
+    fi
+    if [ -n "$expected_sha256" ]; then
+        local downloaded_file
+        downloaded_file=$(find "$temp_dir" -type f -name '*' | head -n 1)
+        if [ -n "$downloaded_file" ]; then
+            echo "$expected_sha256  $downloaded_file" | sha256sum -c - || { echo "[font] Checksum mismatch for $name"; return 1; }
+        fi
     fi
     find "$temp_dir" -type f | while read -r file; do
         case "$file" in
@@ -82,11 +84,13 @@ resolve() {
         echo "[font] Layout file not found: $layout_path"
         return 1
     fi
-    grep -Eo '^\s*\$resolve\.font\s*=\s*[^|]+\s*\|\s*[^ ]+' "$layout_path" | while IFS='=' read -r _ font; do
+    # shellcheck disable=SC2016
+    grep -Eo '^\s*\$resolve\.font\s*=\s*[^|]+\s*\|\s*[^|]+\s*(\|.*)?$' "$layout_path" | while IFS='=' read -r _ font; do
         name=$(echo "$font" | awk -F'|' '{print $1}' | xargs)
         url=$(echo "$font" | awk -F'|' '{print $2}' | xargs)
+        sha=$(echo "$font" | awk -F'|' '{print $3}' | xargs)
         if ! fc-list | grep -q "$name"; then
-            download_and_extract "$name" "$url"
+            download_and_extract "$name" "$url" "$sha"
             fc-cache -f "$font_dir/$name"
         fi
     done

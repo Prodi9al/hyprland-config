@@ -64,5 +64,6 @@ end
 
 -- alias
 M.notify = M.send
+M.sh_quote = sh_quote
 
 return M

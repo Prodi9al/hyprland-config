@@ -8,7 +8,7 @@ if ! source "$(command -v prodi-shell)"; then
     exit 1
 fi
 
-cacheDir="${cacheDir:-$XDG_CACHE_HOME/hyde}"
+cacheDir="${cacheDir:-$XDG_CACHE_HOME/prodi}"
 # confDir="${confDir:-$XDG_CONFIG_HOME}"
 readarray -t codeConf < <(find -L "$confDir" -mindepth 1 -maxdepth 1 -type d -name "Code*" -o -name "VSCodium*" -o -name "Cursor*" | sort)
 readarray -t codeVsix < <(find -L "$HOME" -mindepth 1 -maxdepth 1 -type d -name ".vscode*" -o -name ".cursor" | sort)
@@ -20,6 +20,9 @@ for i in "${!codeVsix[@]}"; do
     file=$(find -L "${codeVsix[i]}" -type f -path "*extensions/thehydeproject*" -name "wallbash.json")
     if [ -z "${file}" ]; then
         [ -f "${cacheDir}/landing/Code_Wallbash.vsix" ] || curl -L -o "${cacheDir}/landing/Code_Wallbash.vsix" https://github.com/HyDE-Project/code-wallbash/raw/refs/heads/master/release/Code_Wallbash.vsix
+        if [ -n "${CODE_WALLBASH_SHA256:-}" ]; then
+            echo "${CODE_WALLBASH_SHA256}  ${cacheDir}/landing/Code_Wallbash.vsix" | sha256sum -c - || { echo "[wallbashcode] VSIX checksum mismatch"; exit 1; }
+        fi
         case ${codeVsix[i]} in
         *".cursor"*)
             echo "[wallbashcode] Cursor IDE: Manual intervention required for extension installation."

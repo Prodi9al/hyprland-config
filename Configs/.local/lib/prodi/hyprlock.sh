@@ -99,8 +99,8 @@ mpris_thumb() {
     artUrl=$(playerctl -p "$player" metadata --format '{{mpris:artUrl}}')
     [ "$artUrl" == "$(cat "$THUMB".lnk)" ] && [ -f "$THUMB".png ] && exit 0
     echo "$artUrl" >"$THUMB".lnk
-    curl -Lso "$THUMB.art" "$artUrl"
-    magick "$THUMB.art" -quality 50 "$THUMB.png"
+    curl -L --proto '=http,https' --max-filesize 5242880 -so "$THUMB.art" "$artUrl"
+    magick "$THUMB.art"[0] -quality 50 "$THUMB.png"
     reload_hyprlock
 }
 fn_cava() {

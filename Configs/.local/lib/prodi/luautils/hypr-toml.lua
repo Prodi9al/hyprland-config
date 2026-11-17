@@ -19,6 +19,13 @@ local function file_exists(path)
     return false
 end
 
+-- Shell-escape a string for safe insertion into a command
+local function shell_quote(arg)
+    arg = tostring(arg)
+    arg = arg:gsub("'", "'\\''")
+    return "'" .. arg .. "'"
+end
+
 -- 1. Ensure the source hypr.theme actually exists
 if not file_exists(theme_config) then
     print("Error: Source theme config not found at " .. theme_config)
@@ -28,7 +35,7 @@ end
 -- 2. Check if config.toml already exists. If NOT, create it.
 if not file_exists(toml_config) then
     -- Run the hyq parser command with fully resolved XDG arguments
-    local cmd = string.format('hyq --dump "%s" --schema "%s" --export nested-json', theme_config, schema_path)
+    local cmd = string.format('hyq --dump %s --schema %s --export nested-json', shell_quote(theme_config), shell_quote(schema_path))
     local f = io.popen(cmd)
     local raw = f:read("*a")
     f:close()
