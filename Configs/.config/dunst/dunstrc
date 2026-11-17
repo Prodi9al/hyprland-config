@@ -17,7 +17,7 @@ icon_theme = "Tela-circle-dracula,Wallbash-Icon,Tela-circle-dracula,Tela-circle-
 # format = "<b>%s</b>"
 
 # [Type-2]
-# appname = "HyDE Notify"
+# appname = "Prodi Notify"
 # format = "<span size='250%%'>%s</span>\n%b"
 
 [Type-1]
@@ -25,7 +25,7 @@ appname = "Prodi Alert"
 format = "<b>%s</b>"
 
 [Type-2]
-appname = "HyDE Notify"
+appname = "Prodi Notify"
 format = "<span size='250%%'>%s</span>\n%b"
 
 

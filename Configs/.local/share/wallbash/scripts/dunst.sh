@@ -61,7 +61,7 @@ icon_theme = "${gtkIcon},${allIcons}"
 # format = "<b>%s</b>"
 
 # [Type-2]
-# appname = "HyDE Notify"
+# appname = "Prodi Notify"
 # format = "<span size='250%%'>%s</span>\n%b"
 
 [Type-1]
@@ -69,7 +69,7 @@ appname = "Prodi Alert"
 format = "<b>%s</b>"
 
 [Type-2]
-appname = "HyDE Notify"
+appname = "Prodi Notify"
 format = "<span size='250%%'>%s</span>\n%b"
 
 
