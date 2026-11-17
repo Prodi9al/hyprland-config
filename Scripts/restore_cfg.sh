@@ -113,7 +113,7 @@ while IFS= read -r line; do
       fi
 
       # Rename original to rollback location (same filesystem as target)
-      rollback="$(dirname "$target_path")/.rollback-$(backup_name "$source_rel")-$"
+      rollback="$(dirname "$target_path")/.rollback-$(backup_name "$source_rel")-$$"
       if [[ -e "$target_path" || -L "$target_path" ]]; then
         if ! mv "$target_path" "$rollback"; then
           echo "ERROR: Could not rename $target_path to rollback"
@@ -155,7 +155,7 @@ while IFS= read -r line; do
       fi
 
       # Rename original to rollback location (same filesystem as target)
-      rollback="$(dirname "$target_path")/.rollback-$(backup_name "$source_rel")-$"
+      rollback="$(dirname "$target_path")/.rollback-$(backup_name "$source_rel")-$$"
       if [[ -e "$target_path" || -L "$target_path" ]]; then
         if ! mv "$target_path" "$rollback"; then
           echo "ERROR: Could not rename $target_path to rollback"

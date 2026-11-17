@@ -91,7 +91,7 @@ restore_managed_item() {
     [[ -d "$backup_path" ]] && backup_is_dir=true
 
     # Copy backup to staging first (verify it works before touching target)
-    staging="$(mktemp -d "$BACKUP_DIR/.restore-staging-XXXXXX")"
+    staging="$(mktemp -d "$(dirname "$target_path")/.restore-staging-XXXXXX")"
     if $backup_is_dir; then
       if ! cp -a "$backup_path"/. "$staging"/ 2>/dev/null; then
         echo "ERROR: Failed to read backup $backup_path — leaving target intact."
