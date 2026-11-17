@@ -6,8 +6,8 @@ hypr = { source = "Configs/.config/hypr", target = "~/.config/hypr" }
 waybar = { source = "Configs/.config/waybar", target = "~/.config/waybar" }
 dunst = { source = "Configs/.config/dunst", target = "~/.config/dunst" }
 fastfetch = { source = "Configs/.config/fastfetch", target = "~/.config/fastfetch" }
-gtk-3.0 = { source = "Configs/.config/gtk-3.0", target = "~/.config/gtk-3.0" }
-gtk-4.0 = { source = "Configs/.config/gtk-4.0", target = "~/.config/gtk-4.0" }
+"gtk-3.0" = { source = "Configs/.config/gtk-3.0", target = "~/.config/gtk-3.0" }
+"gtk-4.0" = { source = "Configs/.config/gtk-4.0", target = "~/.config/gtk-4.0" }
 kitty = { source = "Configs/.config/kitty", target = "~/.config/kitty" }
 Kvantum = { source = "Configs/.config/Kvantum", target = "~/.config/Kvantum" }
 nwg-look = { source = "Configs/.config/nwg-look", target = "~/.config/nwg-look" }

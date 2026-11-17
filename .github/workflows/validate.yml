@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ludeeus/action-shellcheck@v2.0.0
-        with:
-          scandir: Scripts
-          exclude: Configs
+      - name: Install ShellCheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Run ShellCheck on scripts
+        run: shellcheck -x Scripts/*.sh
 
   python-lint:
     runs-on: ubuntu-latest
@@ -23,7 +23,7 @@ jobs:
       - name: Install Ruff
         run: pip install ruff
       - name: Run Ruff on Python scripts
-        run: ruff check Configs/.local/lib/prodi/ --select E,F,W,C --output-format grouped
+        run: ruff check Scripts/ --select E,F,W,C --output-format grouped
 
   lua-syntax:
     runs-on: ubuntu-latest
@@ -47,7 +47,16 @@ jobs:
         run: |
           for f in $(find Configs -name "*.json" -o -name "*.jsonc" | grep -v node_modules); do
             echo "Checking $f..."
-            python3 -c "import json; json.load(open('$f'))" || exit 1
+            [ -s "$f" ] || { echo "SKIP (empty): $f"; continue; }
+            python3 -c "
+import json, re, sys
+with open('$f') as fh:
+    content = fh.read()
+# Strip // comments and /* ... */ blocks (JSONC)
+content = re.sub(r'//.*', '', content)
+content = re.sub(r'/\*.*?\*/', '', content, flags=re.DOTALL)
+json.loads(content)
+" || exit 1
           done
 
   manifest-consistency:

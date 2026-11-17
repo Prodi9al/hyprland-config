@@ -38,7 +38,7 @@ with open(restore_list_path) as f:
         line = line.strip()
         if not line or line.startswith("#"):
             continue
-        source_rel = line.split(">")[0].strip()
+        source_rel = line.split("->")[0].strip()
         restore_sources.add(source_rel)
 
 for src in sorted(restore_sources - manifest_sources):
