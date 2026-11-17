@@ -99,13 +99,10 @@ if [ -d "$BACKUP_DIR" ]; then
   done
 fi
 
-# Remove PATH and HTB env additions from .bashrc
+# Remove PATH from .bashrc
 RC_FILE="$HOME/.bashrc"
 if [ -f "$RC_FILE" ]; then
   echo "==> Cleaning up $RC_FILE..."
-  sed -i '/# Hack The Box waybar module/d' "$RC_FILE" 2>/dev/null || true
-  sed -i '/export HTB_USER_ID=/d' "$RC_FILE" 2>/dev/null || true
-  sed -i '/export HTB_TOKEN=/d' "$RC_FILE" 2>/dev/null || true
   sed -i '/export PATH="\$HOME\/.local\/bin:\$PATH"/d' "$RC_FILE" 2>/dev/null || true
   echo "    Cleaned up $RC_FILE"
 fi

@@ -262,7 +262,6 @@ if [[ "$DRY_RUN" == true ]]; then
   echo "==> Hack The Box Waybar Module Setup (optional) [DRY RUN]"
   echo "    Would prompt for HTB User ID and API token."
   echo "    Would write to $HOME/.config/waybar/scripts/htb_token.env"
-  echo "    Would add env vars to $HOME/.bashrc"
 else
 echo ""
 echo "==> Hack The Box Waybar Module Setup (optional)"
@@ -286,20 +285,6 @@ fi
 if [[ -n "${HTB_USER_ID:-}" ]]; then
   echo "export HTB_USER_ID=\"${HTB_USER_ID}\"" >> "$TOKEN_FILE"
   echo "    Set HTB_USER_ID=$HTB_USER_ID"
-fi
-
-# Persist HTB env vars in shell rc
-RC_FILE="$HOME/.bashrc"
-if [[ -n "${HTB_TOKEN:-}" ]] || [[ -n "${HTB_USER_ID:-}" ]]; then
-  if ! grep -q "HTB_TOKEN\|HTB_USER_ID" "$RC_FILE" 2>/dev/null; then
-    {
-      echo ""
-      echo "# Hack The Box waybar module"
-      [[ -n "${HTB_USER_ID:-}" ]] && echo "export HTB_USER_ID=\"${HTB_USER_ID}\""
-      [[ -n "${HTB_TOKEN:-}" ]] && echo "export HTB_TOKEN=\"${HTB_TOKEN}\""
-    } >> "$RC_FILE"
-    echo "    Added HTB env vars to $RC_FILE"
-  fi
 fi
 fi
 
