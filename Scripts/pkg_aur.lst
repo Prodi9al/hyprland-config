@@ -12,11 +12,12 @@ satty
 
 # Additional Hyprland utilities
 hyprpicker
-hyprsunset
 grimshot
 
 # Notification
-swaync
-
-# Additional utilities
 wl-clip-persist
+
+# AUR wallpaper/screenshot tools
+waydeeper
+mpvpaper
+grimblast

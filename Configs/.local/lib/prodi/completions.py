@@ -27,7 +27,10 @@ Usage:
   completions.py bash|zsh|fish                Output completion template
   completions.py --json                       Full metadata dump
 """
-import sys, re, os, json
+import json
+import os
+import re
+import sys
 from pathlib import Path
 from collections import OrderedDict
 

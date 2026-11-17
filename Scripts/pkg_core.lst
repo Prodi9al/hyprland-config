@@ -5,16 +5,11 @@ hypridle
 hyprsunset
 xdg-desktop-portal-hyprland
 kitty
-konsole
 waybar
 rofi
 wofi
-swww
-hyprpaper
-mpvpaper
 awww
-waydeeper
-grimblast
+hyprpaper
 swappy
 brightnessctl
 pamixer
@@ -23,7 +18,7 @@ pipewire-pulse
 polkit
 polkit-gnome
 dunst
-mako
+swaync
 fastfetch
 fzf
 jq
@@ -43,3 +38,4 @@ xdg-desktop-portal
 xdg-desktop-portal-gtk
 kvantum
 dolphin
+git-lfs

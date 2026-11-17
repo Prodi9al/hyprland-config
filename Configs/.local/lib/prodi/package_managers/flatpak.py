@@ -2,15 +2,15 @@
 
 from __future__ import annotations
 
-from typing import Sequence
-
 import sys
 from pathlib import Path as _Path
+from typing import Sequence
+
 _BASE_DIR = _Path(__file__).resolve().parent
 if str(_BASE_DIR) not in sys.path:
     sys.path.insert(0, str(_BASE_DIR))
 
-from meta import PMMetadata
+from meta import PMMetadata  # noqa: E402
 
 PackageEntry = tuple[str, str | None, str | None, str | None]
 
