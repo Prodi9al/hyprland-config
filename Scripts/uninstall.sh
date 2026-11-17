@@ -126,13 +126,22 @@ restore_managed_item() {
       if ! mv "$staging" "$target_path"; then
         echo "ERROR: Failed to restore $target_path from backup — attempting rollback."
         rm -rf "$target_path" 2>/dev/null || true
+        recovery_ok=false
         if [[ -e "$rollback" || -L "$rollback" ]]; then
           rm -rf "$target_path" 2>/dev/null || true
-          mv "$rollback" "$target_path"
-          echo "Restored original target from rollback: $target_path"
+          if mv "$rollback" "$target_path"; then
+            echo "Restored original target from rollback: $target_path"
+            recovery_ok=true
+          else
+            echo "ERROR: Rollback recovery failed — rollback preserved at $rollback_dir"
+          fi
+        else
+          echo "ERROR: No rollback available for recovery"
         fi
         rm -rf "$staging" 2>/dev/null || true
-        rm -rf "$rollback_dir" 2>/dev/null || true
+        if $recovery_ok && [[ -e "$rollback_dir" || -L "$rollback_dir" ]]; then
+          rm -rf "$rollback_dir" 2>/dev/null || true
+        fi
         return 1
       fi
     else
@@ -141,13 +150,22 @@ restore_managed_item() {
       if ! mv "$staging/$source_name" "$target_path"; then
         echo "ERROR: Failed to restore $target_path from backup — attempting rollback."
         rm -rf "$target_path" 2>/dev/null || true
+        recovery_ok=false
         if [[ -e "$rollback" || -L "$rollback" ]]; then
           rm -f "$target_path" 2>/dev/null || true
-          mv "$rollback" "$target_path"
-          echo "Restored original target from rollback: $target_path"
+          if mv "$rollback" "$target_path"; then
+            echo "Restored original target from rollback: $target_path"
+            recovery_ok=true
+          else
+            echo "ERROR: Rollback recovery failed — rollback preserved at $rollback_dir"
+          fi
+        else
+          echo "ERROR: No rollback available for recovery"
         fi
         rm -rf "$staging" 2>/dev/null || true
-        rm -rf "$rollback_dir" 2>/dev/null || true
+        if $recovery_ok && [[ -e "$rollback_dir" || -L "$rollback_dir" ]]; then
+          rm -rf "$rollback_dir" 2>/dev/null || true
+        fi
         return 1
       fi
 

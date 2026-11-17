@@ -128,16 +128,26 @@ while IFS= read -r line; do
       if ! mv "$staging" "$target_path"; then
         echo "ERROR: mv failed for $target_path — restoring from backup"
         rm -rf "$staging" 2>/dev/null || true
+        recovery_ok=false
         if $target_existed && [[ -e "$rollback" || -L "$rollback" ]]; then
           rm -rf "$target_path" 2>/dev/null || true
-          mv "$rollback" "$target_path"
-          echo "Restored from rollback: $target_path"
+          if mv "$rollback" "$target_path"; then
+            echo "Restored from rollback: $target_path"
+            recovery_ok=true
+          else
+            echo "ERROR: Rollback recovery failed — rollback preserved at $rollback_dir"
+          fi
         elif $target_existed && [[ -e "$backup_path" || -L "$backup_path" ]]; then
           rm -rf "$target_path" 2>/dev/null || true
           cp -a "$backup_path" "$target_path"
           echo "Restored from backup: $target_path"
+          recovery_ok=true
+        else
+          echo "ERROR: No rollback or backup available for recovery"
         fi
-        rm -rf "$rollback_dir" 2>/dev/null || true
+        if $recovery_ok && [[ -e "$rollback_dir" || -L "$rollback_dir" ]]; then
+          rm -rf "$rollback_dir" 2>/dev/null || true
+        fi
         exit 1
       fi
 
@@ -172,16 +182,26 @@ while IFS= read -r line; do
       if ! mv "$staging/$source_name" "$target_path"; then
         echo "ERROR: mv failed for $target_path — restoring from backup"
         rm -rf "$staging" 2>/dev/null || true
+        recovery_ok=false
         if $target_existed && [[ -e "$rollback" || -L "$rollback" ]]; then
           rm -f "$target_path" 2>/dev/null || true
-          mv "$rollback" "$target_path"
-          echo "Restored from rollback: $target_path"
+          if mv "$rollback" "$target_path"; then
+            echo "Restored from rollback: $target_path"
+            recovery_ok=true
+          else
+            echo "ERROR: Rollback recovery failed — rollback preserved at $rollback_dir"
+          fi
         elif $target_existed && [[ -e "$backup_path" || -L "$backup_path" ]]; then
           rm -f "$target_path" 2>/dev/null || true
           cp -a "$backup_path" "$target_path"
           echo "Restored from backup: $target_path"
+          recovery_ok=true
+        else
+          echo "ERROR: No rollback or backup available for recovery"
         fi
-        rm -rf "$rollback_dir" 2>/dev/null || true
+        if $recovery_ok && [[ -e "$rollback_dir" || -L "$rollback_dir" ]]; then
+          rm -rf "$rollback_dir" 2>/dev/null || true
+        fi
         exit 1
       fi
 

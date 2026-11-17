@@ -452,7 +452,7 @@ All hardcoded paths use `$HOME` or `$XDG_*` placeholders — no personal data is
 | `Configs/.local/` | Dotfiles restored to `~/.local/` (prodi, themes, waybar, rofi, sddm, etc.) |
 | `Scripts/install.sh` | Arch and Arch-based distros install script |
 | `Scripts/pkg_core.lst` | Core package list (pacman) |
-| `Scripts/pkg_extra.lst` | Extra package list (AUR) |
+| `Scripts/pkg_extra.lst` | Extra package list (pacman) |
 | `Scripts/restore_cfg.lst` | Config restore manifest |
 | `Scripts/uninstall.sh` | Uninstall script |
 | `Scripts/install_aur.sh` | AUR package installer |
@@ -496,7 +496,7 @@ The installer handles dependency installation, backs up existing configs to `~/.
 **Other scripts:**
 - `./Scripts/uninstall.sh` — Remove all restored dotfiles
 - `./Scripts/restore_cfg.sh` — Restore configs from `Configs/` with backup
-- `./Scripts/install_aur.sh` — Install AUR packages from `pkg_extra.lst`
+- `./Scripts/install_aur.sh` — Install AUR packages from `pkg_aur.lst`
 - `./Scripts/version.sh` — Show version info
 
 ### Option 2: Manual
