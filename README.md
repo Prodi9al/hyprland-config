@@ -448,7 +448,7 @@ All hardcoded paths use `$HOME` or `$XDG_*` placeholders — no personal data is
 |------|---------|
 | `Configs/.config/` | Dotfiles restored to `~/.config/` (hypr, waybar, gtk, kitty, rofi, zsh, fish, etc.) |
 | `Configs/.local/` | Dotfiles restored to `~/.local/` (prodi, themes, waybar, rofi, sddm, etc.) |
-| `Scripts/install.sh` | Arch Linux install script |
+| `Scripts/install.sh` | Arch and Arch-based distros install script |
 | `Scripts/pkg_core.lst` | Core package list (pacman) |
 | `Scripts/pkg_extra.lst` | Extra package list (AUR) |
 | `Scripts/restore_cfg.lst` | Config restore manifest |
@@ -479,7 +479,7 @@ All hardcoded paths use `$HOME` or `$XDG_*` placeholders — no personal data is
 gh repo clone Prodi9al/hyprland-config ~/hyprland-config
 cd ~/hyprland-config
 
-# Run the Arch Linux installer
+# Run the installer (Arch & Arch-based distros)
 ./Scripts/install.sh
 ```
 
@@ -515,7 +515,7 @@ chmod +x ~/.local/bin/prodi-shell
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 ```
 
-### Dependencies (Arch)
+### Dependencies (Arch & Arch-based)
 
 Install manually if not using the installer:
 

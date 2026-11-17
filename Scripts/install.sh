@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Prodi9al Hyprland Config — Install Script
-# Sets up the full Hyprland desktop environment on Arch Linux.
+# Sets up the full Hyprland desktop environment on Arch and Arch-based distros.
 # Usage: ./Scripts/install.sh [--aur]
 
 set -euo pipefail
@@ -22,9 +22,10 @@ done
 echo "==> Prodi9al Hyprland Config Installer"
 echo ""
 
-# 1. Verify Arch Linux
+# 1. Verify Arch-based Linux
 if [[ ! -f /etc/arch-release ]]; then
-  echo "ERROR: This installer is designed for Arch Linux only."
+  echo "ERROR: This installer is designed for Arch and Arch-based distros only."
+  echo "   Detected: $(cat /etc/os-release 2>/dev/null | grep '^PRETTY_NAME=' | cut -d'=' -f2 | tr -d '"' || 'unknown')"
   exit 1
 fi
 
