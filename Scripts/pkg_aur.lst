@@ -1,0 +1,22 @@
+# Extra AUR packages
+# Installed by install_aur.sh via AUR helper (yay, paru, or pamac)
+
+# Lock screen
+swaylock-effects
+
+# Session management
+uwsm
+
+# Disk usage
+satty
+
+# Additional Hyprland utilities
+hyprpicker
+hyprsunset
+grimshot
+
+# Notification
+swaync
+
+# Additional utilities
+wl-clip-persist

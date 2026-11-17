@@ -60,13 +60,13 @@ while IFS= read -r line; do
   [[ "$line" =~ ^[[:space:]]*# ]] && continue
   [[ -z "${line// }" ]] && continue
 
-  source_rel=$(echo "$line" | cut -d'>' -f1 | xargs)
-  target_exp=$(echo "$line" | cut -d'>' -f2 | xargs)
+  source_rel=$(echo "$line" | awk -F' -> ' '{print $1}')
+  target_exp=$(echo "$line" | awk -F' -> ' '{print $2}')
   target_path="${target_exp/#\~/$HOME}"
 
-  if [[ -d "$REPO_DIR/$source_rel" ]]; then
+  if [[ -d "$CONFIGS_DIR/$source_rel" ]]; then
     MANAGED_DIRS+=("$target_path")
-  elif [[ -f "$REPO_DIR/$source_rel" ]]; then
+  elif [[ -f "$CONFIGS_DIR/$source_rel" ]]; then
     MANAGED_FILES+=("$target_path")
   fi
 done < "$RESTORE_LIST"
@@ -85,31 +85,64 @@ restore_managed_item() {
       return 0
     fi
 
+    # Determine if backup is a directory or file
+    local backup_is_dir=false
+    [[ -d "$backup_path" ]] && backup_is_dir=true
+
     # Copy backup to staging first (verify it works before touching target)
     staging="$(mktemp -d "$BACKUP_DIR/.restore-staging-XXXXXX")"
-    if ! cp -a "$backup_path"/. "$staging"/ 2>/dev/null; then
-      echo "ERROR: Failed to read backup $backup_path — leaving target intact."
-      rm -rf "$staging" 2>/dev/null || true
-      return 1
+    if $backup_is_dir; then
+      if ! cp -a "$backup_path"/. "$staging"/ 2>/dev/null; then
+        echo "ERROR: Failed to read backup $backup_path — leaving target intact."
+        rm -rf "$staging" 2>/dev/null || true
+        return 1
+      fi
+    else
+      local source_name
+      source_name="$(basename "$backup_path")"
+      if ! cp -a "$backup_path" "$staging/$source_name" 2>/dev/null; then
+        echo "ERROR: Failed to read backup $backup_path — leaving target intact."
+        rm -rf "$staging" 2>/dev/null || true
+        return 1
+      fi
     fi
 
-    # Rename current target to rollback
-    rollback="$BACKUP_DIR/.uninstall-rollback-$(backup_name "$source_rel")-$$"
+    # Rename current target to rollback — abort if this fails
+    rollback="$BACKUP_DIR/.uninstall-rollback-$(backup_name "$source_rel")-$RANDOM-$$"
     if [[ -e "$target_path" ]]; then
-      mv "$target_path" "$rollback" 2>/dev/null || true
+      if ! mv "$target_path" "$rollback"; then
+        echo "ERROR: Could not move $target_path to rollback — aborting to prevent data loss."
+        rm -rf "$staging" 2>/dev/null || true
+        exit 1
+      fi
     fi
 
     # Move staged content into place
     mkdir -p "$(dirname "$target_path")"
-    if ! mv "$staging" "$target_path"; then
-      echo "ERROR: Failed to restore $target_path from backup — attempting rollback."
-      rm -rf "$target_path" 2>/dev/null || true
-      if [[ -e "$rollback" ]]; then
-        mv "$rollback" "$target_path" || cp -a "$rollback" "$target_path"
-        echo "Restored original target from rollback: $target_path"
+    if $backup_is_dir; then
+      if ! mv "$staging" "$target_path"; then
+        echo "ERROR: Failed to restore $target_path from backup — attempting rollback."
+        rm -rf "$target_path" 2>/dev/null || true
+        if [[ -e "$rollback" ]]; then
+          mv "$rollback" "$target_path" || cp -a "$rollback" "$target_path"
+          echo "Restored original target from rollback: $target_path"
+        fi
+        rm -rf "$staging" 2>/dev/null || true
+        return 1
       fi
-      rm -rf "$staging" 2>/dev/null || true
-      return 1
+    else
+      local source_name
+      source_name="$(basename "$backup_path")"
+      if ! mv "$staging/$source_name" "$target_path"; then
+        echo "ERROR: Failed to restore $target_path from backup — attempting rollback."
+        rm -rf "$target_path" 2>/dev/null || true
+        if [[ -e "$rollback" ]]; then
+          mv "$rollback" "$target_path" || cp -a "$rollback" "$target_path"
+          echo "Restored original target from rollback: $target_path"
+        fi
+        rm -rf "$staging" 2>/dev/null || true
+        return 1
+      fi
     fi
 
     rm -rf "$rollback" 2>/dev/null || true
@@ -136,8 +169,8 @@ for target_path in "${MANAGED_DIRS[@]}"; do
     [[ "$line" =~ ^[[:space:]]*# ]] && continue
     [[ -z "${line// }" ]] && continue
 
-    source_rel=$(echo "$line" | cut -d'>' -f1 | xargs)
-    target_exp=$(echo "$line" | cut -d'>' -f2 | xargs)
+source_rel=$(echo "$line" | awk -F' -> ' '{print $1}')
+  target_exp=$(echo "$line" | awk -F' -> ' '{print $2}')
     manifest_target="${target_exp/#\~/$HOME}"
 
     if [[ "$manifest_target" != "$target_path" ]]; then
@@ -154,8 +187,8 @@ for target_path in "${MANAGED_FILES[@]}"; do
     [[ "$line" =~ ^[[:space:]]*# ]] && continue
     [[ -z "${line// }" ]] && continue
 
-    source_rel=$(echo "$line" | cut -d'>' -f1 | xargs)
-    target_exp=$(echo "$line" | cut -d'>' -f2 | xargs)
+source_rel=$(echo "$line" | awk -F' -> ' '{print $1}')
+  target_exp=$(echo "$line" | awk -F' -> ' '{print $2}')
     manifest_target="${target_exp/#\~/$HOME}"
 
     if [[ "$manifest_target" != "$target_path" ]]; then

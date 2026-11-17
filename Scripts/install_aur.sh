@@ -27,10 +27,10 @@ fi
 
 echo "==> Using AUR helper: $AUR_HELPER"
 
-# Read extra package list
-EXTRA_LIST="$SCRIPTS_DIR/pkg_extra.lst"
+# Read AUR package list
+EXTRA_LIST="$SCRIPTS_DIR/pkg_aur.lst"
 if [[ ! -f "$EXTRA_LIST" ]]; then
-  echo "No pkg_extra.lst found."
+  echo "No pkg_aur.lst found."
   exit 0
 fi
 

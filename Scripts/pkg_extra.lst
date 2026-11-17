@@ -1,6 +1,5 @@
-# Extra packages (AUR / optional)
-# Install these with: ./Scripts/install_aur.sh
-# Requires an AUR helper (yay, paru, or pamac)
+# Extra official repository packages
+# Installed by install.sh via pacman
 
 # Shell enhancements
 starship
@@ -13,35 +12,15 @@ lsd
 bat
 fzf
 
-# Lock screen
-swaylock-effects
-
-# Session management
-uwsm
-
 # Editor
 vim
-
-# Disk usage
-satty
 
 # System monitoring
 btop
 htop
 
-# Additional Hyprland utilities
-hyprpicker
-hyprsunset
-grimshot
-slurp
-
-# Notification
-dunst
-swaync
-
 # Additional utilities
 wl-clipboard
-wl-clip-persist
 xdotool
 ydotool
 
@@ -51,11 +30,8 @@ qt5ct
 qt6ct
 kvantum
 
-# Fonts (install manually or via AUR)
-# ttf-jetbrains-mono-nerd
-# ttf-maplemono-nerd
-# ttf-mononoki-nerd
+# Screenshot/selection
+slurp
 
-# Icons (install manually or via AUR)
-# papirus-icon-theme
-# beautyline-icon-theme
+# Notification
+dunst

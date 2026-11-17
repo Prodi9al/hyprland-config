@@ -70,10 +70,10 @@ while IFS= read -r line; do
   [[ "$line" =~ ^[[:space:]]*# ]] && continue
   [[ -z "${line// }" ]] && continue
 
-  source_rel=$(echo "$line" | cut -d'>' -f1 | xargs)
-  target_exp=$(echo "$line" | cut -d'>' -f2 | xargs)
+  source_rel=$(echo "$line" | awk -F' -> ' '{print $1}')
+  target_exp=$(echo "$line" | awk -F' -> ' '{print $2}')
 
-  source_path="$REPO_DIR/$source_rel"
+  source_path="$CONFIGS_DIR/$source_rel"
   # Expand ~ in target
   target_path="${target_exp/#\~/$HOME}"
 
@@ -101,45 +101,87 @@ while IFS= read -r line; do
     echo "    [DRY RUN] Would restore: $source_rel → $target_path"
   else
     mkdir -p "$(dirname "$target_path")"
-    staging="$(mktemp -d "$(dirname "$target_path")/.restore-staging-XXXXXX")"
 
-    # Stage the new content
-    if ! cp -a "$source_path"/. "$staging"/; then
-      echo "ERROR: cp staging failed for $source_rel"
-      rm -rf "$staging" 2>/dev/null || true
-      exit 1
-    fi
-
-    # Rename original to rollback location
-    rollback="$BACKUP_DIR/.rollback-$(backup_name "$source_rel")-$$"
-    if [[ -e "$target_path" ]]; then
-      if ! mv "$target_path" "$rollback"; then
-        echo "ERROR: Could not rename $target_path to rollback"
+    if [[ -d "$source_path" ]]; then
+      # Directory: stage its contents, then replace target directory
+      staging="$(mktemp -d "$(dirname "$target_path")/.restore-staging-XXXXXX")"
+      if ! cp -a "$source_path"/. "$staging"/; then
+        echo "ERROR: cp staging failed for $source_rel"
         rm -rf "$staging" 2>/dev/null || true
         exit 1
       fi
-    fi
 
-    # Move staged content into place
-    if ! mv "$staging" "$target_path"; then
-      echo "ERROR: mv failed for $target_path — restoring from backup"
-      rm -rf "$staging" 2>/dev/null || true
-      if $target_existed && [[ -e "$rollback" ]]; then
-        mv "$rollback" "$target_path" || cp -a "$rollback" "$target_path"
-        echo "Restored from rollback: $target_path"
-      elif $target_existed && [[ -e "$backup_path" ]]; then
-        cp -a "$backup_path" "$target_path"
-        echo "Restored from backup: $target_path"
+      # Rename original to rollback location
+      rollback="$BACKUP_DIR/.rollback-$(backup_name "$source_rel")-$$"
+      if [[ -e "$target_path" ]]; then
+        if ! mv "$target_path" "$rollback"; then
+          echo "ERROR: Could not rename $target_path to rollback"
+          rm -rf "$staging" 2>/dev/null || true
+          exit 1
+        fi
       fi
-      exit 1
-    fi
 
-    # Remove rollback now that restore is confirmed
-    if [[ -e "$rollback" ]]; then
-      rm -rf "$rollback" 2>/dev/null || true
-    fi
+      # Move staged content into place
+      if ! mv "$staging" "$target_path"; then
+        echo "ERROR: mv failed for $target_path — restoring from backup"
+        rm -rf "$staging" 2>/dev/null || true
+        if $target_existed && [[ -e "$rollback" ]]; then
+          mv "$rollback" "$target_path" || cp -a "$rollback" "$target_path"
+          echo "Restored from rollback: $target_path"
+        elif $target_existed && [[ -e "$backup_path" ]]; then
+          cp -a "$backup_path" "$target_path"
+          echo "Restored from backup: $target_path"
+        fi
+        exit 1
+      fi
 
-    echo "Restored: $target_path"
+      # Remove rollback now that restore is confirmed
+      if [[ -e "$rollback" ]]; then
+        rm -rf "$rollback" 2>/dev/null || true
+      fi
+
+      echo "Restored: $target_path"
+    else
+      # File: stage the file itself, then atomically replace target file
+      staging="$(mktemp -d "$(dirname "$target_path")/.restore-staging-XXXXXX")"
+      source_name="$(basename "$source_path")"
+      if ! cp -a "$source_path" "$staging/$source_name"; then
+        echo "ERROR: cp staging failed for $source_rel"
+        rm -rf "$staging" 2>/dev/null || true
+        exit 1
+      fi
+
+      # Rename original to rollback location
+      rollback="$BACKUP_DIR/.rollback-$(backup_name "$source_rel")-$$"
+      if [[ -e "$target_path" ]]; then
+        if ! mv "$target_path" "$rollback"; then
+          echo "ERROR: Could not rename $target_path to rollback"
+          rm -rf "$staging" 2>/dev/null || true
+          exit 1
+        fi
+      fi
+
+      # Move staged file into place
+      if ! mv "$staging/$source_name" "$target_path"; then
+        echo "ERROR: mv failed for $target_path — restoring from backup"
+        rm -rf "$staging" 2>/dev/null || true
+        if $target_existed && [[ -e "$rollback" ]]; then
+          mv "$rollback" "$target_path" || cp -a "$rollback" "$target_path"
+          echo "Restored from rollback: $target_path"
+        elif $target_existed && [[ -e "$backup_path" ]]; then
+          cp -a "$backup_path" "$target_path"
+          echo "Restored from backup: $target_path"
+        fi
+        exit 1
+      fi
+
+      # Remove rollback now that restore is confirmed
+      if [[ -e "$rollback" ]]; then
+        rm -rf "$rollback" 2>/dev/null || true
+      fi
+
+      echo "Restored: $target_path"
+    fi
   fi
 
 done < "$RESTORE_LIST"
