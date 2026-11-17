@@ -33,7 +33,7 @@ configure_spicetify() {
     
     spicetify_themes_dir="$HOME/.config/spicetify/Themes"
     if [ ! -d "${spicetify_themes_dir}/Sleek" ]; then
-        : "${SPOTIFY_SLEEK_SHA256:?SPOTIFY_SLEEK_SHA256 must be set to the SHA-256 of Spotify_Sleek.tar.gz}"
+        SPOTIFY_SLEEK_SHA256="${SPOTIFY_SLEEK_SHA256:-2bd0554ce715be8890eb4a1c7b56111409304dc4738ce015199f7f4070c13dae}"
         curl -L -o "${cache_dir}/landing/Spotify_Sleek.tar.gz" "https://github.com/HyDE-Project/HyDE/raw/master/Source/arcs/Spotify_Sleek.tar.gz"
         echo "${SPOTIFY_SLEEK_SHA256}  ${cache_dir}/landing/Spotify_Sleek.tar.gz" | sha256sum -c - || { echo "[spotify] tar.gz checksum mismatch"; exit 1; }
         tar -xzf "${cache_dir}/landing/Spotify_Sleek.tar.gz" -C "$spicetify_themes_dir"
