@@ -7,6 +7,7 @@ download_and_extract() {
     local url="$2"
     local expected_sha256="${3:-}"
     local temp_dir="$landing_dir/$name"
+    rm -rf "$temp_dir"
     mkdir -p "$temp_dir"
     if cd "$temp_dir"; then
         curl -s -O -L "$url" || return 1
@@ -92,8 +93,9 @@ resolve() {
         url=$(echo "$font" | awk -F'|' '{print $2}' | xargs)
         sha=$(echo "$font" | awk -F'|' '{print $3}' | xargs)
         if ! fc-list | grep -q "$name"; then
-            download_and_extract "$name" "$url" "$sha"
-            fc-cache -f "$font_dir/$name"
+            if download_and_extract "$name" "$url" "$sha"; then
+                fc-cache -f "$font_dir/$name"
+            fi
         fi
     done
 }
