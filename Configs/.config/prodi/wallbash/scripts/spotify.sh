@@ -54,8 +54,8 @@ if [ -n "${SPOTIFY_PATH}" ]; then
 [warning]   using custom spotify path
             ensure to have proper permissions for ${SPOTIFY_PATH}
             run:
-            chmod a+wr ${SPOTIFY_PATH}
-            chmod a+wr -R ${SPOTIFY_PATH}/Apps
+            chown -R "$USER:$USER" ${SPOTIFY_PATH}
+            chmod g+wr -R ${SPOTIFY_PATH}/Apps
 
             note: run with 'sudo' if only needed.
 EOF

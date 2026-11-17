@@ -3,7 +3,7 @@
 # For user configuration edit '$HOME/.config/dunst/dunst.conf' then run 'prodi-shell wallbash dunst' to apply changes.
 # Updated dunst configuration: https://github.com/HyDE-Project/HyDE/blob/master/Configs/.config/dunst/dunst.conf
 
-# HyDE specific section // To override the default configuration edit '$HOME/.cache/hyde/wallbash/dunst.conf'
+# HyDE specific section // To override the default configuration edit '$HOME/.cache/prodi/wallbash/dunst.conf'
 # ------------------------------------------------------------------------------
 [global]
 corner_radius = 10

@@ -8,7 +8,7 @@ pypr = { enabled = true, description = "Hyprland wrapper" }
 qt5ct = { enabled = true, description = "Qt5 configuration tool" }
 qt6ct = { enabled = true, description = "Qt6 configuration tool" }
 xsettingsd = { enabled = true, description = "X settings daemon" }
-hyde = { enabled = true, description = "HyDE theme system" }
+prodi = { enabled = true, description = "Prodi theme system" }
 
 [local]
 themes = { enabled = true, description = "GTK/Kvantum themes" }
@@ -17,5 +17,5 @@ fonts = { enabled = true, description = "Font files" }
 waybar-share = { enabled = true, description = "Waybar shared data" }
 sddm = { enabled = true, description = "SDDM display manager" }
 rofi-share = { enabled = true, description = "Rofi themes" }
-hyde-share = { enabled = true, description = "HyDE shared data" }
+prodi-share = { enabled = true, description = "Prodi shared data" }
 wallbash = { enabled = true, description = "Wallbash color system" }

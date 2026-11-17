@@ -144,7 +144,7 @@ else
   mkdir -p "$BACKUP_DIR"
 
 # Back up .config dirs that will be overwritten
-for d in hypr waybar dunst fastfetch gtk-3.0 gtk-4.0 kitty Kvantum nwg-look pypr qt5ct qt6ct swaync wlogout xsettingsd hyde rofi zsh uwsm fish starship swaylock lsd vim satty menus; do
+for d in hypr waybar dunst fastfetch gtk-3.0 gtk-4.0 kitty Kvantum nwg-look pypr qt5ct qt6ct swaync wlogout xsettingsd prodi rofi zsh uwsm fish starship swaylock lsd vim satty menus; do
   if [ -d "$HOME/.config/$d" ]; then
     safe_backup "$HOME/.config/$d" "$(backup_path_unique ".config/$d")"
     echo "    backed up .config/$d"
@@ -166,7 +166,7 @@ if [[ -e "$HOME/.config/dconf/profile" || -L "$HOME/.config/dconf/profile" ]]; t
 fi
 
 # Back up .local/share dirs that will be overwritten
-for d in themes icons fonts waybar sddm rofi hyde wallbash kio kxmlgui5 xdg-desktop-portal dolphin; do
+for d in themes icons fonts waybar sddm rofi prodi wallbash kio kxmlgui5 xdg-desktop-portal dolphin; do
   if [ -d "$HOME/.local/share/$d" ]; then
     safe_backup "$HOME/.local/share/$d" "$(backup_path_unique ".local/share/$d")"
     echo "    backed up .local/share/$d"

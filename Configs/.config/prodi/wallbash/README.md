@@ -53,7 +53,7 @@ Structure your template and determine the target configuration location. This ca
 
 Use environment variables to handle directories dynamically:
 - `${confDir}` = `$XDG_CONFIG_HOME` or `$HOME/.config/`
-- `${cacheDir}/wallbash` = `HYDE_CACHE_DIR/wallbash` = `$HOME/.cache/hyde`
+- `${cacheDir}/wallbash` = `HYDE_CACHE_DIR/wallbash` = `$HOME/.cache/prodi`
 
 #### Optional Script/Command
 

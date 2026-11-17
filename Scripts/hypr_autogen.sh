@@ -16,7 +16,7 @@ if [[ ! -f "$CONFIG_DIR/hyprland.lua" ]]; then
 fi
 
 # Source wallbash colors if available
-WALLBASH_COLORS="$HOME/.cache/hyde/wallbash/gtk.css"
+WALLBASH_COLORS="$HOME/.cache/prodi/wallbash/gtk.css"
 if [[ -f "$WALLBASH_COLORS" ]]; then
   echo "==> Applying wallbash colors..."
   # Colors are applied via the theme system
