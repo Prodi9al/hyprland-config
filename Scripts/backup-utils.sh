@@ -37,7 +37,7 @@ backup_path_unique() {
     base="$(backup_path "$rel")"
 
     if [[ -e "$base" || -L "$base" ]]; then
-        echo "${base}.$(date +%s)"
+        echo "${base}.$(date +%s%N)"
     else
         echo "$base"
     fi

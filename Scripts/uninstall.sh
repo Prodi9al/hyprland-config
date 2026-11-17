@@ -109,7 +109,7 @@ restore_managed_item() {
     fi
 
     # Rename current target to rollback — abort if this fails (same filesystem)
-    rollback="$(dirname "$target_path")/.uninstall-rollback-$(backup_name "$source_rel")-$RANDOM-$$"
+    rollback="$(mktemp "$(dirname "$target_path")/.uninstall-rollback-$(backup_name "$source_rel")-XXXXXX")"
     if [[ -e "$target_path" || -L "$target_path" ]]; then
       if ! mv "$target_path" "$rollback"; then
         echo "ERROR: Could not move $target_path to rollback — aborting to prevent data loss."
