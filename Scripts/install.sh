@@ -178,10 +178,6 @@ if [ -e "$HOME/.local/lib/prodi" ]; then
   safe_backup "$HOME/.local/lib/prodi" "$(backup_path_unique ".local/lib/prodi")"
   echo "    backed up .local/lib/prodi"
 fi
-if [ -e "$HOME/.local/share/prodi" ]; then
-  safe_backup "$HOME/.local/share/prodi" "$(backup_path_unique ".local/share/prodi")"
-  echo "    backed up .local/share/prodi"
-fi
 if [ -e "$HOME/.local/bin/prodi-shell" ]; then
   safe_backup "$HOME/.local/bin/prodi-shell" "$(backup_path_unique ".local/bin/prodi-shell")"
   echo "    backed up .local/bin/prodi-shell"
