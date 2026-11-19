@@ -1,0 +1,7 @@
+[Unit]
+Description=Keep howdy-next working after OpenCV/howdy updates (symlinks + wrapper)
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/howdy-fix.sh

@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily howdy-next maintenance (persistent, runs after boot if missed)
+
+[Timer]
+OnBootSec=2min
+OnCalendar=daily
+Persistent=true
+Unit=howdy-fix.service
+
+[Install]
+WantedBy=timers.target
