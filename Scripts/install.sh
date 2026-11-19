@@ -280,6 +280,13 @@ read -r -p "    Enter your HTB User ID (e.g. 2426022): " HTB_USER_ID || true
 read -r -s -p "    Enter your HTB API token: " HTB_TOKEN || true
 echo ""
 
+# HTB User IDs are numeric. Reject anything else up front so it can never
+# corrupt the token file via the sed replacement below (e.g. &, |, backslash).
+if [[ -n "${HTB_USER_ID:-}" && ! "$HTB_USER_ID" =~ ^[0-9]+$ ]]; then
+  echo "    Invalid HTB User ID (expected digits only); ignoring it."
+  HTB_USER_ID=""
+fi
+
 TOKEN_FILE="$HOME/.config/waybar/scripts/htb_token.env"
 mkdir -p "$(dirname "$TOKEN_FILE")"
 
