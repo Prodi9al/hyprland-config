@@ -227,17 +227,17 @@ source_rel=$(echo "$line" | awk -F' -> ' '{print $1}')
   done < "$RESTORE_LIST"
 done
 
-# Remove PATH addition from .bashrc
+# Remove the installer-owned PATH block from .bashrc.
+# Only the marker-wrapped block is removed; a pre-existing user PATH entry is
+# left untouched (we cannot prove we added it).
 RC_FILE="$HOME/.bashrc"
 if [ -f "$RC_FILE" ]; then
-  # shellcheck disable=SC2016
-  if grep -q 'export PATH="\$HOME\/.local\/bin:\$PATH"' "$RC_FILE" 2>/dev/null; then
+  if grep -qF '# >>> prodi: ~/.local/bin on PATH >>>' "$RC_FILE" 2>/dev/null; then
     if [[ "$DRY_RUN" == true ]]; then
-      echo "    [DRY RUN] Would clean PATH from $RC_FILE"
+      echo "    [DRY RUN] Would remove prodi PATH block from $RC_FILE"
     else
-      # shellcheck disable=SC2016
-      sed -i '/export PATH="\$HOME\/.local\/bin:\$PATH"/d' "$RC_FILE" 2>/dev/null || true
-      echo "    Cleaned up PATH from $RC_FILE"
+      sed -i '/# >>> prodi: ~\/.local\/bin on PATH >>>/,/# <<< prodi: ~\/.local\/bin on PATH <<</d' "$RC_FILE" 2>/dev/null || true
+      echo "    Removed prodi PATH block from $RC_FILE"
     fi
   fi
 fi
