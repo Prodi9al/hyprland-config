@@ -13,6 +13,7 @@ BACKUP_DIR="$HOME/.config/cfg_backups"
 INSTALL_AUR=false
 SKIP_SYS_UPDATE=false
 DRY_RUN=false
+UNATTENDED=false
 
 # Source shared backup naming utility
 # shellcheck source=./backup-utils.sh
@@ -25,6 +26,7 @@ for arg in "$@"; do
     --aur) INSTALL_AUR=true ;;
     --skip-sys-update) SKIP_SYS_UPDATE=true ;;
     --dry-run) DRY_RUN=true ;;
+    --unattended) UNATTENDED=true ;;
   esac
 done
 
@@ -86,11 +88,16 @@ else
   if [[ "$DRY_RUN" == true ]]; then
     echo "    [DRY RUN] sudo pacman -Syu --needed --noconfirm ${PKG_LIST[*]}"
   else
-    read -r -p "    Run 'sudo pacman -Syu' to update system first? [y/N] " confirm_sysupdate
-    if [[ "$confirm_sysupdate" =~ ^[Yy]$ ]]; then
+    if [[ "$UNATTENDED" == true ]]; then
+      echo "    Unattended mode: running system update..."
       sudo pacman -Syu --needed --noconfirm
     else
-      echo "    Skipping system update."
+      read -r -p "    Run 'sudo pacman -Syu' to update system first? [y/N] " confirm_sysupdate
+      if [[ "$confirm_sysupdate" =~ ^[Yy]$ ]]; then
+        sudo pacman -Syu --needed --noconfirm
+      else
+        echo "    Skipping system update."
+      fi
     fi
   fi
 fi
@@ -268,53 +275,64 @@ if [[ "$DRY_RUN" == true ]]; then
   echo "    Would back up any existing credentials, then write to $HOME/.config/waybar/scripts/htb_token.env"
   echo "    Pressing Enter (no token) leaves existing credentials untouched."
 else
-echo ""
-echo "==> Hack The Box Waybar Module Setup (optional)"
-echo "    The waybar includes a Hack The Box rank module."
-echo "    Press Enter to skip."
-read -r -p "    Enter your HTB User ID (e.g. 2426022): " HTB_USER_ID || true
-read -r -s -p "    Enter your HTB API token: " HTB_TOKEN || true
-echo ""
-
-# HTB User IDs are numeric. Reject anything else up front so it can never
-# corrupt the token file via the sed replacement below (e.g. &, |, backslash).
-if [[ -n "${HTB_USER_ID:-}" && ! "$HTB_USER_ID" =~ ^[0-9]+$ ]]; then
-  echo "    Invalid HTB User ID (expected digits only); ignoring it."
-  HTB_USER_ID=""
-fi
-
-TOKEN_FILE="$HOME/.config/waybar/scripts/htb_token.env"
-mkdir -p "$(dirname "$TOKEN_FILE")"
-
-if [[ -n "${HTB_TOKEN:-}" ]]; then
-  # Never silently destroy existing credentials: back them up first.
-  if [ -s "$TOKEN_FILE" ]; then
-    TOKEN_BACKUP="${TOKEN_FILE}.bak.$(date +%Y%m%d%H%M%S)"
-    cp -a "$TOKEN_FILE" "$TOKEN_BACKUP"
-    chmod 600 "$TOKEN_BACKUP"
-    echo "    Backed up existing HTB credentials to $TOKEN_BACKUP"
-  fi
-  {
-    printf 'export HTB_TOKEN=%s\n' "$HTB_TOKEN"
-    [[ -n "${HTB_USER_ID:-}" ]] && printf 'export HTB_USER_ID=%s\n' "$HTB_USER_ID"
-  } > "$TOKEN_FILE"
-  chmod 600 "$TOKEN_FILE"
-  echo "    Wrote HTB token to $TOKEN_FILE"
-elif [ -s "$TOKEN_FILE" ]; then
-  # No token entered: leave existing credentials untouched.
-  echo "    No token entered; existing HTB credentials left untouched."
-  if [[ -n "${HTB_USER_ID:-}" ]]; then
-    if grep -q '^export HTB_USER_ID=' "$TOKEN_FILE" 2>/dev/null; then
-      sed -i "s|^export HTB_USER_ID=.*|export HTB_USER_ID=${HTB_USER_ID}|" "$TOKEN_FILE"
-    else
-      printf 'export HTB_USER_ID=%s\n' "$HTB_USER_ID" >> "$TOKEN_FILE"
+  if [[ "$UNATTENDED" == true ]]; then
+    echo ""
+    echo "==> Hack The Box Waybar Module Setup (optional) [UNATTENDED]"
+    echo "    Reading HTB credentials from environment variables..."
+    HTB_USER_ID="${HTB_USER_ID:-}"
+    HTB_TOKEN="${HTB_TOKEN:-}"
+    if [[ -z "$HTB_TOKEN" ]]; then
+      echo "    No HTB_TOKEN in environment; skipping HTB setup."
     fi
-    chmod 600 "$TOKEN_FILE"
-    echo "    Set HTB_USER_ID=$HTB_USER_ID"
+  else
+    echo ""
+    echo "==> Hack The Box Waybar Module Setup (optional)"
+    echo "    The waybar includes a Hack The Box rank module."
+    echo "    Press Enter to skip."
+    read -r -p "    Enter your HTB User ID (e.g. 2426022): " HTB_USER_ID || true
+    read -r -s -p "    Enter your HTB API token: " HTB_TOKEN || true
+    echo ""
   fi
-else
-  echo "    No token entered; skipping HTB setup."
-fi
+
+  # HTB User IDs are numeric. Reject anything else up front so it can never
+  # corrupt the token file via the sed replacement below (e.g. &, |, backslash).
+  if [[ -n "${HTB_USER_ID:-}" && ! "$HTB_USER_ID" =~ ^[0-9]+$ ]]; then
+    echo "    Invalid HTB User ID (expected digits only); ignoring it."
+    HTB_USER_ID=""
+  fi
+
+  TOKEN_FILE="$HOME/.config/waybar/scripts/htb_token.env"
+  mkdir -p "$(dirname "$TOKEN_FILE")"
+
+  if [[ -n "${HTB_TOKEN:-}" ]]; then
+    # Never silently destroy existing credentials: back them up first.
+    if [ -s "$TOKEN_FILE" ]; then
+      TOKEN_BACKUP="${TOKEN_FILE}.bak.$(date +%Y%m%d%H%M%S)"
+      cp -a "$TOKEN_FILE" "$TOKEN_BACKUP"
+      chmod 600 "$TOKEN_BACKUP"
+      echo "    Backed up existing HTB credentials to $TOKEN_BACKUP"
+    fi
+    {
+      printf 'export HTB_TOKEN=%s\n' "$HTB_TOKEN"
+      [[ -n "${HTB_USER_ID:-}" ]] && printf 'export HTB_USER_ID=%s\n' "$HTB_USER_ID"
+    } > "$TOKEN_FILE"
+    chmod 600 "$TOKEN_FILE"
+    echo "    Wrote HTB token to $TOKEN_FILE"
+  elif [ -s "$TOKEN_FILE" ]; then
+    # No token entered: leave existing credentials untouched.
+    echo "    No token entered; existing HTB credentials left untouched."
+    if [[ -n "${HTB_USER_ID:-}" ]]; then
+      if grep -q '^export HTB_USER_ID=' "$TOKEN_FILE" 2>/dev/null; then
+        sed -i "s|^export HTB_USER_ID=.*|export HTB_USER_ID=${HTB_USER_ID}|" "$TOKEN_FILE"
+      else
+        printf 'export HTB_USER_ID=%s\n' "$HTB_USER_ID" >> "$TOKEN_FILE"
+      fi
+      chmod 600 "$TOKEN_FILE"
+      echo "    Set HTB_USER_ID=$HTB_USER_ID"
+    fi
+  else
+    echo "    No token entered; skipping HTB setup."
+  fi
 fi
 
 # 8. Ensure PATH includes ~/.local/bin.
