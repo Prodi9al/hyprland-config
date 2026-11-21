@@ -82,8 +82,8 @@
 # shellcheck disable=SC1090
 
 python_initialized() {
-    local python_script="${LIB_DIR}/hyde/pyutils/python_env.py"
-    local venv="${XDG_STATE_HOME:-$HOME/.local/state}/hyde/python_env"
+    local python_script="${LIB_DIR}/prodi/pyutils/python_env.py"
+    local venv="${XDG_STATE_HOME:-$HOME/.local/state}/prodi/python_env"
 
     if [[ -x "${venv}/bin/python" ]]; then
         source "${venv}/bin/activate"
@@ -100,7 +100,7 @@ python_initialized() {
 }
 
 python_activate() {
-    local python_env="${XDG_STATE_HOME:-$HOME/.local/state}/hyde/python_env/bin/activate"
+    local python_env="${XDG_STATE_HOME:-$HOME/.local/state}/prodi/python_env/bin/activate"
     if [[ -r "${python_env}" ]]; then
         source "${python_env}"
     else
@@ -112,8 +112,8 @@ python_activate() {
 
 lua_initialized() {
     python_activate
-    python3 "${LIB_DIR}/hyde/pyutils/lua_env.py" sync ||
-        python3 "${LIB_DIR}/hyde/pyutils/lua_env.py" rebuild
+    python3 "${LIB_DIR}/prodi/pyutils/lua_env.py" sync ||
+        python3 "${LIB_DIR}/prodi/pyutils/lua_env.py" rebuild
 }
 
 initialized() {
@@ -126,7 +126,7 @@ PATH=${PATH}
 HYDE_SCRIPTS_PATH=${HYDE_SCRIPTS_PATH}
 export BIN_DIR LIB_DIR SHARE_DIR PATH HYDE_SCRIPTS_PATH HYDE_SHELL_INIT
 EOF
-    command cat "${LIB_DIR}/hyde/globalcontrol.sh"
+    command cat "${LIB_DIR}/prodi/globalcontrol.sh"
 }
 
 USAGE() {
@@ -219,9 +219,9 @@ call_wallbashScript() {
     fi
 }
 
-hyde_reload() {
+prodi_reload() {
     python_activate
-    python3 "${LIB_DIR}/hyde/reload.py" "${@}"
+    python3 "${LIB_DIR}/prodi/reload.py" "${@}"
 }
 
 list_script_path() {
@@ -247,11 +247,11 @@ list_script() {
 }
 
 get_version() {
-    if [[ ! -f "${XDG_STATE_HOME:-$HOME/.local/state}/hyde/version" ]]; then
+    if [[ ! -f "${XDG_STATE_HOME:-$HOME/.local/state}/prodi/version" ]]; then
         echo "HyDE version file not found. Please update HyDE."
         exit 1
     fi
-    source "${XDG_STATE_HOME:-$HOME/.local/state}/hyde/version"
+    source "${XDG_STATE_HOME:-$HOME/.local/state}/prodi/version"
     cat <<VERSION
 HyDE, your Development Environment
 
@@ -275,11 +275,11 @@ VERSION
 }
 
 get_release_notes() {
-    if [[ ! -f "${XDG_STATE_HOME:-$HOME/.local/state}/hyde/version" ]]; then
+    if [[ ! -f "${XDG_STATE_HOME:-$HOME/.local/state}/prodi/version" ]]; then
         echo "HyDE version file not found. Please update HyDE."
         exit 1
     fi
-    source "${XDG_STATE_HOME:-$HOME/.local/state}/hyde/version"
+    source "${XDG_STATE_HOME:-$HOME/.local/state}/prodi/version"
     echo "HyDE Release Notes:"
     echo "$HYDE_RELEASE_NOTES"
 }
@@ -311,27 +311,27 @@ run_command() {
     # cannot shadow the implementation that replaced it.
     for dir in "${SCRIPT_DIRS[@]}"; do
         if [[ -f "$dir/${1}.lua" ]]; then
-            l_env="${XDG_STATE_HOME:-$HOME/.local/state}/hyde/lua_env"
+            l_env="${XDG_STATE_HOME:-$HOME/.local/state}/prodi/lua_env"
             if [[ ! -d "$l_env" ]]; then
                 print_log -warn "Lua environment not found!" " Please run 'prodi-shell luainit' to set up the environment."
                 send_notifs "Lua environment not found!" "Please run 'prodi-shell luainit' to set up the environment."
                 exit 1
             fi
-            __hyde_lua_ver_file="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/hyde/lua_ver"
-            if [[ -f "$__hyde_lua_ver_file" ]]; then
-                read -r lua_ver _ <"$__hyde_lua_ver_file"
+            __prodi_lua_ver_file="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/prodi/lua_ver"
+            if [[ -f "$__prodi_lua_ver_file" ]]; then
+                read -r lua_ver _ <"$__prodi_lua_ver_file"
             elif command -v lua &>/dev/null; then
                 read -r lua_ver _ < <(lua -e 'io.write(_VERSION:match("%d+%.%d+"))')
-                echo "$lua_ver" >"$__hyde_lua_ver_file"
+                echo "$lua_ver" >"$__prodi_lua_ver_file"
             fi
-            unset __hyde_lua_ver_file
+            unset __prodi_lua_ver_file
             export LUA_PATH="$l_env/share/lua/$lua_ver/?.lua;$l_env/share/lua/$lua_ver/?/init.lua;$LUA_PATH"
             export LUA_CPATH="$l_env/lib/lua/$lua_ver/?.so;$LUA_CPATH"
             exec lua "$dir/${1}.lua" "${@:2}"
         elif [[ -f "$dir/${1}.sh" ]]; then
             exec bash "$dir/${1}.sh" "${@:2}"
         elif [[ -f "$dir/${1}.py" ]]; then
-            exec "${XDG_STATE_HOME:-$HOME/.local/state}/hyde/python_env/bin/python" "$dir/${1}.py" "${@:2}"
+            exec "${XDG_STATE_HOME:-$HOME/.local/state}/prodi/python_env/bin/python" "$dir/${1}.py" "${@:2}"
         elif [[ -f "$dir/${1}" && -x "$dir/${1}" ]]; then
             exec "$dir/${1}" "${@:2}"
         fi
@@ -347,8 +347,8 @@ run_command() {
 }
 
 run_uv() {
-    local project_dir="${LIB_DIR}/hyde"
-    local venv_path="${XDG_STATE_HOME:-$HOME/.local/state}/hyde/python_env"
+    local project_dir="${LIB_DIR}/prodi"
+    local venv_path="${XDG_STATE_HOME:-$HOME/.local/state}/prodi/python_env"
     shift
     local subcmd="${1:-help}"
     shift 2>/dev/null || true
@@ -370,7 +370,7 @@ run_uv() {
 
 run_luarocks() {
     shift
-    local lua_env_dir="${XDG_STATE_HOME:-$HOME/.local/state}/hyde/lua_env"
+    local lua_env_dir="${XDG_STATE_HOME:-$HOME/.local/state}/prodi/lua_env"
     if command -v luarocks >/dev/null 2>&1; then
         luarocks --tree "${lua_env_dir}" "$@"
     else
@@ -408,7 +408,7 @@ run_pypr() {
             exec app.sh -t service pypr
         fi
     else
-        UV_PROJECT_ENVIRONMENT="${XDG_STATE_HOME:-$HOME/.local/state}/hyde/python_env" uv add "pyprland==3.3.1" --project "${LIB_DIR}/hyde"
+        UV_PROJECT_ENVIRONMENT="${XDG_STATE_HOME:-$HOME/.local/state}/prodi/python_env" uv add "pyprland==3.3.1" --project "${LIB_DIR}/prodi"
     fi
 }
 
@@ -515,17 +515,17 @@ BIN_DIR=$(dirname "$(which "${EXECUTABLE:-prodi-shell}")")
 LIB_DIR=$(realpath "${BIN_DIR}/../lib")
 SHARE_DIR=$(realpath "${BIN_DIR}/../share")
 # Prepend hyde paths to PATH only if not already present
-for _p in "$LIB_DIR/hyde" "$BIN_DIR" "${XDG_CONFIG_HOME:-$HOME/.config}/hyde/scripts"; do
+for _p in "$LIB_DIR/prodi" "$BIN_DIR" "${XDG_CONFIG_HOME:-$HOME/.config}/prodi/scripts"; do
     [[ ":$PATH:" != *":$_p:"* ]] && PATH="$_p:$PATH"
 done
 unset _p
 # Define hyde scripts search paths (colon-separated, user configurable)
-HYDE_SCRIPTS_PATH="${HYDE_SCRIPTS_PATH:-${XDG_CONFIG_HOME:-$HOME/.config}/hyde/scripts:${LIB_DIR}/hyde}:${XDG_DATA_HOME:-$HOME/.local/share}/waybar/scripts:${XDG_CONFIG_HOME:-$HOME/.config}/waybar/scripts"
+HYDE_SCRIPTS_PATH="${HYDE_SCRIPTS_PATH:-${XDG_CONFIG_HOME:-$HOME/.config}/prodi/scripts:${LIB_DIR}/hyde}:${XDG_DATA_HOME:-$HOME/.local/share}/waybar/scripts:${XDG_CONFIG_HOME:-$HOME/.config}/waybar/scripts"
 export BIN_DIR LIB_DIR SHARE_DIR PATH HYDE_SCRIPTS_PATH
 
 # -----------------------------------------------------------------
 
-[[ -d "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/hyde" ]] || mkdir -p "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/hyde"
+[[ -d "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/prodi" ]] || mkdir -p "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/prodi"
 
 case "$1" in
 app)
@@ -535,7 +535,7 @@ app)
     # before the exec below -- this path used to skip globalcontrol.sh
     # entirely and reach it only on the fallback branch further down,
     # silently launching every app-managed service without it (#1951).
-    if ! source "${LIB_DIR}/hyde/globalcontrol.sh"; then
+    if ! source "${LIB_DIR}/prodi/globalcontrol.sh"; then
         echo "Error: Could not load HyDE, broken installation?"
         exit 1
     fi
@@ -557,7 +557,7 @@ lock-session)
     ;;
 esac
 
-if ! source "${LIB_DIR}/hyde/globalcontrol.sh"; then
+if ! source "${LIB_DIR}/prodi/globalcontrol.sh"; then
     echo "Error: Could not load HyDE, broken installation?"
     exit 1
 fi
@@ -583,7 +583,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
         ;;
     -r | reload)
         shift
-        hyde_reload "${@}"
+        prodi_reload "${@}"
         ;;
     wallbash)
         shift
@@ -593,7 +593,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     completion | completions)
         # Delegate all completion operations to the Python backend
         python_activate
-        python3 "${LIB_DIR}/hyde/completions.py" "${@:2}"
+        python3 "${LIB_DIR}/prodi/completions.py" "${@:2}"
         exit $?
         ;;
     --release-notes | release-notes)
@@ -605,14 +605,14 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     help)
         shift
         if [[ $# -gt 0 ]]; then
-            python3 "${LIB_DIR}/hyde/help.py" "$@"
+            python3 "${LIB_DIR}/prodi/help.py" "$@"
             exit $?
         fi
         USAGE
         ;;
     man)
         shift
-        python3 "${LIB_DIR}/hyde/man.py" "$@"
+        python3 "${LIB_DIR}/prodi/man.py" "$@"
         exit $?
         ;;
     --help | -h)
