@@ -19,7 +19,7 @@ if str(BASE_DIR) not in sys.path:
 import pm
 
 XDG_RUNTIME_DIR = Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp"))
-STATE_DIR = XDG_RUNTIME_DIR / "hyde"
+STATE_DIR = XDG_RUNTIME_DIR / "prodi"
 UPDATE_INFO = STATE_DIR / "update_info.json"
 CACHE_DIR = STATE_DIR / "pm" / "system_update"
 SCRIPT_PATH = Path(__file__).resolve()
@@ -131,9 +131,9 @@ def status_json(records: list[UpdateRecord]) -> str:
 
 
 def show_fastfetch() -> None:
-    if shutil.which("hyde-shell") is None:
+    if shutil.which("prodi-shell") is None:
         return
-    subprocess.run(["hyde-shell", "fastfetch"], check=False)
+    subprocess.run(["prodi-shell", "fastfetch"], check=False)
 
 
 def print_summary(records: list[UpdateRecord]) -> None:

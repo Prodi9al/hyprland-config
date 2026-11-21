@@ -155,13 +155,13 @@ end
 local desktop_app_cache = {}
 
 local function get_desktop_app_config_table()
-    local explicit = os.getenv("HYDE_CONFIG_TOML")
+    local explicit = os.getenv("PRODI_CONFIG_TOML")
     local path
     if explicit and explicit ~= "" then
         path = explicit
     else
         local home = os.getenv("HOME") or ""
-        path = home .. "/.config/hyde/config.toml"
+        path = home .. "/.config/prodi/config.toml"
     end
 
     if desktop_app_cache[path] then
@@ -485,12 +485,12 @@ local function build_option_context_with_detection()
     ctx:set_summary("Open files, MIME types, or keywords with desktop applications using GIO.")
     ctx:set_description(
         [[
-hyde-shell: open files, MIME types, or keywords with desktop applications.
+prodi-shell: open files, MIME types, or keywords with desktop applications.
 
 Examples:
-  hyde-shell open example.pdf
-  hyde-shell open text-editor
-  hyde-shell open example.pdf --with evince.desktop --set-default
+  prodi-shell open example.pdf
+  prodi-shell open text-editor
+  prodi-shell open example.pdf --with evince.desktop --set-default
 ]]
     )
 
@@ -585,7 +585,7 @@ Examples:
         new_entry {long_name = "help", arg = GLib.OptionArg.NONE, arg_data = holders.help, description = "Show help"}
     }
 
-    ctx:add_main_entries(entries, "hyde-shell")
+    ctx:add_main_entries(entries, "prodi-shell")
     return ctx, holders, true
 end
 
@@ -651,7 +651,7 @@ local function manual_parse(argv)
 end
 
 local function print_usage(prog)
-    prog = prog or arg[0] or "hyde-shell"
+    prog = prog or arg[0] or "prodi-shell"
     io.write(("Usage: %s open <file|mime|keyword> [options]\n"):format(prog))
     io.write("Use --help for detailed options.\n")
 end

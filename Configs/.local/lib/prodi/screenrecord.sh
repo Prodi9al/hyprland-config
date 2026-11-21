@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -eo pipefail
-[[ $HYDE_SHELL_INIT -ne 1 ]] && eval "$(hyde-shell init)"
+[[ $PRODI_SHELL_INIT -ne 1 ]] && eval "$(prodi-shell init)"
 RECORDER="wl-screenrec"
 command -v "$RECORDER" &> /dev/null || RECORDER="wf-recorder"
 if ! command -v "$RECORDER" &> /dev/null; then
@@ -11,7 +11,7 @@ fi
 USAGE() {
     cat << USAGE
 
-Usage: 'hyde-shell screenrecord' [option]
+Usage: 'prodi-shell screenrecord' [option]
 
     Using $RECORDER to record the screen.
 
@@ -32,7 +32,7 @@ Note:
     Additional arguments are passed to '$RECORDER'.
 
 Example:
-        'hyde-shell screenrecord' --start -- --audio --codec libx264
+        'prodi-shell screenrecord' --start -- --audio --codec libx264
 
 
     To see all available options for '$RECORDER', run:
@@ -80,7 +80,7 @@ handle_recording() {
     fi
     tmp_thumbnail=$(mktemp -t thumbnail_XXXXXX.png)
     if [[ -z $GEOM ]]; then
-        "$LIB_DIR/hyde/screenshot/grimblast" save active "$tmp_thumbnail"
+        "$LIB_DIR/prodi/screenshot/grimblast" save active "$tmp_thumbnail"
     else
         grim -g "$GEOM" "$tmp_thumbnail"
     fi

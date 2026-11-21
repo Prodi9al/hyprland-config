@@ -19,36 +19,36 @@
 -- from the search path it sets.
 local root = assert(debug.getinfo(1, "S").source:match("^@(.*)/"), "not loaded from a file")
 
----@module "prodi"
-prodi = prodi or {}
+---@module "hyde"
+hyde = hyde or {}
 ---@diagnostic disable-next-line: inject-field
-prodi.path = dofile(root .. "/lua/prodi/path.lua")
-package.loaded["prodi.path"] = prodi.path
+hyde.path = dofile(root .. "/lua/hyde/path.lua")
+package.loaded["hyde.path"] = hyde.path
 
 local pkg_paths = {
-	prodi.path.state .. "/prodi/?.lua", -- Lua state
-	prodi.path.lib .. "/prodi/?.lua", -- lib scripts
-	prodi.path.lib .. "/prodi/luautils/?.lua", -- lib scripts
-	prodi.path.share .. "/hypr/lua/?.lua",
-	prodi.path.state .. "/prodi/lua_env/share/lua/5.5/?.lua", -- virtual env for lua
-	prodi.path.state .. "/prodi/lua_env/share/lua/5.5/?/init.lua", -- virtual env for lua
-	prodi.path.config .. "/hypr/?.lua", -- expose main users config
+	hyde.path.state .. "/hyde/?.lua", -- Lua state
+	hyde.path.lib .. "/hyde/?.lua", -- lib scripts
+	hyde.path.lib .. "/hyde/luautils/?.lua", -- lib scripts
+	hyde.path.share .. "/hypr/lua/?.lua",
+	hyde.path.state .. "/hyde/lua_env/share/lua/5.5/?.lua", -- virtual env for lua
+	hyde.path.state .. "/hyde/lua_env/share/lua/5.5/?/init.lua", -- virtual env for lua
+	hyde.path.config .. "/hypr/?.lua", -- expose main users config
 	root .. "/lua/?.lua" -- this file's own tree, whatever prefix it sits under
 }
 
 package.path = package.path .. ";" .. table.concat(pkg_paths, ";") .. ";"
 package.cpath = package.cpath
 	.. ";"
-	.. prodi.path.state
-	.. "/prodi/lua_env/lib/lua/5.5/?.so" -- virtual env shared objects
+	.. hyde.path.state
+	.. "/hyde/lua_env/lib/lua/5.5/?.so" -- virtual env shared objects
 
 -- Let's call it early so we can use it in other files
-local utils = require("prodi.utils")
-require("prodi.env")
-require("prodi.config")
-require("prodi.binds")
-require("prodi.dispatcher")
-require("prodi.handlers")
+local utils = require("hyde.utils")
+require("hyde.env")
+require("hyde.config")
+require("hyde.binds")
+require("hyde.dispatcher")
+require("hyde.handlers")
 
 local check_require = utils.check_require
 
@@ -68,7 +68,7 @@ require("key_binds")
 require("dynamic")
 -- * Event handlers for more DE like experience
 require("events")
---* Prodi's startup overridable too!
+--* HyDE's startup overridable too!
 require("start_up")
 -- * Automatically load generated monitor configs (e.g., from nwg-displays)
 check_require("monitors")

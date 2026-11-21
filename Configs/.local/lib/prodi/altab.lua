@@ -18,7 +18,7 @@ local json = require("luautils.json")
 local argparse = require("luautils.argparse")
 local logger = require("luautils.global.log")
 
-local parser = argparse("hyde-shell altab", "Window Alt-Tab Switcher (index-based, optimized)")
+local parser = argparse("prodi-shell altab", "Window Alt-Tab Switcher (index-based, optimized)")
 parser:flag("--next", "Select next window index (save only)")
 parser:flag("--prev", "Select previous window index (save only)")
 parser:flag("--apply", "Apply saved window index (focus and clear state)")

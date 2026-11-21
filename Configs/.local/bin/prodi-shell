@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # This script resolves $PATHS and LIB_DIR specific to hyde.
-# @name: hyde-shell
+# @name: prodi-shell
 # @short: HyDE Command-Line Interface and Script Runner
 # @ver: 1.1.0
-# @usage: hyde-shell [command] [args]
+# @usage: prodi-shell [command] [args]
 # @global.flag: -h,--help | Show this help message
 # @global.flag: -v,--version | Show version information
 # @cmd: help
 # @cmd.alias: -h
-# @cmd.desc: Show help for hyde-shell commands and scripts
+# @cmd.desc: Show help for prodi-shell commands and scripts
 # @cmd.opt: <topic> | Show detailed help for a command or script
 # @cmd: man
 # @cmd.desc: Render metadata in man-style format
@@ -105,7 +105,7 @@ python_activate() {
         source "${python_env}"
     else
         printf "Warning: Python virtual environment not found at %s\n" "${python_env}"
-        printf "You may need to run 'hyde-shell pyinit' to set it up.\n"
+        printf "You may need to run 'prodi-shell pyinit' to set it up.\n"
         python_initialized
     fi
 }
@@ -141,7 +141,7 @@ USAGE() {
     printf '  %s%s%s\n\n' "$_DIM" "$sep" "$_R"
 
     printf '  %sUSAGE%s\n' "$_BOLD" "$_R"
-    printf '    hyde-shell %s[command]%s %s[args]%s\n\n' "$_CYAN" "$_R" "$_DIM" "$_R"
+    printf '    prodi-shell %s[command]%s %s[args]%s\n\n' "$_CYAN" "$_R" "$_DIM" "$_R"
 
     printf '  %sCOMMANDS%s\n' "$_BOLD" "$_R"
     local cmds=(
@@ -166,9 +166,9 @@ USAGE() {
 
     printf '  %sSCRIPTS%s\n' "$_BOLD" "$_R"
     printf '    Run any script by name (without extension):\n'
-    printf '      %shyde-shell theme.switch%s\n' "$_DIM" "$_R"
-    printf '      %shyde-shell wallpaper%s\n\n' "$_DIM" "$_R"
-    printf '    Use %shyde-shell -s%s to list all available scripts.\n\n' "$_CYAN" "$_R"
+    printf '      %sprodi-shell theme.switch%s\n' "$_DIM" "$_R"
+    printf '      %sprodi-shell wallpaper%s\n\n' "$_DIM" "$_R"
+    printf '    Use %sprodi-shell -s%s to list all available scripts.\n\n' "$_CYAN" "$_R"
 
     printf '  %s%s%s\n\n' "$_DIM" "$sep" "$_R"
 }
@@ -269,7 +269,7 @@ $(if hyprctl_output=$(hyprctl version 2>/dev/null | head -n1); then echo "$hyprc
 $(hyde-ipc --version 2>/dev/null || echo "hyde-ipc not found")
 
 HyDE updates every Friday, so please check for updates regularly.
-Run 'hyde-shell release-notes' to see the latest changes.
+Run 'prodi-shell release-notes' to see the latest changes.
 HyDE is a community-driven project, and contributions are welcome.
 VERSION
 }
@@ -313,8 +313,8 @@ run_command() {
         if [[ -f "$dir/${1}.lua" ]]; then
             l_env="${XDG_STATE_HOME:-$HOME/.local/state}/hyde/lua_env"
             if [[ ! -d "$l_env" ]]; then
-                print_log -warn "Lua environment not found!" " Please run 'hyde-shell luainit' to set up the environment."
-                send_notifs "Lua environment not found!" "Please run 'hyde-shell luainit' to set up the environment."
+                print_log -warn "Lua environment not found!" " Please run 'prodi-shell luainit' to set up the environment."
+                send_notifs "Lua environment not found!" "Please run 'prodi-shell luainit' to set up the environment."
                 exit 1
             fi
             __hyde_lua_ver_file="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/hyde/lua_ver"
@@ -363,7 +363,7 @@ run_uv() {
         UV_PROJECT_ENVIRONMENT="$venv_path" uv pip list --python "${venv_path}/bin/python"
         ;;
     *)
-        echo "Usage: hyde-shell uv [install|uninstall|list] [packages...]"
+        echo "Usage: prodi-shell uv [install|uninstall|list] [packages...]"
         ;;
     esac
 }
@@ -511,7 +511,7 @@ else
     EXECUTABLE="${BASH_SOURCE[0]}"
 fi
 
-BIN_DIR=$(dirname "$(which "${EXECUTABLE:-hyde-shell}")")
+BIN_DIR=$(dirname "$(which "${EXECUTABLE:-prodi-shell}")")
 LIB_DIR=$(realpath "${BIN_DIR}/../lib")
 SHARE_DIR=$(realpath "${BIN_DIR}/../share")
 # Prepend hyde paths to PATH only if not already present

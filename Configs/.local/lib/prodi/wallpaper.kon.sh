@@ -3,8 +3,8 @@ scrDir=$(dirname "$(realpath "$0")")
 source "$scrDir/globalcontrol.sh"
 scrName="$(basename "$0")"
 kmenuPath="$HOME/.local/share/kio/servicemenus"
-kmenuDesk="$kmenuPath/hydewallpaper.desktop"
-tgtPath="$(dirname "$HYDE_THEME_DIR")"
+kmenuDesk="$kmenuPath/prodiwallpaper.desktop"
+tgtPath="$(dirname "$PRODI_THEME_DIR")"
 get_themes
 while getopts "t:w:" option; do
     case $option in
@@ -45,8 +45,8 @@ if [ ! -z "$setTheme" ] && [ ! -z "$setWall" ]; then
     "$scrDir/theme.switch.sh" -s "$setTheme"
     notify-send -a "HyDE Alert" -i "$thmbDir/$inwallHash.sqre" "Wallpaper set in $setTheme"
 else
-    echo -e "[Desktop Entry]\nType=Service\nMimeType=image/png;image/jpeg;image/jpg;image/gif;image/webp\nActions=Menu-Refresh$(printf ";%s" "${thmList[@]}")\nX-KDE-Submenu=Set As Wallpaper...\n\n[Desktop Action Menu-Refresh]\nName=.: Refresh List :.\nExec=hyde-shell $scrName" > "$kmenuDesk"
+    echo -e "[Desktop Entry]\nType=Service\nMimeType=image/png;image/jpeg;image/jpg;image/gif;image/webp\nActions=Menu-Refresh$(printf ";%s" "${thmList[@]}")\nX-KDE-Submenu=Set As Wallpaper...\n\n[Desktop Action Menu-Refresh]\nName=.: Refresh List :.\nExec=prodi-shell $scrName" > "$kmenuDesk"
     for i in "${!thmList[@]}"; do
-        echo -e "\n[Desktop Action ${thmList[i]}]\nName=${thmList[i]}\nExec=hyde-shell $scrName -t \"${thmList[i]}\" -w %u" >> "$kmenuDesk"
+        echo -e "\n[Desktop Action ${thmList[i]}]\nName=${thmList[i]}\nExec=prodi-shell $scrName -t \"${thmList[i]}\" -w %u" >> "$kmenuDesk"
     done
 fi

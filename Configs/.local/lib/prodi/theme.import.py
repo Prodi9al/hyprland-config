@@ -322,7 +322,7 @@ def fzf_menu():
             return
         print("\n🚀 Proceeding with theme installation...\n")
         patch_themes(SELECTED_THEMES)
-        subprocess.run(["hyde-shell", "reload"], check=True)
+        subprocess.run(["prodi-shell", "reload"], check=True)
 
     except KeyboardInterrupt:
         print("\n❌ Operation cancelled by user.\n")
@@ -343,7 +343,7 @@ def fetch_all_themes():
             else:
                 print(f"⚠️  Theme '{theme_name}' not found in the JSON data.")
                 logger.debug(f"Theme '{theme_name}' not found in the JSON data.")
-        subprocess.run(["hyde-shell", "reload"], check=True)
+        subprocess.run(["prodi-shell", "reload"], check=True)
     else:
         print(f"❌ Themes directory '{themes_dir}' not found.")
         logger.debug(f"Themes directory '{themes_dir}' not found.")
@@ -357,7 +357,7 @@ def fetch_theme(theme_name):
         theme_data = next((t for t in JSON_DATA if t["THEME"] == theme_name), None)
         if theme_data:
             patch_themes([theme_name])
-            subprocess.run(["hyde-shell", "reload"], check=True)
+            subprocess.run(["prodi-shell", "reload"], check=True)
         else:
             print(f"❌ Theme '{theme_name}' not found in the JSON data.")
             logger.debug(f"Theme '{theme_name}' not found in the JSON data.")
@@ -382,7 +382,7 @@ def main():
         "-f",
         type=str,
         metavar="THEME",
-        help="Fetch and update a specific theme by name (`all` to fetch all themes located in 'xdg_config/hyde/themes')",
+        help="Fetch and update a specific theme by name (`all` to fetch all themes located in 'xdg_config/prodi/themes')",
     )
 
     args = parser.parse_args()

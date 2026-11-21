@@ -17,7 +17,7 @@
 # while Caffeine mode is toggled. hypridle.conf already has
 # `ignore_systemd_inhibit = false`, so it respects this natively -- no custom
 # Wayland idle-inhibit protocol client needed.
-# Checked before hyde-shell/globalcontrol.sh is sourced below: that source
+# Checked before prodi-shell/globalcontrol.sh is sourced below: that source
 # sets its own XDG_RUNTIME_DIR fallback ("/run/user/$(id -u)"), which would
 # make this check unreachable. A shared, world-writable fallback like
 # /tmp/hyde would let another local user pre-plant that path (a directory
@@ -30,13 +30,13 @@ if [ -z "$XDG_RUNTIME_DIR" ]; then
     exit 1
 fi
 
-if ! source "$(command -v hyde-shell)"; then
-    echo "[$0] :: Error: hyde-shell not found."
+if ! source "$(command -v prodi-shell)"; then
+    echo "[$0] :: Error: prodi-shell not found."
     echo "[$0] :: Is HyDE installed?"
     exit 1
 fi
 
-state_dir="$XDG_RUNTIME_DIR/hyde"
+state_dir="$XDG_RUNTIME_DIR/prodi"
 state_file="$state_dir/caffeine"
 lock_file="$state_dir/caffeine.lock"
 mkdir -p "$state_dir"

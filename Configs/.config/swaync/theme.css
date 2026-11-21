@@ -43,7 +43,7 @@ notificationwindow, blankwindow {
   /* The Control Center which contains the old notifications + widgets */
   background: @sw-cc-bg;
   color: @text-color;
-  border-radius: 10px; /* hyde:rounding */
+  border-radius: 10px; /* prodi:rounding */
   border: 2px solid @sw-cc-border-color;
   opacity: 0.9;
 }
@@ -76,13 +76,13 @@ notificationwindow, blankwindow {
 * overwritten on every theme reload)
 * */
 .notification-row .notification-background {
-  padding: 8px; /* hyde:gaps_out */
+  padding: 8px; /* prodi:gaps_out */
 }
 
 .notification-row .notification-background .notification {
   /* The actual notification */
   color: @sw-noti-window-txt;
-  border-radius: 10px; /* hyde:rounding */
+  border-radius: 10px; /* prodi:rounding */
   border: 2px solid @sw-noti-window-br;
   padding: 5px;
   transition: background 0.15s ease-in-out;

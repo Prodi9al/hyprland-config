@@ -132,12 +132,12 @@ end
 
 local function parse_default_configs(hyVar)
     local default_paths = {
-        xdg.data .. "/hyde/hyde.conf",
-        xdg.data .. "/hyde/hyprland.conf",
-        "/usr/local/share/hyde/hyde.conf",
-        "/usr/local/share/hyde/hyprland.conf",
-        "/usr/share/hyde/hyde.conf",
-        "/usr/share/hyde/hyprland.conf"
+        xdg.data .. "/prodi/hyde.conf",
+        xdg.data .. "/prodi/hyprland.conf",
+        "/usr/local/share/prodi/hyde.conf",
+        "/usr/local/share/prodi/hyprland.conf",
+        "/usr/share/prodi/hyde.conf",
+        "/usr/share/prodi/hyprland.conf"
     }
 
     for _, path in ipairs(default_paths) do
@@ -171,7 +171,7 @@ local function parse_hypr_conf(hyArg, path)
 
     local theme_path = path
     if not theme_path or theme_path == "" then
-        local theme_dir = os.getenv("HYDE_THEME_DIR")
+        local theme_dir = os.getenv("PRODI_THEME_DIR")
         if theme_dir and theme_dir ~= "" then
             theme_path = theme_dir .. "/hypr.theme"
         end

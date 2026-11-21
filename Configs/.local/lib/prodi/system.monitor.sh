@@ -7,7 +7,7 @@ Usage: $(basename "$0") --[option]
     -h, --help  Display this help and exit
     -e, --execute   Explicit command to execute
 
-Config: ~/.config/hyde/config.toml
+Config: ~/.config/prodi/config.toml
 
     [sysmonitor]
     execute = "btop"                    # Default command to execute // accepts executable or app.desktop
@@ -36,7 +36,7 @@ case $1 in
         exit 1
         ;;
 esac
-pidFile="$XDG_RUNTIME_DIR/hyde/sysmonlaunch.pid"
+pidFile="$XDG_RUNTIME_DIR/prodi/sysmonlaunch.pid"
 if [ -f "$pidFile" ]; then
     while IFS= read -r line; do
         pid=$(awk -F ':::' '{print $1}' <<< "$line")

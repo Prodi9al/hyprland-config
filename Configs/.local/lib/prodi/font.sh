@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 font_dir="${XDG_DATA_HOME:-$HOME/.local/share}/fonts"
-landing_dir="${XDG_CACHE_HOME:-$HOME/.cache}/hyde/landing/fonts"
+landing_dir="${XDG_CACHE_HOME:-$HOME/.cache}/prodi/landing/fonts"
 mkdir -p "$font_dir" "$landing_dir"
 download_and_extract() {
     local name="$1"
@@ -52,7 +52,7 @@ download_and_extract() {
                 ;;
             *.ttf | *.otf)
                 mkdir -p "$font_dir/hyde"
-                mv "$file" "$font_dir/hyde/$name.ttf"
+                mv "$file" "$font_dir/prodi/$name.ttf"
                 echo "[font] $name installed successfully. Please restart hyprlock to apply changes."
                 notify-send -i "preferences-desktop-font" "HyDE font" "$name Installed successfully"
                 return 0

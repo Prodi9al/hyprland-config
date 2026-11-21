@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-[[ $HYDE_SHELL_INIT -ne 1 ]] && eval "$(hyde-shell init)"
+[[ $PRODI_SHELL_INIT -ne 1 ]] && eval "$(prodi-shell init)"
 sleep 1
 killall -e xdg-desktop-portal-hyprland
 killall -e xdg-desktop-portal

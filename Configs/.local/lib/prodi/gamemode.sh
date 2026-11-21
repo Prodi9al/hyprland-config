@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-LOCK_FILE="${XDG_RUNTIME_DIR}/hyde/gamemode.lck"
+LOCK_FILE="${XDG_RUNTIME_DIR}/prodi/gamemode.lck"
 
 if [ -f "$LOCK_FILE" ]; then
     # Gamemode is ON → turn it OFF

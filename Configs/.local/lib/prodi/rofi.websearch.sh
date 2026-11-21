@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 set -e
-if [[ $HYDE_SHELL_INIT -ne 1 ]]; then
-    eval "$(hyde-shell init)"
+if [[ $PRODI_SHELL_INIT -ne 1 ]]; then
+    eval "$(prodi-shell init)"
 else
     export_hyde_config
 fi
 
 # Source argparse.sh for argument parsing
-source "${LIB_DIR}/hyde/shutils/argparse.sh"
+source "${LIB_DIR}/prodi/shutils/argparse.sh"
 
-cached_search_dir="${XDG_CACHE_HOME:-$HOME/.cache}/hyde/landing/websearch"
+cached_search_dir="${XDG_CACHE_HOME:-$HOME/.cache}/prodi/landing/websearch"
 declare -A SITES SITES_ICON
 search_file=(
-    "$SHARE_DIR/hyde/websearch.lst"
-    "$XDG_CONFIG_HOME/hyde/websearch.lst")
+    "$SHARE_DIR/prodi/websearch.lst"
+    "$XDG_CONFIG_HOME/prodi/websearch.lst")
 load_search_engines() {
     local lst_files=()
     for f in "${search_file[@]}"; do
@@ -198,7 +198,7 @@ main() {
     argparse_init "$@"
 
     # Set program name and header
-    argparse_program "hyde-shell rofi.websearch"
+    argparse_program "prodi-shell rofi.websearch"
     argparse_header "HyDE Web Search"
 
     # Define arguments

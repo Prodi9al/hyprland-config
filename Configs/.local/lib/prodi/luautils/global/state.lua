@@ -2,9 +2,9 @@
 -- Shared state I/O for HyDE Lua scripts.
 --
 -- Provides two independent state channels:
---   staterc  — the shell-compatible $XDG_STATE_HOME/hyde/staterc file
+--   staterc  — the shell-compatible $XDG_STATE_HOME/prodi/staterc file
 --              (KEY="value" format, shared with shell and Python)
---   lua_state — per-selector .lua stub files under $XDG_STATE_HOME/hyde/lua_state/
+--   lua_state — per-selector .lua stub files under $XDG_STATE_HOME/prodi/lua_state/
 --              (fast dofile-based cache, Lua-only)
 --
 -- Usage:
@@ -33,7 +33,7 @@ end
 
 -- ── staterc (shell-compatible, shared with shell/Python) ─────────────────────
 
-local staterc_path = xdg.state .. "/hyde/staterc"
+local staterc_path = xdg.state .. "/prodi/staterc"
 
 --- Read a value from staterc. Returns the unquoted string or nil.
 -- staterc.sh escapes \ " $ and the backtick inside the double quotes
@@ -64,7 +64,7 @@ local function sh_quote(s)
 end
 
 -- staterc.sh sits next to luautils/; found from this file's own path, like
--- luautils/init.lua finds HYDE_SCRIPTS_PATH, else where globalcontrol.sh
+-- luautils/init.lua finds PRODI_SCRIPTS_PATH, else where globalcontrol.sh
 -- puts $scrDir.
 local function find_staterc_helper()
     local src = debug.getinfo(1, "S").source
@@ -72,7 +72,7 @@ local function find_staterc_helper()
     if dir then
         return dir .. "staterc.sh"
     end
-    return (os.getenv("LIB_DIR") or (os.getenv("HOME") .. "/.local/lib")) .. "/hyde/staterc.sh"
+    return (os.getenv("LIB_DIR") or (os.getenv("HOME") .. "/.local/lib")) .. "/prodi/staterc.sh"
 end
 local staterc_helper = find_staterc_helper()
 

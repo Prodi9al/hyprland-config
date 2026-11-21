@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-[[ $HYDE_SHELL_INIT -ne 1 ]] && eval "$(hyde-shell init)"
+[[ $PRODI_SHELL_INIT -ne 1 ]] && eval "$(prodi-shell init)"
 if [[ ${WALLBASH_STARTUP:-0} -eq 1 ]]; then
     exit 0
 fi
 
 confDir="${confDir:-$XDG_CONFIG_HOME}"
 cacheDir="${cacheDir:-$XDG_CACHE_HOME/hyde}"
-HYDE_THEME="${HYDE_THEME:-}"
-HYDE_THEME_DIR="${HYDE_THEME_DIR:-$confDir/hyde/themes/$HYDE_THEME}"
+PRODI_THEME="${PRODI_THEME:-}"
+PRODI_THEME_DIR="${PRODI_THEME_DIR:-$confDir/prodi/themes/$PRODI_THEME}"
 enableWallDcol="${enableWallDcol:-0}"
 # Loads the interface variables of a hyprlang file into __NAME variables.
 # hyq's `--export env` output is not shell-safe: it does not escape `$(...)`,
@@ -32,14 +32,14 @@ load_hypr_vars() {
 __GTK_THEME= __COLOR_SCHEME= __ICON_THEME= __CURSOR_THEME= __CURSOR_SIZE=
 __FONT= __FONT_SIZE= __DOCUMENT_FONT= __DOCUMENT_FONT_SIZE=
 __MONOSPACE_FONT= __MONOSPACE_FONT_SIZE= __CODE_THEME=
-load_hypr_vars "$HYDE_THEME_DIR/hypr.theme"
+load_hypr_vars "$PRODI_THEME_DIR/hypr.theme"
 
 # The user's [hyprland] overrides from config.toml (converted into the state
 # hyprland.conf) win over the theme, exactly as in theme.switch.sh. Without
 # this the Lua ui state written below kept the theme's own GTK theme and
 # color/dconf.lua wrote it back into gsettings on every wallbash run, so
 # GTK3 apps (Firefox, blueman) ignored the override, see HyDE#2132.
-hypr_state_file="${XDG_STATE_HOME:-$HOME/.local/state}/hyde/hyprland.conf"
+hypr_state_file="${XDG_STATE_HOME:-$HOME/.local/state}/prodi/hyprland.conf"
 [[ -f ${hypr_state_file} ]] && load_hypr_vars "$hypr_state_file"
 
 # This is for older themes that do not define the above variables
@@ -74,7 +74,7 @@ lua_quote_to() {
 }
 
 handle_on_lua() {
-    ui_state="${XDG_STATE_HOME}/hyde/lua_state/ui.lua"
+    ui_state="${XDG_STATE_HOME}/prodi/lua_state/ui.lua"
     wallbash_mode="theme"
     if [[ ${enableWallDcol:-0} -eq 1 ]]; then
         wallbash_mode="auto"
@@ -89,7 +89,7 @@ handle_on_lua() {
     local _notification_font _bar_font _menu_font
     local _code_theme _sddm_theme _wallbash_mode
 
-    lua_quote_to _hyde_theme "${HYDE_THEME}"
+    lua_quote_to _hyde_theme "${PRODI_THEME}"
     lua_quote_to _gtk_theme "${__GTK_THEME}"
     lua_quote_to _icon_theme "${__ICON_THEME}"
     lua_quote_to _color_scheme "${__COLOR_SCHEME}"

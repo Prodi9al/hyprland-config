@@ -59,14 +59,14 @@ def _escape_lua_string(value):
 
 def load_bind_commands():
     """Reads the combo->command cache hyde/binds.lua writes on every config
-    load (see Configs/.local/share/hypr/lua/hyde/binds.lua). Missing file,
+    load (see Configs/.local/share/hypr/lua/prodi/binds.lua). Missing file,
     unreadable file, malformed JSON, or JSON that isn't a flat string->string
     object all resolve to an empty map -- __lua binds simply stay
     unresolved, which is the existing, already-correct fallback behavior for
     binds that can't be reduced to one command at all.
     """
     cache_home = os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache")
-    cache_path = os.path.join(cache_home, "hyde", "lua_bind_commands.json")
+    cache_path = os.path.join(cache_home, "prodi", "lua_bind_commands.json")
 
     try:
         with open(cache_path, "r") as f:

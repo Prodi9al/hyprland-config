@@ -58,7 +58,7 @@ local function theme_window_em(theme)
         return nil, nil
     end
     local path = (theme:find("[/.]rasi$") or theme:find("/")) and theme or
-        (xdg.data .. "/hyde/rofi/themes/" .. theme .. ".rasi")
+        (xdg.data .. "/prodi/rofi/themes/" .. theme .. ".rasi")
     local f = io.open(path, "r")
     if not f then
         return nil, nil

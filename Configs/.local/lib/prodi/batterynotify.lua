@@ -175,7 +175,7 @@ conf.XDG_RUNTIME_DIR = os.getenv('XDG_RUNTIME_DIR') or '/run/user/' .. tostring(
 
 
 local function show_config()
-    io.write('\nModify ' .. conf.XDG_CONFIG_HOME .. '/hyde/config.toml to set options.\n')
+    io.write('\nModify ' .. conf.XDG_CONFIG_HOME .. '/prodi/config.toml to set options.\n')
     io.write('      STATUS      THRESHOLD    INTERVAL\n')
     io.write(string.format('      Full        %d          %d Minutes\n', conf.battery_full_threshold, conf.notify))
     io.write(string.format("      Critical    %d           %d Seconds then '%s'\n", conf.battery_critical_threshold,

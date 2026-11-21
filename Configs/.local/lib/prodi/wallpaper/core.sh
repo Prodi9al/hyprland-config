@@ -16,18 +16,18 @@ Wall_Change() {
 }
 Wall_Json() {
     setIndex=0
-    [ ! -d "$HYDE_THEME_DIR" ] && echo "ERROR: \"$HYDE_THEME_DIR\" does not exist" && exit 0
-    if [ -d "$HYDE_THEME_DIR/wallpapers" ]; then
-        wallPathArray=("$HYDE_THEME_DIR/wallpapers")
+    [ ! -d "$PRODI_THEME_DIR" ] && echo "ERROR: \"$PRODI_THEME_DIR\" does not exist" && exit 0
+    if [ -d "$PRODI_THEME_DIR/wallpapers" ]; then
+        wallPathArray=("$PRODI_THEME_DIR/wallpapers")
     else
-        wallPathArray=("$HYDE_THEME_DIR")
+        wallPathArray=("$PRODI_THEME_DIR")
     fi
     wallPathArray+=("${WALLPAPER_CUSTOM_PATHS[@]}")
-    [ -d "${XDG_PICTURES_DIR%/}/Wallpapers/${HYDE_THEME}" ] && wallPathArray+=("${XDG_PICTURES_DIR%/}/Wallpapers/${HYDE_THEME}")
+    [ -d "${XDG_PICTURES_DIR%/}/Wallpapers/${PRODI_THEME}" ] && wallPathArray+=("${XDG_PICTURES_DIR%/}/Wallpapers/${PRODI_THEME}")
     get_hashmap "${wallPathArray[@]}"
     wallListJson=$(printf '%s\n' "${wallList[@]}" | jq -R . | jq -s .)
     wallHashJson=$(printf '%s\n' "${wallHash[@]}" | jq -R . | jq -s .)
-    jq -n --argjson wallList "$wallListJson" --argjson wallHash "$wallHashJson" --arg cacheHome "${HYDE_CACHE_HOME:-$HOME/.cache/hyde}" '
+    jq -n --argjson wallList "$wallListJson" --argjson wallHash "$wallHashJson" --arg cacheHome "${PRODI_CACHE_HOME:-$HOME/.cache/hyde}" '
         [range(0; $wallList | length) as $i |
             {
                 path: $wallList[$i],
@@ -50,8 +50,8 @@ Wall_Json() {
 
 Wall_Hash() {
     setIndex=0
-    [ ! -d "$HYDE_THEME_DIR" ] && echo "ERROR: \"$HYDE_THEME_DIR\" does not exist" && exit 0
-    wallPathArray=("$HYDE_THEME_DIR/wallpapers")
+    [ ! -d "$PRODI_THEME_DIR" ] && echo "ERROR: \"$PRODI_THEME_DIR\" does not exist" && exit 0
+    wallPathArray=("$PRODI_THEME_DIR/wallpapers")
     wallPathArray+=("${WALLPAPER_CUSTOM_PATHS[@]}")
     get_hashmap "${wallPathArray[@]}"
     [ ! -e "$(readlink -f "$wallSet")" ] && echo "Fixing link :: $wallSet" && ln -fs "${wallList[setIndex]}" "$wallSet"
@@ -64,10 +64,10 @@ Wall_Hash() {
 #
 # Globals:
 #   set_as_global, setIndex, wallList, wallHash, LIB_DIR, wall* link targets,
-#   HYDE_STATUS_CACHE_FAILED, HYDE_STATUS_COLOURS_FAILED
+#   PRODI_STATUS_CACHE_FAILED, PRODI_STATUS_COLOURS_FAILED
 # Returns:
-#   0 on success, HYDE_STATUS_CACHE_FAILED when the thumbnail cache fails,
-#   HYDE_STATUS_COLOURS_FAILED when the colour pass fails
+#   0 on success, PRODI_STATUS_CACHE_FAILED when the thumbnail cache fails,
+#   PRODI_STATUS_COLOURS_FAILED when the colour pass fails
 ##
 Wall_Cache() {
     if [[ ${WALLPAPER_RELOAD_ALL:-1} -eq 1 ]] && [[ $wallpaper_setter_flag != "link" ]]; then
@@ -79,14 +79,14 @@ Wall_Cache() {
     if [ "$set_as_global" == "true" ]; then
         print_log -sec "wallpaper" "Setting Wallpaper as global"
         local cache_output
-        if ! cache_output=$("$LIB_DIR/hyde/wallpaper/cache.sh" commence -w "${wallList[setIndex]}" 2>&1); then
+        if ! cache_output=$("$LIB_DIR/prodi/wallpaper/cache.sh" commence -w "${wallList[setIndex]}" 2>&1); then
             print_log -sec "wallpaper" -err "cache" "could not cache ${wallList[setIndex]}"
             printf '%s\n' "$cache_output" >&2
-            return "${HYDE_STATUS_CACHE_FAILED:-3}"
+            return "${PRODI_STATUS_CACHE_FAILED:-3}"
         fi
-        if ! "$LIB_DIR/hyde/color.set.sh" "${wallList[setIndex]}"; then
+        if ! "$LIB_DIR/prodi/color.set.sh" "${wallList[setIndex]}"; then
             print_log -sec "wallpaper" -err "colors" "could not generate colours from ${wallList[setIndex]}"
-            return "${HYDE_STATUS_COLOURS_FAILED:-4}"
+            return "${PRODI_STATUS_COLOURS_FAILED:-4}"
         fi
         ln -fs "$thmbDir/${wallHash[setIndex]}.sqre" "$wallSqr"
         ln -fs "$thmbDir/${wallHash[setIndex]}.thmb" "$wallTmb"

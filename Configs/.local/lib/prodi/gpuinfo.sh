@@ -267,7 +267,7 @@ nvidia_GPU() {
 }
 amd_GPU() {
     primary_gpu="AMD $GPUINFO_AMD_GPU"
-    amd_output=$("${XDG_STATE_HOME:-$HOME/.local/state}/hyde/python_env/bin/python" "$scrDir/amdgpu.py")
+    amd_output=$("${XDG_STATE_HOME:-$HOME/.local/state}/prodi/python_env/bin/python" "$scrDir/amdgpu.py")
     if [[ -n $amd_output ]] && [[ $amd_output != *"No AMD GPUs detected."* ]] && [[ $amd_output != *"Unknown query failure"* ]]; then
         temperature=$(echo "$amd_output" | jq -r '.["GPU Temperature"]' | sed 's/°C//')
         utilization=$(echo "$amd_output" | jq -r '.["GPU Load"]' | sed 's/%//')

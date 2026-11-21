@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ##
-# Locked, atomic writer for $XDG_STATE_HOME/hyde/staterc.
+# Locked, atomic writer for $XDG_STATE_HOME/prodi/staterc.
 #
 # Usage: staterc.sh set KEY VALUE
 #

@@ -109,7 +109,7 @@ def _load_folder_cache() -> dict[str, str]:
 def _resolve_folder(project: str) -> str | None:
     """Resolve a project name to a folder path (case-sensitive first)."""
     cache = _load_folder_cache()
-    # Exact case match — distinguishes 'hyde' from 'HyDE'
+    # Exact case match — distinguishes 'prodi' from 'HyDE'
     folder = cache.get(project)
     if folder:
         return folder

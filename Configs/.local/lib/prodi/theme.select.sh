@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-[[ $HYDE_SHELL_INIT -ne 1 ]] && eval "$(hyde-shell init)"
-rofiAssetDir="$SHARE_DIR/hyde/rofi/assets"
+[[ $PRODI_SHELL_INIT -ne 1 ]] && eval "$(prodi-shell init)"
+rofiAssetDir="$SHARE_DIR/prodi/rofi/assets"
 hypr_border=${hypr_border:-"$(hyprctl -j getoption decoration:rounding | jq '.int')"}
 hypr_border=${hypr_border:-2}
 if [[ -n $HYPRLAND_INSTANCE_SIGNATURE ]]; then
@@ -115,9 +115,9 @@ rofiSel=$(
         -theme-str "$font_override" \
         -theme-str "$r_override" \
         -theme "${ROFI_THEME_STYLE:-selector}" \
-        -select "$HYDE_THEME"
+        -select "$PRODI_THEME"
 )
 if [ -n "$rofiSel" ]; then
-    "$LIB_DIR/hyde/theme.switch.sh" -s "$rofiSel"
+    "$LIB_DIR/prodi/theme.switch.sh" -s "$rofiSel"
     notify-send -a "HyDE Alert" -i "$iconsDir/Wallbash-Icon/hyde.png" " $rofiSel"
 fi

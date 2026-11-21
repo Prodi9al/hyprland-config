@@ -5,15 +5,15 @@ local floating_window_boundary = function(win)
 		return
 	end
 
-	if hyde.handle and hyde.handle.float_size_bounds then
-		hyde.handle.float_size_bounds(win)
+	if prodi.handle and prodi.handle.float_size_bounds then
+		prodi.handle.float_size_bounds(win)
 	end
 end
 
 -- spawns floating windows
 local floating_window_follow_cursor = function(win)
-	if hyde.handle and hyde.handle.float_follow_cursor then
-		hyde.handle.float_follow_cursor(win)
+	if prodi.handle and prodi.handle.float_follow_cursor then
+		prodi.handle.float_follow_cursor(win)
 	end
 end
 

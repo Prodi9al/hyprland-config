@@ -1213,7 +1213,7 @@ def main():
     # Set default input/output if --gui and not provided
     if args.gui and not args.input:
         xdg_cache = os.environ.get("XDG_CACHE_HOME", os.path.expanduser("~/.cache"))
-        args.input = os.path.join(xdg_cache, "hyde", "wall.dcol")
+        args.input = os.path.join(xdg_cache, "prodi", "wall.dcol")
         if not args.output:
             args.output = args.input
 

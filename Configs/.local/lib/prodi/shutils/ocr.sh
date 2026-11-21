@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-[[ ${HYDE_SHELL_INIT} -ne 1 ]] && eval "$(hyde-shell init)"
+[[ ${PRODI_SHELL_INIT} -ne 1 ]] && eval "$(prodi-shell init)"
 
 ocr_extract() {
     image_path="$1"

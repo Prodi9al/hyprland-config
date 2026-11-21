@@ -4,7 +4,7 @@ local toml = require("toml")
 local xdg = require("xdg")
 
 local theme_name = arg[1] or "Catppuccin Mocha"
-local theme_dir = xdg.config .. "/hyde/themes/" .. theme_name
+local theme_dir = xdg.config .. "/prodi/themes/" .. theme_name
 local theme_config = theme_dir .. "/hypr.theme"
 local toml_config = theme_dir .. "/config.toml"
 local schema_path = xdg.data .. "/hypr/schema/hyprland-lua.json"

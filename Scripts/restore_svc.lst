@@ -1,0 +1,13 @@
+# Format: service|context|command
+# context: root|user
+# command: enable|start|restart|enable --now|etc.
+#
+# Legacy format (single service per line) is still supported:
+
+# System services (root)
+NetworkManager|root|enable --now
+bluetooth|root|enable --now
+
+# User services
+omniroute|user|enable --now
+9router|user|enable --now

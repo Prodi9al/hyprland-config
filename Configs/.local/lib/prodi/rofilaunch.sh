@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 pkill rofi && exit 0
-if [[ $HYDE_SHELL_INIT -ne 1 ]]; then
-    eval "$(hyde-shell init)"
+if [[ $PRODI_SHELL_INIT -ne 1 ]]; then
+    eval "$(prodi-shell init)"
 else
     export_hyde_config
 fi
@@ -66,7 +66,7 @@ rofi_args+=("$@")
 hypr_border="${hypr_border:-10}"
 hypr_width="${hypr_width:-2}"
 wind_border=$((hypr_border * 3))
-if [[ -f "$HYDE_STATE_HOME/fullscreen_$r_mode" ]]; then
+if [[ -f "$PRODI_STATE_HOME/fullscreen_$r_mode" ]]; then
     hypr_width="0"
     wind_border="0"
 fi
@@ -98,5 +98,5 @@ rofi -show "$r_mode" \
     -theme-str "$r_override" \
     -theme "$rofi_config" \
     -dump-theme | {
-    grep -q "fullscreen.*true" && touch "$HYDE_STATE_HOME/fullscreen_$r_mode"
-} || rm -f "$HYDE_STATE_HOME/fullscreen_$r_mode"
+    grep -q "fullscreen.*true" && touch "$PRODI_STATE_HOME/fullscreen_$r_mode"
+} || rm -f "$PRODI_STATE_HOME/fullscreen_$r_mode"

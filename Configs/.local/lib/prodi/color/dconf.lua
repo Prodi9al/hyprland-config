@@ -22,7 +22,7 @@ local function _f(font, size)
 end
 
 local lua_u = {}
-local ok, ui = pcall(dofile, xdg.state .. "/hyde/lua_state/ui.lua")
+local ok, ui = pcall(dofile, xdg.state .. "/prodi/lua_state/ui.lua")
 if ok and ui then lua_u = ui.ui end
 
 local function _r(key)

@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
-[[ $HYDE_SHELL_INIT -ne 1 ]] && eval "$(hyde-shell init)"
+[[ $PRODI_SHELL_INIT -ne 1 ]] && eval "$(prodi-shell init)"
 style=$1
 if [ "$#" -lt 2 ] && [[ $1 =~ ^[0-9]+$ ]]; then
     print_log -y "Please use --backend and --style flags... this usage will be deprecated"
 else
 
     # shellcheck disable=SC1091
-    source "${LIB_DIR}/hyde/shutils/argparse.sh"
+    source "${LIB_DIR}/prodi/shutils/argparse.sh"
     argparse_init "$@"
 
-    argparse_program "hyde-shell gamelauncher"
+    argparse_program "prodi-shell gamelauncher"
     argparse_header "HyDE Game Launcher"
 
     argparse "--style,-s" "STYLE" "Specify the style" "parameter"
@@ -42,8 +42,8 @@ case ${style:-5} in
         monitor_scale="${monitor_scale:-100}"
         monitor_width=$((monitor_info[0] * percent / monitor_scale))
         monitor_height=$((monitor_info[1] * percent / monitor_scale))
-        BG=$HOME/.local/share/hyde/rofi/assets/steamdeck_holographic.png
-        BGfx=$HOME/.cache/hyde/landing/steamdeck_holographic_${monitor_width}x$monitor_height.png
+        BG=$HOME/.local/share/prodi/rofi/assets/steamdeck_holographic.png
+        BGfx=$HOME/.cache/prodi/landing/steamdeck_holographic_${monitor_width}x$monitor_height.png
         if [ ! -e "$BGfx" ]; then
             magick "$BG" -resize ${monitor_width}x$monitor_height -background none -gravity center -extent ${monitor_width}x$monitor_height "$BGfx"
         fi
@@ -60,13 +60,13 @@ rofi_args=()
 
 case "$backend" in
     steam)
-        backend_command=("${XDG_STATE_HOME:-$HOME/.local/state}/hyde/python_env/bin/python" "$LIB_DIR/hyde/gamelauncher/steam.py" --rofi-string)
+        backend_command=("${XDG_STATE_HOME:-$HOME/.local/state}/prodi/python_env/bin/python" "$LIB_DIR/prodi/gamelauncher/steam.py" --rofi-string)
         ;;
     lutris)
-        backend_command=("${XDG_STATE_HOME:-$HOME/.local/state}/hyde/python_env/bin/python" "$LIB_DIR/hyde/gamelauncher/lutris.py" --rofi-string)
+        backend_command=("${XDG_STATE_HOME:-$HOME/.local/state}/prodi/python_env/bin/python" "$LIB_DIR/prodi/gamelauncher/lutris.py" --rofi-string)
         ;;
     *)
-        backend_command=("${XDG_STATE_HOME:-$HOME/.local/state}/hyde/python_env/bin/python" "$LIB_DIR/hyde/gamelauncher/catalog.py" --rofi-string)
+        backend_command=("${XDG_STATE_HOME:-$HOME/.local/state}/prodi/python_env/bin/python" "$LIB_DIR/prodi/gamelauncher/catalog.py" --rofi-string)
         rofi_args=(-markup-rows)
         ;;
 esac

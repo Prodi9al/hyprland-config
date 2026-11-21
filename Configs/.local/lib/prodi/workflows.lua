@@ -28,7 +28,7 @@ if _is_main then
     common.run(
         M,
         {
-            name = "hyde-shell workflows",
+            name = "prodi-shell workflows",
             description = "HyDE Workflow Selector"
         }
     )

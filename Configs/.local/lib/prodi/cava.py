@@ -29,9 +29,9 @@ class HydeConfig:
         self.config = self._load_config()
 
     def _load_config(self):
-        """Load Hyde configuration from $XDG_STATE_HOME/hyde/config"""
+        """Load Hyde configuration from $XDG_STATE_HOME/prodi/config"""
         state_dir = os.path.expanduser(os.getenv("XDG_STATE_HOME", "~/.local/state"))
-        config_file = os.path.join(state_dir, "hyde", "config")
+        config_file = os.path.join(state_dir, "prodi", "config")
 
         if not os.path.exists(config_file):
             return {}
@@ -140,9 +140,9 @@ class CavaServer:
 
     def __init__(self):
         self.runtime_dir = os.getenv("XDG_RUNTIME_DIR", os.path.join("/run/user", str(os.getuid())))
-        self.socket_file = os.path.join(self.runtime_dir, "hyde", "cava.sock")
-        self.pid_file = os.path.join(self.runtime_dir, "hyde", "cava.pid")
-        self.temp_dir = Path(os.path.join(self.runtime_dir, "hyde"))
+        self.socket_file = os.path.join(self.runtime_dir, "prodi", "cava.sock")
+        self.pid_file = os.path.join(self.runtime_dir, "prodi", "cava.pid")
+        self.temp_dir = Path(os.path.join(self.runtime_dir, "prodi"))
         self.config_file = self.temp_dir / "cava.manager.conf"
 
         self.clients = []
@@ -360,7 +360,7 @@ class CavaServer:
             print("Error: cava not found. Please install cava.")
 
     def _create_cava_config(self, bars=16, range_val=15, channels="stereo", reverse=0, prefix=""):
-        """Create cava configuration file with channels and reverse support, using HydeConfig with or without prefix as appropriate"""
+        """Create cava configuration file with channels and reverse support, using prodiConfig with or without prefix as appropriate"""
         hyde_config = HydeConfig()
 
         if prefix:
@@ -598,7 +598,7 @@ class CavaClient:
 
     def __init__(self):
         self.runtime_dir = os.getenv("XDG_RUNTIME_DIR", os.path.join("/run/user", str(os.getuid())))
-        self.socket_file = os.path.join(self.runtime_dir, "hyde", "cava.sock")
+        self.socket_file = os.path.join(self.runtime_dir, "prodi", "cava.sock")
         self.parser = CavaDataParser()
 
     def _auto_start_manager_if_needed(self, bars=16, range_val=15):
@@ -739,7 +739,7 @@ class CavaReloadClient:
 
     def __init__(self):
         self.runtime_dir = os.getenv("XDG_RUNTIME_DIR", os.path.join("/run/user", str(os.getuid())))
-        self.socket_file = os.path.join(self.runtime_dir, "hyde", "cava.sock")
+        self.socket_file = os.path.join(self.runtime_dir, "prodi", "cava.sock")
 
     def reload(self):
         if not os.path.exists(self.socket_file):

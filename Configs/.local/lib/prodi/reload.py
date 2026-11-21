@@ -60,34 +60,34 @@ def run_cmd(cmd, quiet=False) -> bool:
 
 def reload_cache() -> bool:
     """Reload wallpaper cache."""
-    cache_script = LIB_DIR / "hyde" / "wallpaper" / "cache.sh"
+    cache_script = LIB_DIR / "prodi" / "wallpaper" / "cache.sh"
     if not cache_script.exists():
         print_log("-err", f"Cache script not found at {cache_script}")
         return False
-    print_log("-sec", "hyde", "Reloading wallpaper cache...")
+    print_log("-sec", "prodi", "Reloading wallpaper cache...")
     return run_cmd(["bash", str(cache_script), "commence", "-t", ""])
 
 
 def reload_theme() -> bool:
     """Reload theme switch."""
-    theme_script = LIB_DIR / "hyde" / "theme.switch.sh"
+    theme_script = LIB_DIR / "prodi" / "theme.switch.sh"
     if not theme_script.exists():
         print_log("-err", f"Theme switch script not found at {theme_script}")
         return False
-    print_log("-sec", "hyde", "Reloading theme...")
+    print_log("-sec", "prodi", "Reloading theme...")
     return run_cmd(["bash", str(theme_script)])
 
 
 def reload_python() -> bool:
     """Reload/sync Python virtual environment."""
-    python_script = LIB_DIR / "hyde" / "pyutils" / "python_env.py"
+    python_script = LIB_DIR / "prodi" / "pyutils" / "python_env.py"
     if not python_script.exists():
         print_log("-err", f"Python env script not found at {python_script}")
         return False
 
-    print_log("-sec", "hyde", "Reloading Python environment...")
+    print_log("-sec", "prodi", "Reloading Python environment...")
     state_home = os.environ.get("XDG_STATE_HOME") or os.path.expanduser("~/.local/state")
-    venv_python = Path(state_home) / "hyde" / "python_env" / "bin" / "python"
+    venv_python = Path(state_home) / "prodi" / "python_env" / "bin" / "python"
 
     if os.access(venv_python, os.X_OK):
         if run_cmd([str(venv_python), str(python_script), "sync"], quiet=True):
@@ -104,12 +104,12 @@ def reload_python() -> bool:
 
 def reload_lua() -> bool:
     """Reload/sync Lua environment."""
-    lua_script = LIB_DIR / "hyde" / "pyutils" / "lua_env.py"
+    lua_script = LIB_DIR / "prodi" / "pyutils" / "lua_env.py"
     if not lua_script.exists():
         print_log("-err", f"Lua env script not found at {lua_script}")
         return False
 
-    print_log("-sec", "hyde", "Reloading Lua environment...")
+    print_log("-sec", "prodi", "Reloading Lua environment...")
     python_bin = sys.executable or "python3"
 
     if run_cmd([python_bin, str(lua_script), "sync"]):
@@ -158,7 +158,7 @@ def main():
         print_log("-warn", f"Valid targets are: {', '.join(TARGETS.keys())} or 'all'")
         sys.exit(1)
 
-    print_log("-sec", "hyde", f"Reloading HyDE components: {', '.join(targets_to_run)}")
+    print_log("-sec", "prodi", f"Reloading HyDE components: {', '.join(targets_to_run)}")
 
     success = True
     for name in TARGETS:

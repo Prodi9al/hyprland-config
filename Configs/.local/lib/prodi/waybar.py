@@ -75,8 +75,8 @@ INCLUDES_DIRS = [
 ]
 
 CONFIG_JSONC = Path(os.path.join(str(xdg_config_home()), "waybar", "config.jsonc"))
-STATE_FILE = Path(os.path.join(str(xdg_state_home()), "hyde", "staterc"))
-HYDE_CONFIG = Path(os.path.join(str(xdg_state_home()), "hyde", "config"))
+STATE_FILE = Path(os.path.join(str(xdg_state_home()), "prodi", "staterc"))
+PRODI_CONFIG = Path(os.path.join(str(xdg_state_home()), "prodi", "config"))
 _desktop = os.environ.get('XDG_CURRENT_DESKTOP') or os.environ.get('XDG_SESSION_DESKTOP') or 'Hyprland'
 if _desktop in ('HyDE', 'unknown', ''):
     _desktop = 'Hyprland'
@@ -171,8 +171,8 @@ def get_state_value(key, default=None):
 
 def get_config_value(key, default=None):
     """Get a value from the config file or state file."""
-    if HYDE_CONFIG.exists():
-        with open(HYDE_CONFIG, "r") as file:
+    if PRODI_CONFIG.exists():
+        with open(PRODI_CONFIG, "r") as file:
             for line in file:
                 clean_line = line.strip()
                 if clean_line.startswith("export "):
@@ -642,7 +642,7 @@ def _atomic_copy(src, dst):
 
 def write_style_file(style_filepath, source_filepath):
     """Override the style file with the given source style."""
-    wallbash_gtk_css_file = os.path.join(str(xdg_cache_home()), "hyde", "wallbash", "gtk.css")
+    wallbash_gtk_css_file = os.path.join(str(xdg_cache_home()), "prodi", "wallbash", "gtk.css")
     wallbash_gtk_css_file_str = (
         f'@import "{wallbash_gtk_css_file}";'
         if os.path.exists(wallbash_gtk_css_file)
@@ -1153,7 +1153,7 @@ def get_value_from_hypr_theme(variable_name):
         try:
             with open(STATE_FILE, "r") as file:
                 for line in file:
-                    if line.startswith("HYDE_THEME="):
+                    if line.startswith("PRODI_THEME="):
                         theme_name = line.strip().split("=", 1)[1].strip('"').strip("'")
                         logger.debug(f"Found theme name in state file: {theme_name}")
                         break
@@ -1165,7 +1165,7 @@ def get_value_from_hypr_theme(variable_name):
         logger.debug("No theme name found in state file")
         return None
 
-    hypr_theme_path = os.path.join(str(xdg_config_home()), "hyde", "themes", theme_name, "hypr.theme")
+    hypr_theme_path = os.path.join(str(xdg_config_home()), "prodi", "themes", theme_name, "hypr.theme")
     logger.debug(f"Looking for hypr.theme at: {hypr_theme_path}")
 
     if not os.path.exists(hypr_theme_path):
@@ -1342,7 +1342,7 @@ def update_style(style_path):
 
     if not os.path.exists(theme_style_filepath):
         logger.error(
-            f"Missing '{theme_style_filepath}', Please run 'hyde-shell reload' to generate it."
+            f"Missing '{theme_style_filepath}', Please run 'prodi-shell reload' to generate it."
         )
 
     if not style_path:
@@ -1408,8 +1408,8 @@ def main():
     logger.debug("Starting waybar.py")
     logger.debug(f"Looking for state file at: {STATE_FILE}")
 
-    source_env_file(os.path.join(str(xdg_runtime_dir()), "hyde", "environment"))
-    source_env_file(os.path.join(str(xdg_state_home()), "hyde", "config"))
+    source_env_file(os.path.join(str(xdg_runtime_dir()), "prodi", "environment"))
+    source_env_file(os.path.join(str(xdg_state_home()), "prodi", "config"))
 
     if STATE_FILE.exists():
         logger.debug(f"State file found: {STATE_FILE}")

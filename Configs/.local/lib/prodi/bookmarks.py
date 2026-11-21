@@ -13,10 +13,10 @@ class XDGPaths:
             "XDG_RUNTIME_DIR", os.path.join(self.HOME, ".local/share")
         )
         self.xdg_data = os.environ.get("XDG_DATA_HOME", os.path.join(self.HOME, ".local/share"))
-        self.CACHE_DIR = os.path.join(self.xdg_cache, "hyde")
-        self.CONFIG_DIR = os.path.join(self.xdg_config, "hyde")
-        self.RUNTIME_DIR = os.path.join(self.xdg_runtime, "hyde")
-        self.DATA_DIR = os.path.join(self.xdg_data, "hyde")
+        self.CACHE_DIR = os.path.join(self.xdg_cache, "prodi")
+        self.CONFIG_DIR = os.path.join(self.xdg_config, "prodi")
+        self.RUNTIME_DIR = os.path.join(self.xdg_runtime, "prodi")
+        self.DATA_DIR = os.path.join(self.xdg_data, "prodi")
         self.RECENT_FILE = os.path.join(self.CACHE_DIR, "landing/show_bookmarks.recent")
         self.RECENT_NUMBER = 5
 

@@ -4,27 +4,27 @@ export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
-export HYDE_CONFIG_HOME="$XDG_CONFIG_HOME/hyde"
-export HYDE_DATA_HOME="$XDG_DATA_HOME/hyde"
-export HYDE_CACHE_HOME="$XDG_CACHE_HOME/hyde"
-export HYDE_STATE_HOME="$XDG_STATE_HOME/hyde"
-export HYDE_RUNTIME_DIR="$XDG_RUNTIME_DIR/hyde"
+export PRODI_CONFIG_HOME="$XDG_CONFIG_HOME/prodi"
+export PRODI_DATA_HOME="$XDG_DATA_HOME/prodi"
+export PRODI_CACHE_HOME="$XDG_CACHE_HOME/prodi"
+export PRODI_STATE_HOME="$XDG_STATE_HOME/prodi"
+export PRODI_RUNTIME_DIR="$XDG_RUNTIME_DIR/prodi"
 export ICONS_DIR="$XDG_DATA_HOME/icons"
 export FONTS_DIR="$XDG_DATA_HOME/fonts"
 export THEMES_DIR="$XDG_DATA_HOME/themes"
-export scrDir="${LIB_DIR:-$HOME/.local/lib}/hyde"
+export scrDir="${LIB_DIR:-$HOME/.local/lib}/prodi"
 export confDir="${XDG_CONFIG_HOME:-$HOME/.config}"
-export hydeConfDir="$HYDE_CONFIG_HOME"
-export cacheDir="$HYDE_CACHE_HOME"
-export thmbDir="$HYDE_CACHE_HOME/thumbs"
-export dcolDir="$HYDE_CACHE_HOME/dcols"
+export prodiConfDir="$PRODI_CONFIG_HOME"
+export cacheDir="$PRODI_CACHE_HOME"
+export thmbDir="$PRODI_CACHE_HOME/thumbs"
+export dcolDir="$PRODI_CACHE_HOME/dcols"
 export iconsDir="$ICONS_DIR"
 export themesDir="$THEMES_DIR"
 export fontsDir="$FONTS_DIR"
 export hashMech="sha1sum"
 
-export HYDE_STATUS_CACHE_FAILED=3
-export HYDE_STATUS_COLOURS_FAILED=4
+export PRODI_STATUS_CACHE_FAILED=3
+export PRODI_STATUS_COLOURS_FAILED=4
 
 ##
 # Creates the directories HyDE writes its own generated state into. A template
@@ -32,21 +32,21 @@ export HYDE_STATUS_COLOURS_FAILED=4
 # first run on a clean machine would otherwise leave the colour state unwritten.
 #
 # Globals:
-#   HYDE_STATE_HOME, HYDE_CACHE_HOME, HYDE_RUNTIME_DIR, XDG_CONFIG_HOME
+#   PRODI_STATE_HOME, PRODI_CACHE_HOME, PRODI_RUNTIME_DIR, XDG_CONFIG_HOME
 ##
-hyde_state_dirs() {
+prodi_state_dirs() {
     local dir
-    for dir in "$HYDE_STATE_HOME/lua_state" "$HYDE_CACHE_HOME/wallbash" "$HYDE_RUNTIME_DIR" \
+    for dir in "$PRODI_STATE_HOME/lua_state" "$PRODI_CACHE_HOME/wallbash" "$PRODI_RUNTIME_DIR" \
         "${XDG_CONFIG_HOME:-$HOME/.config}/hypr/themes"; do
         [ -d "$dir" ] && continue
         if ! mkdir -p "$dir"; then
-            printf '[hyde] could not create %s\n' "$dir" >&2
+            printf '[prodi] could not create %s\n' "$dir" >&2
             return 1
         fi
     done
 }
-hyde_state_dirs
-hyde_state_dirs_status=$?
+prodi_state_dirs
+prodi_state_dirs_status=$?
 
 send_notifs() {
     local args=("$@")
@@ -207,8 +207,8 @@ get_themes() {
     unset thmSort
     unset thmList
     unset thmWall
-    if [ ! -d "$HYDE_CONFIG_HOME/themes" ]; then
-        print_log -sec "theme" -warn "themes" "no theme directory at $HYDE_CONFIG_HOME/themes"
+    if [ ! -d "$PRODI_CONFIG_HOME/themes" ]; then
+        print_log -sec "theme" -warn "themes" "no theme directory at $PRODI_CONFIG_HOME/themes"
         return 1
     fi
     while read -r thmDir; do
@@ -222,7 +222,7 @@ get_themes() {
         [ -f "$thmDir/.sort" ] && thmSortS+=("$(head -1 "$thmDir/.sort")") || thmSortS+=("0")
         thmWallS+=("$realWallPath")
         thmListS+=("${thmDir##*/}")
-    done < <(find -H "$HYDE_CONFIG_HOME/themes" -mindepth 1 -maxdepth 1 -type d)
+    done < <(find -H "$PRODI_CONFIG_HOME/themes" -mindepth 1 -maxdepth 1 -type d)
     while IFS='|' read -r sort theme wall; do
         thmSort+=("$sort")
         thmList+=("$theme")
@@ -242,7 +242,7 @@ get_themes() {
 # not a failure and must not make the function return non-zero: a function
 # call is not exempt from `set -e` the way a command inside an `&&`/`||`
 # list is, so every caller that runs with `set -e` (directly, or via
-# `hyde-shell init`, which calls this) would silently die right here,
+# `prodi-shell init`, which calls this) would silently die right here,
 # before doing anything, on any system that never created these files.
 #
 # A file that *does* exist and fails to source (e.g. broken syntax) is a
@@ -250,8 +250,8 @@ get_themes() {
 # swallowed, only "the file is absent" is treated as success.
 ##
 export_hyde_config() {
-    local user_conf_state="$XDG_STATE_HOME/hyde/staterc"
-    local user_conf="$XDG_STATE_HOME/hyde/config"
+    local user_conf_state="$XDG_STATE_HOME/prodi/staterc"
+    local user_conf="$XDG_STATE_HOME/prodi/config"
     [ -f "$user_conf_state" ] && { source "$user_conf_state" || return; }
     [ -f "$user_conf" ] && { source "$user_conf" || return; }
     return 0
@@ -261,33 +261,33 @@ case "$enableWallDcol" in
 0 | 1 | 2 | 3) ;;
 *) enableWallDcol=0 ;;
 esac
-if [ -z "$HYDE_THEME" ] || [ ! -d "$HYDE_CONFIG_HOME/themes/$HYDE_THEME" ]; then
+if [ -z "$PRODI_THEME" ] || [ ! -d "$PRODI_CONFIG_HOME/themes/$PRODI_THEME" ]; then
     get_themes
-    HYDE_THEME="${thmList[0]}"
+    PRODI_THEME="${thmList[0]}"
 fi
-HYDE_THEME_DIR="$HYDE_CONFIG_HOME/themes/$HYDE_THEME"
+PRODI_THEME_DIR="$PRODI_CONFIG_HOME/themes/$PRODI_THEME"
 WALLBASH_DIRS=(
     "$XDG_CONFIG_HOME/wallbash"
-    "$XDG_CONFIG_HOME/hyde/wallbash"
+    "$XDG_CONFIG_HOME/prodi/wallbash"
     "$XDG_DATA_HOME/wallbash"
-    "$XDG_DATA_HOME/hyde/wallbash"
-    "/usr/local/share/hyde/wallbash"
-    "/usr/share/hyde/wallbash")
+    "$XDG_DATA_HOME/prodi/wallbash"
+    "/usr/local/share/prodi/wallbash"
+    "/usr/share/prodi/wallbash")
 wallbashDirs=("${WALLBASH_DIRS[@]}")
-export HYDE_THEME HYDE_THEME_DIR WALLBASH_DIRS wallbashDirs enableWallDcol
+export PRODI_THEME PRODI_THEME_DIR WALLBASH_DIRS wallbashDirs enableWallDcol
 if [ -n "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
     hypr_border="$(hyprctl -j getoption decoration:rounding | jq '.int')"
     hypr_width="$(hyprctl -j getoption general:border_size | jq '.int')"
 fi
-export hypr_border=${hypr_border:-${HYDE_BORDER_RADIUS:-2}}
-export hypr_width=${hypr_width:-${HYDE_BORDER_WIDTH:-2}}
+export hypr_border=${hypr_border:-${PRODI_BORDER_RADIUS:-2}}
+export hypr_width=${hypr_width:-${PRODI_BORDER_WIDTH:-2}}
 pkg_installed() {
     local pkgIn=$1
     if command -v "$pkgIn" &>/dev/null; then
         return 0
     elif command -v "flatpak" &>/dev/null && flatpak info "$pkgIn" &>/dev/null; then
         return 0
-    elif hyde-shell pm.sh pq "$pkgIn" &>/dev/null; then
+    elif prodi-shell pm.sh pq "$pkgIn" &>/dev/null; then
         return 0
     else
         return 1
@@ -310,7 +310,7 @@ set_hash() {
     "$hashMech" "$hashImage" | awk '{print $1}'
 }
 check_package() {
-    local lock_file="${XDG_RUNTIME_DIR:-/tmp}/hyde/__package.lock"
+    local lock_file="${XDG_RUNTIME_DIR:-/tmp}/prodi/__package.lock"
     mkdir -p "${XDG_RUNTIME_DIR:-/tmp}/hyde"
     if [ -f "$lock_file" ]; then
         return 0
@@ -326,7 +326,7 @@ check_package() {
 }
 get_hyprConf() {
     local hyArg="$1"
-    local file="${2:-"$HYDE_THEME_DIR/hypr.theme"}"
+    local file="${2:-"$PRODI_THEME_DIR/hypr.theme"}"
     local hyVar="$hyArg"
     local hyType=""
 
@@ -372,12 +372,12 @@ get_hyprConf() {
         "CODE_THEME") echo "Wallbash" ;;
         "SDDM_THEME") echo "" ;;
         *) grep "^[[:space:]]*\$default.$hyVar\s*=" \
-            "$XDG_DATA_HOME/hyde/hyde.conf" \
-            "$XDG_DATA_HOME/hyde/hyprland.conf" \
-            "/usr/local/share/hyde/hyde.conf" \
-            "/usr/local/share/hyde/hyprland.conf" \
-            "/usr/share/hyde/hyde.conf" \
-            "/usr/share/hyde/hyprland.conf" 2>/dev/null | cut -d '=' -f2 | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | head -n 1 ;;
+            "$XDG_DATA_HOME/prodi/hyde.conf" \
+            "$XDG_DATA_HOME/prodi/hyprland.conf" \
+            "/usr/local/share/prodi/hyde.conf" \
+            "/usr/local/share/prodi/hyprland.conf" \
+            "/usr/share/prodi/hyde.conf" \
+            "/usr/share/prodi/hyprland.conf" 2>/dev/null | cut -d '=' -f2 | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | head -n 1 ;;
         esac
     else
         echo "$gsVal"
@@ -446,7 +446,7 @@ get_rofi_pos() {
 paste_string() {
     if ! command -v wtype >/dev/null; then exit 0; fi
     if [ -t 1 ]; then return 0; fi
-    ignore_paste_file="$HYDE_STATE_HOME/ignore.paste"
+    ignore_paste_file="$PRODI_STATE_HOME/ignore.paste"
     if [[ ! -e $ignore_paste_file ]]; then
         cat <<EOF >"$ignore_paste_file"
 kitty
@@ -484,15 +484,15 @@ is_hovered() {
 # because hyprlock, which has no Lua configuration, sources that file.
 #
 # Globals:
-#   HYDE_STATE_HOME, confDir
+#   PRODI_STATE_HOME, confDir
 # Returns:
 #   0 when every artefact exists and carries content, 1 otherwise
 ##
 wallbash_state_is_complete() {
     local required=(
         "$confDir/hypr/themes/colors.conf"
-        "$HYDE_STATE_HOME/lua_state/colors.lua"
-        "$HYDE_STATE_HOME/lua_state/ui.lua"
+        "$PRODI_STATE_HOME/lua_state/colors.lua"
+        "$PRODI_STATE_HOME/lua_state/ui.lua"
     )
     local artefact
     for artefact in "${required[@]}"; do
@@ -593,6 +593,6 @@ export -f get_hyprConf get_monitor_scale get_rofi_pos is_hovered toml_write get_
 # Fails the source when the generated-state directories could not be created,
 # so a caller does not render templates into a directory that is not there.
 ##
-if [ "${hyde_state_dirs_status:-0}" -ne 0 ]; then
-    return "$hyde_state_dirs_status" 2>/dev/null || exit "$hyde_state_dirs_status"
+if [ "${prodi_state_dirs_status:-0}" -ne 0 ]; then
+    return "$prodi_state_dirs_status" 2>/dev/null || exit "$prodi_state_dirs_status"
 fi

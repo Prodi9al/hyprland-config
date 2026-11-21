@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-if [[ $HYDE_SHELL_INIT -ne 1 ]]; then
-    eval "$(hyde-shell init)"
+if [[ $PRODI_SHELL_INIT -ne 1 ]]; then
+    eval "$(prodi-shell init)"
 else
     export_hyde_config
 fi
 
 # shellcheck disable=SC1091
-[[ -f "${LIB_DIR}/hyde/shutils/l10n.sh" ]] && source "${LIB_DIR}/hyde/shutils/l10n.sh"
+[[ -f "${LIB_DIR}/prodi/shutils/l10n.sh" ]] && source "${LIB_DIR}/prodi/shutils/l10n.sh"
 
 USAGE() {
     cat <<"USAGE"
@@ -106,7 +106,7 @@ take_screenshot() {
 
     [[ ${SCREENSHOT_ANNOTATION_ENABLED} == false ]] && target_file="$save_dir/$save_file"
 
-    command=("$LIB_DIR/hyde/screenshot/grimblast" "${extra_args[@]}" "copysave" "${mode}" "${target_file}")
+    command=("$LIB_DIR/prodi/screenshot/grimblast" "${extra_args[@]}" "copysave" "${mode}" "${target_file}")
     print_log -g "Executing screenshot command: ${command[*]}"
     if eval "${command[*]}"; then
         [[ ${SCREENSHOT_ANNOTATION_ENABLED} == false ]] && return 0
@@ -123,9 +123,9 @@ ocr_screenshot() {
     local mode=$1
     shift
     local extra_args=("$@")
-    if "$LIB_DIR/hyde/screenshot/grimblast" "${extra_args[@]}" copysave "$mode" "$temp_screenshot"; then
-        source "${LIB_DIR}/hyde/shutils/ocr.sh"
-        source ${XDG_STATE_HOME}/hyde/config
+    if "$LIB_DIR/prodi/screenshot/grimblast" "${extra_args[@]}" copysave "$mode" "$temp_screenshot"; then
+        source "${LIB_DIR}/prodi/shutils/ocr.sh"
+        source ${XDG_STATE_HOME}/prodi/config
         print_log -g "Performing OCR on $temp_screenshot"
         send_notifs "OCR" "Performing OCR on screenshot..." -i "document-scan" -r 9
         if ! ocr_extract "$temp_screenshot"; then
@@ -142,8 +142,8 @@ qr_screenshot() {
     local mode=$1
     shift
     local extra_args=("$@")
-    if "$LIB_DIR/hyde/screenshot/grimblast" "${extra_args[@]}" copysave "$mode" "$temp_screenshot"; then
-        source "${LIB_DIR}/hyde/shutils/qr.sh"
+    if "$LIB_DIR/prodi/screenshot/grimblast" "${extra_args[@]}" copysave "$mode" "$temp_screenshot"; then
+        source "${LIB_DIR}/prodi/shutils/qr.sh"
         print_log -g "Performing QR scan on $temp_screenshot"
         send_notifs "QR Scan" "Performing QR scan on screenshot..." -i "document-scan" -r 9
         if ! qr_extract "$temp_screenshot"; then

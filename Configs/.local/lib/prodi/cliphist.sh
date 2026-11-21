@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 pkill -u "$USER" rofi && exit 0
-[[ $HYDE_SHELL_INIT -ne 1 ]] && eval "$(hyde-shell init)"
-cache_dir="${HYDE_CACHE_HOME:-$HOME/.cache/hyde}"
+[[ $PRODI_SHELL_INIT -ne 1 ]] && eval "$(prodi-shell init)"
+cache_dir="${PRODI_CACHE_HOME:-$HOME/.cache/hyde}"
 favorites_file="$cache_dir/landing/cliphist_favorites"
 [ -f "$HOME/.cliphist_favorites" ] && favorites_file="$HOME/.cliphist_favorites"
 cliphist_style="${ROFI_CLIPHIST_STYLE:-clipboard}"
 
 # shellcheck disable=SC1091
-[[ -f "${LIB_DIR}/hyde/shutils/l10n.sh" ]] && source "${LIB_DIR}/hyde/shutils/l10n.sh"
+[[ -f "${LIB_DIR}/prodi/shutils/l10n.sh" ]] && source "${LIB_DIR}/prodi/shutils/l10n.sh"
 
 
 process_deletion() {
@@ -62,7 +62,7 @@ check_content() {
         cliphist decode <<< "$line" | wl-copy
         local img_idx
         img_idx=$(awk -F '\t' '{print $1}' <<< "$line")
-        local temp_preview="$XDG_RUNTIME_DIR/hyde/pastebin-preview_$img_idx"
+        local temp_preview="$XDG_RUNTIME_DIR/prodi/pastebin-preview_$img_idx"
         wl-paste > "$temp_preview"
         notify-send -a "${_T["Pastebin:"]:-Pastebin:}" "${_T["Preview:"]:-Preview:} $img_idx" -i "$temp_preview" -t 2000
         return 1
@@ -138,7 +138,7 @@ cliphist_cmd() {
         echo -e ":o:p:t:\t⚙️ ${_T["Options"]:-Options}"
         cliphist list
     else
-        HYDE_CLIPHIST_IMAGE_ONLY=true cliphist.image.py
+        PRODI_CLIPHIST_IMAGE_ONLY=true cliphist.image.py
     fi
 }
 show_history() {
@@ -297,12 +297,12 @@ main_menu_options() {
 ocr_scan() {
 
     # shellcheck disable=SC1091
-    source "${LIB_DIR}/hyde/shutils/ocr.sh"
-    source ${XDG_STATE_HOME}/hyde/config
+    source "${LIB_DIR}/prodi/shutils/ocr.sh"
+    source ${XDG_STATE_HOME}/prodi/config
     local runtime_dir="${XDG_RUNTIME_DIR:-/run/user/${EUID}}/hyde"
     local image_path="${runtime_dir}/cliphist_ocr.png"
     local index
-    index="$(HYDE_CLIPHIST_IMAGE_ONLY=1 "${LIB_DIR}/hyde/cliphist.image.py" | head -n1)"
+    index="$(PRODI_CLIPHIST_IMAGE_ONLY=1 "${LIB_DIR}/prodi/cliphist.image.py" | head -n1)"
     [[ -n $index ]] || {
         send_notifs "${_T["OCR Error"]:-OCR Error}" "${_T["No images in clipboard history..."]:-No images in clipboard history...}" -r 9
         exit 1
@@ -324,10 +324,10 @@ main() {
     setup_rofi_config
 
     # shellcheck disable=SC1091
-    source "${LIB_DIR}/hyde/shutils/argparse.sh"
+    source "${LIB_DIR}/prodi/shutils/argparse.sh"
 
     argparse_init "$@"
-    argparse_program "hyde-shell cliphist"
+    argparse_program "prodi-shell cliphist"
     argparse_header "HyDE Clipboard Manager"
 
     argparse "--copy,-c" "ACTION=copy" "Show clipboard history and copy selected item"

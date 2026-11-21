@@ -35,21 +35,21 @@ HERE = Path(__file__).resolve().parent
 COMPLETIONS_DIR = HERE / "completions"
 
 # ──────────────────────────────────────────────────────────────
-# Built-in command list (parsed from hyde-shell annotations)
+# Built-in command list (parsed from prodi-shell annotations)
 # ──────────────────────────────────────────────────────────────
-HYDE_SHELL_PATH = (HERE.parent.parent / "bin" / "hyde-shell").resolve()
-if not HYDE_SHELL_PATH.is_file():
-    HYDE_SHELL_PATH = Path("/usr/local/bin/hyde-shell")
+PRODI_SHELL_PATH = (HERE.parent.parent / "bin" / "prodi-shell").resolve()
+if not PRODI_SHELL_PATH.is_file():
+    PRODI_SHELL_PATH = Path("/usr/local/bin/prodi-shell")
 
 BUILT_IN_COMMANDS = []  # populated lazily
 BUILT_IN_DESCRIPTIONS = {}
 
 
 def _ensure_builtins():
-    """Parse @cmd annotations from hyde-shell and populate BUILT_IN_COMMANDS."""
+    """Parse @cmd annotations from prodi-shell and populate BUILT_IN_COMMANDS."""
     if BUILT_IN_COMMANDS:
         return
-    meta = parse_new_style(str(HYDE_SHELL_PATH))
+    meta = parse_new_style(str(PRODI_SHELL_PATH))
     cmds = {}
     for cmd_name, info in meta.get("commands", {}).items():
         desc = info.get("desc", "").strip()
@@ -193,20 +193,20 @@ def script_has_public_metadata(file_path: str) -> bool:
 def get_script_paths() -> list:
     """Return list of full paths to discoverable scripts.
 
-    Checks HYDE_SCRIPTS_PATH env var first, then falls back to
+    Checks PRODI_SCRIPTS_PATH env var first, then falls back to
     scanning the hyde lib directory for scripts with metadata.
     """
-    # Mirror hyde-shell defaults when HYDE_SCRIPTS_PATH is missing so
+    # Mirror prodi-shell defaults when PRODI_SCRIPTS_PATH is missing so
     # completions still include user/config scripts in non-initialized shells.
     xdg_config_home = os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config"))
     xdg_data_home = os.environ.get("XDG_DATA_HOME", os.path.expanduser("~/.local/share"))
     default_paths = [
-        os.path.join(xdg_config_home, "hyde", "scripts"),
+        os.path.join(xdg_config_home, "prodi", "scripts"),
         str(HERE),
         os.path.join(xdg_data_home, "waybar", "scripts"),
         os.path.join(xdg_config_home, "waybar", "scripts"),
     ]
-    env_paths = os.environ.get("HYDE_SCRIPTS_PATH", "")
+    env_paths = os.environ.get("PRODI_SCRIPTS_PATH", "")
     search_paths = [p for p in env_paths.split(":") if p.strip()] if env_paths else default_paths[:]
     seen = set()
     paths = []
@@ -414,7 +414,7 @@ def get_global_flags_for_script(script_name: str) -> list:
 # ──────────────────────────────────────────────────────────────
 def output_completion_file(shell: str):
     """Cat the completion template for the given shell."""
-    template = COMPLETIONS_DIR / f"hyde-shell.{shell}"
+    template = COMPLETIONS_DIR / f"prodi-shell.{shell}"
     if template.is_file():
         sys.stdout.write(template.read_text(encoding='utf-8'))
     else:

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-if ! source "$(command -v hyde-shell)"; then
-    echo "[wallbash] code :: Error: hyde-shell not found."
+if ! source "$(command -v prodi-shell)"; then
+    echo "[wallbash] code :: Error: prodi-shell not found."
     echo "[wallbash] code :: Is HyDE installed?"
     exit 1
 fi
-selected_wall="${1:-${XDG_CACHE_HOME:-$HOME/.cache}/hyde/wall.set}"
+selected_wall="${1:-${XDG_CACHE_HOME:-$HOME/.cache}/prodi/wall.set}"
 [ -z "$selected_wall" ] && echo "No input wallpaper" && exit 1
 selected_wall="$(readlink -f "$selected_wall")"
 pkill -O -x mpvpaper || true

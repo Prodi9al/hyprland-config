@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC1091
 # shellcheck disable=SC2034
-if [[ $HYDE_SHELL_INIT -ne 1 ]]; then
-    eval "$(hyde-shell init)"
+if [[ $PRODI_SHELL_INIT -ne 1 ]]; then
+    eval "$(prodi-shell init)"
 else
     export_hyde_config
 fi
 
-source "$LIB_DIR/hyde/wallpaper/help.sh"
-source "$LIB_DIR/hyde/wallpaper/core.sh"
-source "$LIB_DIR/hyde/wallpaper/select.sh"
+source "$LIB_DIR/prodi/wallpaper/help.sh"
+source "$LIB_DIR/prodi/wallpaper/core.sh"
+source "$LIB_DIR/prodi/wallpaper/select.sh"
 
 resolve_cache_args() {
     [ "$cache_flag" == "true" ] || return 0
@@ -26,24 +26,24 @@ run_cache_command() {
     [ "$cache_flag" == "true" ] || return 1
     case "$cache_mode" in
     current)
-        "$LIB_DIR/hyde/wallpaper/cache.sh" commence
+        "$LIB_DIR/prodi/wallpaper/cache.sh" commence
         ;;
     w | wall)
         if [ -z "$cache_arg" ] || [ ! -f "$cache_arg" ]; then
             print_log -err "wallpaper" "--cache wall requires a valid file path"
             return 1
         fi
-        "$LIB_DIR/hyde/wallpaper/cache.sh" commence -w "$cache_arg"
+        "$LIB_DIR/prodi/wallpaper/cache.sh" commence -w "$cache_arg"
         ;;
     t | theme)
         if [ -z "$cache_arg" ]; then
             print_log -err "wallpaper" "--cache theme requires a theme name"
             return 1
         fi
-        "$LIB_DIR/hyde/wallpaper/cache.sh" commence -t "$cache_arg"
+        "$LIB_DIR/prodi/wallpaper/cache.sh" commence -t "$cache_arg"
         ;;
     f | full | all)
-        "$LIB_DIR/hyde/wallpaper/cache.sh" commence -f
+        "$LIB_DIR/prodi/wallpaper/cache.sh" commence -f
         ;;
     *)
         print_log -err "wallpaper" "Invalid cache mode: $cache_mode"
@@ -73,19 +73,19 @@ setup_wallpaper_targets() {
         return 1
     fi
     if [ "$set_as_global" == "true" ]; then
-        wallSet="$HYDE_THEME_DIR/wall.set"
-        wallCur="$HYDE_CACHE_HOME/wall.set"
-        wallSqr="$HYDE_CACHE_HOME/wall.sqre"
-        wallTmb="$HYDE_CACHE_HOME/wall.thmb"
-        wallBlr="$HYDE_CACHE_HOME/wall.blur"
-        wallQad="$HYDE_CACHE_HOME/wall.quad"
-        wallDcl="$HYDE_CACHE_HOME/wall.dcol"
+        wallSet="$PRODI_THEME_DIR/wall.set"
+        wallCur="$PRODI_CACHE_HOME/wall.set"
+        wallSqr="$PRODI_CACHE_HOME/wall.sqre"
+        wallTmb="$PRODI_CACHE_HOME/wall.thmb"
+        wallBlr="$PRODI_CACHE_HOME/wall.blur"
+        wallQad="$PRODI_CACHE_HOME/wall.quad"
+        wallDcl="$PRODI_CACHE_HOME/wall.dcol"
     elif [ -n "$wallpaper_backend" ]; then
-        mkdir -p "$HYDE_CACHE_HOME/wallpapers"
-        wallCur="$HYDE_CACHE_HOME/wallpapers/$wallpaper_backend.png"
-        wallSet="$HYDE_THEME_DIR/wall.$wallpaper_backend.png"
+        mkdir -p "$PRODI_CACHE_HOME/wallpapers"
+        wallCur="$PRODI_CACHE_HOME/wallpapers/$wallpaper_backend.png"
+        wallSet="$PRODI_THEME_DIR/wall.$wallpaper_backend.png"
     else
-        wallSet="$HYDE_THEME_DIR/wall.set"
+        wallSet="$PRODI_THEME_DIR/wall.set"
     fi
     if [ ! -e "$wallSet" ]; then
         Wall_Hash
@@ -134,7 +134,7 @@ handle_output_mode() {
 
 wallpaper_backend_status() {
     case "$1" in
-    "${HYDE_STATUS_CACHE_FAILED:-3}" | "${HYDE_STATUS_COLOURS_FAILED:-4}") printf '%s\n' 1 ;;
+    "${PRODI_STATUS_CACHE_FAILED:-3}" | "${PRODI_STATUS_COLOURS_FAILED:-4}") printf '%s\n' 1 ;;
     *) printf '%s\n' "$1" ;;
     esac
 }
@@ -215,7 +215,7 @@ main() {
             # Warm cache/icons when actually applying a selection (not output-only)
             if [ "$output_flag" != "true" ]; then
                 local _cache_pid
-                "$LIB_DIR/hyde/wallpaper/cache.sh" commence &>/dev/null &
+                "$LIB_DIR/prodi/wallpaper/cache.sh" commence &>/dev/null &
                 _cache_pid=$!
                 trap 'wait "$_cache_pid" 2>/dev/null' EXIT
             fi
@@ -231,15 +231,15 @@ main() {
         esac
     fi
     local backend_status=0
-    if [ -f "$LIB_DIR/hyde/wallpaper.$wallpaper_backend.sh" ] && [ -n "$wallpaper_backend" ]; then
+    if [ -f "$LIB_DIR/prodi/wallpaper.$wallpaper_backend.sh" ] && [ -n "$wallpaper_backend" ]; then
         print_log -sec "wallpaper" "Using backend: $wallpaper_backend"
-        "$LIB_DIR/hyde/wallpaper.$wallpaper_backend.sh" "$wallSet" || backend_status=$?
+        "$LIB_DIR/prodi/wallpaper.$wallpaper_backend.sh" "$wallSet" || backend_status=$?
     else
         if command -v "wallpaper.$wallpaper_backend.sh" >/dev/null; then
             "wallpaper.$wallpaper_backend.sh" "$wallSet" || backend_status=$?
         else
             print_log -warn "wallpaper" "No backend script found for $wallpaper_backend"
-            print_log -warn "wallpaper" "Created: $HYDE_CACHE_HOME/wallpapers/$wallpaper_backend.png instead"
+            print_log -warn "wallpaper" "Created: $PRODI_CACHE_HOME/wallpapers/$wallpaper_backend.png instead"
         fi
     fi
     if [ "$wallpaper_setter_flag" == "select" ]; then

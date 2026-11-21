@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 pkill -u "$USER" rofi && exit 0
-if [[ $HYDE_SHELL_INIT -ne 1 ]]; then
-    eval "$(hyde-shell init)"
+if [[ $PRODI_SHELL_INIT -ne 1 ]]; then
+    eval "$(prodi-shell init)"
 else
     export_hyde_config
 fi
-emoji_dir=${HYDE_DATA_HOME:-$HOME/.local/share/hyde}
+emoji_dir=${PRODI_DATA_HOME:-$HOME/.local/share/hyde}
 emoji_data="$emoji_dir/emoji.db"
-cache_dir="${HYDE_CACHE_HOME:-$HOME/.cache/hyde}"
+cache_dir="${PRODI_CACHE_HOME:-$HOME/.cache/hyde}"
 recent_data="$cache_dir/landing/show_emoji.recent"
 save_recent_entry() {
     local emoji_line="$1"
@@ -89,7 +89,7 @@ parse_arguments() {
                 cat << HELP
 Usage:
 --style [1 | 2]         Change Emoji style
-                        Add 'emoji_style=[1|2]' variable in ~/.config/hyde/config.toml'
+                        Add 'emoji_style=[1|2]' variable in ~/.config/prodi/config.toml'
                             1 = list
                             2 = grid
                         or select styles from 'rofi-theme-selector'

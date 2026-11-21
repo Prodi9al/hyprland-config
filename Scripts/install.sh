@@ -375,6 +375,40 @@ else
   echo "    Added ~/.local/bin to PATH in $RC_FILE"
 fi
 
+# 9. Generate theme state on fresh install (mimic hyde: generate lua_state,
+#    wallpaper cache, and waybar config during install so colors work out of
+#    the box without requiring a manual `prodi-shell reload theme`).
+if [[ "$DRY_RUN" != true ]] && [[ "$UNATTENDED" != true ]]; then
+  echo ""
+  echo "==> Generating theme state for fresh install..."
+  export LIB_DIR="$HOME/.local/lib"
+  export SHARE_DIR="$HOME/.local/share"
+  export PATH="$HOME/.local/lib/prodi:$HOME/.local/bin:${PATH}"
+  if source "$HOME/.local/lib/prodi/globalcontrol.sh" 2>/dev/null; then
+    echo "    Prodi environment initialized."
+    if "$HOME/.local/lib/prodi/wallpaper/cache.sh" commence -t "" 2>/dev/null; then
+      echo "    Wallpaper cache generated."
+    else
+      echo "    Warning: wallpaper cache generation skipped."
+    fi
+    if "$HOME/.local/lib/prodi/theme.switch.sh" -q 2>/dev/null; then
+      echo "    Theme color state generated (colors.lua, ui.lua, hypr_theme.lua)."
+    else
+      echo "    Warning: theme state generation skipped — run 'prodi-shell reload theme' manually."
+    fi
+    if "$HOME/.local/lib/prodi/waybar.py" --update 2>/dev/null; then
+      echo "    Waybar configuration updated."
+    else
+      echo "    Warning: waybar update skipped."
+    fi
+  else
+    echo "    Warning: prodi environment could not be initialized — theme state not generated."
+  fi
+elif [[ "$UNATTENDED" == true ]]; then
+  echo ""
+  echo "==> Skipping theme state generation (unattended mode). Run 'prodi-shell reload theme' after first boot."
+fi
+
 echo ""
 echo "==> Install complete!"
 echo ""
@@ -384,5 +418,5 @@ echo "Next steps:"
 echo "  1. Log out and log back in (or source ~/.bashrc)."
 echo "  2. Install fonts (e.g. JetBrainsMono Nerd Font) and icons (e.g. BeautyLine, Bibata)."
 echo "  3. Start Hyprland and press SUPER+R to open the menu."
-echo "  4. Use \`prodi-shell theme.switch\` to change themes."
+echo "  4. Theme color state is already generated — use \`prodi-shell theme.switch\` to change themes."
 echo "  5. Use \`prodi-shell wallpaper\` to manage wallpapers."

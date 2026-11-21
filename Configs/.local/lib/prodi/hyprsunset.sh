@@ -1,10 +1,10 @@
 #! /bin/env bash
-if ! source "$(command -v hyde-shell)"; then
-    echo "[$0] :: Error: hyde-shell not found."
+if ! source "$(command -v prodi-shell)"; then
+    echo "[$0] :: Error: prodi-shell not found."
     echo "[$0] :: Is HyDE installed?"
     exit 1
 fi
-sunsetConf="${XDG_STATE_HOME:-$HOME/.local/state}/hyde/hyprsunset"
+sunsetConf="${XDG_STATE_HOME:-$HOME/.local/state}/prodi/hyprsunset"
 default_temp=6000
 default_gamma=100
 temp_step=500

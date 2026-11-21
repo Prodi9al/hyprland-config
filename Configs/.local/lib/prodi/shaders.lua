@@ -13,8 +13,8 @@ local argparse = require("argparse")
 local state = require("luautils.global.state")
 local socket = require("socket")
 local JSON = require("dkjson")
-local CACHE_DIR = xdg.state .. "/hyde/shaders"
-local RUNTIME_DIR = (xdg.runtime or xdg.state) .. "/hyde/shaders"
+local CACHE_DIR = xdg.state .. "/prodi/shaders"
+local RUNTIME_DIR = (xdg.runtime or xdg.state) .. "/prodi/shaders"
 local MENU_FILE = RUNTIME_DIR .. "/preview"
 local INSTANCE = os.getenv("HYPRLAND_INSTANCE_SIGNATURE") or ""
 local DEFAULT_SHADER_ICON = ""
@@ -581,7 +581,7 @@ end
 local _is_main = arg and arg[0] and (_src == "@" .. arg[0] or _src:sub(2):match("[^/]+$") == arg[0]:match("[^/]+$"))
 if _is_main then
     -- Custom CLI parser with test flags
-    local parser = argparse("hyde-shell shaders", "HyDE Shader Selector")
+    local parser = argparse("prodi-shell shaders", "HyDE Shader Selector")
     parser:flag("--list", "List available items")
     parser:option("--set", "Set the given item"):argname("NAME")
     parser:flag("--select", "Select an item with rofi")

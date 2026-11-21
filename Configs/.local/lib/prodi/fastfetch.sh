@@ -16,7 +16,7 @@ options:
 
 USAGE
 }
-[ -f "$HYDE_STATE_HOME/staterc" ] && source "$HYDE_STATE_HOME/staterc"
+[ -f "$PRODI_STATE_HOME/staterc" ] && source "$PRODI_STATE_HOME/staterc"
 [ -f "/etc/os-release" ] && source "/etc/os-release"
 confDir="${XDG_CONFIG_HOME:-$HOME/.config}"
 iconDir="${XDG_DATA_HOME:-$HOME/.local/share}/icons"
@@ -29,8 +29,8 @@ case $1 in
             (   
                 image_dirs+=("$confDir/fastfetch/logo")
                 image_dirs+=("$iconDir/Wallbash-Icon/fastfetch/")
-                if [ -n "$HYDE_THEME" ] && [ -d "$confDir/hyde/themes/$HYDE_THEME/logo" ]; then
-                    image_dirs+=("$confDir/hyde/themes/$HYDE_THEME/logo")
+                if [ -n "$PRODI_THEME" ] && [ -d "$confDir/prodi/themes/$PRODI_THEME/logo" ]; then
+                    image_dirs+=("$confDir/prodi/themes/$PRODI_THEME/logo")
                 fi
                 [ -f "$hyde_distro_logo" ] && echo "$hyde_distro_logo"
                 image_dirs+=("$cacheDir/wall.quad")
@@ -86,9 +86,9 @@ HELP
                         image_dirs+=("$iconDir/Wallbash-Icon/fastfetch/")
                         ;;
                     --theme) if
-                        [ -n "$HYDE_THEME" ] && [ -d "$confDir/hyde/themes/$HYDE_THEME/logo" ]
+                        [ -n "$PRODI_THEME" ] && [ -d "$confDir/prodi/themes/$PRODI_THEME/logo" ]
                     then
-                        image_dirs+=("$confDir/hyde/themes/$HYDE_THEME/logo")
+                        image_dirs+=("$confDir/prodi/themes/$PRODI_THEME/logo")
                     fi ;;
                 esac
             done

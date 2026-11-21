@@ -64,7 +64,7 @@ if _is_main then
     common.run(
         M,
         {
-            name = "hyde-shell animations",
+            name = "prodi-shell animations",
             description = "HyDE Animation Selector"
         }
     )

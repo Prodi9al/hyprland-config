@@ -31,7 +31,7 @@ function command_not_found_handler {
 # Function to display a slow load warning
 # the intention is for hyprdots users who might have multiple zsh initialization
 function _slow_load_warning {
-    local lock_file="/tmp/.hyde_slow_load_warning.lock"
+    local lock_file="/tmp/.prodi_slow_load_warning.lock"
     local load_time=$SECONDS
 
     # Check if the lock file exists

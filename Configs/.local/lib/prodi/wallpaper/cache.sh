@@ -8,12 +8,12 @@ extract_thumbnail() {
 }
 
 wallpaper_cache_bootstrap() {
-    if [[ ${HYDE_SHELL_INIT:-0} -ne 1 ]]; then
-        eval "$(hyde-shell init)"
+    if [[ ${PRODI_SHELL_INIT:-0} -ne 1 ]]; then
+        eval "$(prodi-shell init)"
     else
         export_hyde_config
     fi
-    export scrDir="${LIB_DIR:-$HOME/.local/lib}/hyde"
+    export scrDir="${LIB_DIR:-$HOME/.local/lib}/prodi"
     export thmbDir
     export dcolDir
 }
@@ -44,8 +44,8 @@ move_generated_thumbnail() {
 }
 
 wallpaper_cache_init() {
-    [ -d "$HYDE_THEME_DIR" ] && cacheIn="$HYDE_THEME_DIR" || {
-        echo "Error: HYDE_THEME_DIR not found!"
+    [ -d "$PRODI_THEME_DIR" ] && cacheIn="$PRODI_THEME_DIR" || {
+        echo "Error: PRODI_THEME_DIR not found!"
         return 1
     }
     [ -d "$thmbDir" ] || mkdir -p "$thmbDir"
@@ -117,7 +117,7 @@ fn_envar_cache() {
     if command -v rofi &>/dev/null; then
         if [[ ! $XDG_DATA_DIRS =~ share/hyde ]]; then
             mkdir -p "$XDG_DATA_HOME/rofi/themes"
-            ln -snf "$XDG_DATA_HOME/hyde/rofi/themes"/* "$XDG_DATA_HOME/rofi/themes/"
+            ln -snf "$XDG_DATA_HOME/prodi/rofi/themes"/* "$XDG_DATA_HOME/rofi/themes/"
         fi
     fi
 }
@@ -159,7 +159,7 @@ wallpaper_cache_commence() {
             mode=""
             ;;
         t)
-            cacheIn="$(dirname "$HYDE_THEME_DIR")/$OPTARG"
+            cacheIn="$(dirname "$PRODI_THEME_DIR")/$OPTARG"
             if [ ! -d "$cacheIn" ]; then
                 echo "Error: Input theme \"$OPTARG\" not found!"
                 return 1
@@ -168,7 +168,7 @@ wallpaper_cache_commence() {
             mode=""
             ;;
         f)
-            cacheIn="$(dirname "$HYDE_THEME_DIR")"
+            cacheIn="$(dirname "$PRODI_THEME_DIR")"
             mode="_force"
             single_wallpaper=0
             ;;

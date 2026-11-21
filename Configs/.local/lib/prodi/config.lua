@@ -43,10 +43,10 @@ local xdg_config_home = getenv_or(os.getenv("HOME") .. "/.config", "XDG_CONFIG_H
 local xdg_state_home = getenv_or(os.getenv("HOME") .. "/.local/state", "XDG_STATE_HOME")
 
 local config = {
-    ConfigFile = xdg_config_home .. "/hyde/config.toml",
-    EnvFile = xdg_state_home .. "/hyde/config",
-    HyprFile = xdg_state_home .. "/hyde/hyprland.conf",
-    HyprEnvFile = xdg_state_home .. "/hyde/hypr.conf",
+    ConfigFile = xdg_config_home .. "/prodi/config.toml",
+    EnvFile = xdg_state_home .. "/prodi/config",
+    HyprFile = xdg_state_home .. "/prodi/hyprland.conf",
+    HyprEnvFile = xdg_state_home .. "/prodi/hypr.conf",
     NoDaemon = false,
     NoExport = false,
     Verbose = false,
@@ -59,7 +59,7 @@ local isInitialStartup = true
 
 -- CLI parsing
 local function parse_args(argv)
-    local parser = argparse("hyde-shell config", "Parse HyDE config.toml and generate HyDE/Hyprland output files.")
+    local parser = argparse("prodi-shell config", "Parse HyDE config.toml and generate HyDE/Hyprland output files.")
     parser:option("--input", "Path to the input TOML config file."):argname("PATH")
     parser:option("--env", "Path to the generated shell env file."):argname("PATH")
     parser:option("--hypr", "Path to the generated Hyprland config file."):argname("PATH")

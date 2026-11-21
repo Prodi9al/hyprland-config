@@ -1,15 +1,15 @@
 #! /bin/bash
-if ! source "$(command -v hyde-shell)"; then
-    echo "Error: hyde-shell not found."
+if ! source "$(command -v prodi-shell)"; then
+    echo "Error: prodi-shell not found."
     echo "Is HyDE installed?"
     exit 1
 fi
 
 # Source argparse.sh for argument parsing
-source "${LIB_DIR}/hyde/shutils/argparse.sh"
+source "${LIB_DIR}/prodi/shutils/argparse.sh"
 
 confDir="${confDir:-$XDG_CONFIG_HOME}"
-cacheDir="${HYDE_CACHE_HOME:-"$XDG_CACHE_HOME/hyde"}"
+cacheDir="${PRODI_CACHE_HOME:-"$XDG_CACHE_HOME/prodi"}"
 WALLPAPER="$cacheDir/wall.set"
 HYPRLOCK_SCOPE_NAME="hyde-${XDG_SESSION_DESKTOP:-unknown}-lockscreen.scope"
 
@@ -19,8 +19,8 @@ fn_background() {
     is_video=$(file --mime-type -b "$WP" | grep -c '^video/')
     if [ "$is_video" -eq 1 ]; then
         print_log -sec "wallpaper" -stat "converting video" "$WP"
-        mkdir -p "$HYDE_CACHE_HOME/wallpapers/thumbnails"
-        cached_thumb="$HYDE_CACHE_HOME/wallpapers/$(${hashMech:-sha1sum} "$WP" | cut -d' ' -f1).png"
+        mkdir -p "$PRODI_CACHE_HOME/wallpapers/thumbnails"
+        cached_thumb="$PRODI_CACHE_HOME/wallpapers/$(${hashMech:-sha1sum} "$WP" | cut -d' ' -f1).png"
         extract_thumbnail "$WP" "$cached_thumb"
         WP="$cached_thumb"
     fi
@@ -106,10 +106,10 @@ mpris_thumb() {
 fn_cava() {
     local tempFile=/tmp/hyprlock-cava
     [ -f "$tempFile" ] && tail -n 1 "$tempFile"
-    config_file="$XDG_RUNTIME_DIR/hyde/cava.hyprlock"
+    config_file="$XDG_RUNTIME_DIR/prodi/cava.hyprlock"
     if [ "$(pgrep -c -f "cava -p $config_file")" -eq 0 ]; then
         trap 'rm -f ${tempFile}' EXIT
-        "${LIB_DIR}/hyde/cava.py" hyprlock >$tempFile 2>&1
+        "${LIB_DIR}/prodi/cava.py" hyprlock >$tempFile 2>&1
     fi
 }
 fn_art() {
@@ -119,7 +119,7 @@ find_filepath() {
     local filename="${*:-$1}"
     local search_dirs=(
         "${XDG_CONFIG_HOME:-$HOME/.config}/hypr/hyprlock"
-        "${XDG_CONFIG_HOME:-$HOME/.config}/hyde/hyprlock"
+        "${XDG_CONFIG_HOME:-$HOME/.config}/prodi/hyprlock"
         "$HYPRLOCK_CONF_DIR")
     print_log -sec "hyprlock" -stat "Searching for layout" "$filename"
     find "${search_dirs[@]}" -type f -name "$filename*" 2>/dev/null | head -n 1
@@ -150,7 +150,7 @@ $layout_items"
         -theme-str "$font_override" \
         -theme-str "$r_override" \
         -theme-str "$(get_rofi_pos)" \
-        -on-selection-changed 'hyde-shell hyprlock.sh --test-preview  "{entry}"' \
+        -on-selection-changed 'prodi-shell hyprlock.sh --test-preview  "{entry}"' \
         -theme "${ROFI_HYPRLOCK_STYLE:-clipboard}")
     if [ -z "$selected_layout" ]; then
         echo "No selection made"
@@ -163,7 +163,7 @@ $layout_items"
     local hyprlock_conf_path
     hyprlock_conf_path=$(find_filepath "$selected_layout")
     generate_conf "$hyprlock_conf_path"
-    "$LIB_DIR/hyde/font.sh" resolve "$hyprlock_conf_path"
+    "$LIB_DIR/prodi/font.sh" resolve "$hyprlock_conf_path"
     fn_profile
     notify-send -i "system-lock-screen" "Hyprlock layout:" "$selected_layout"
 }
@@ -229,7 +229,7 @@ layout_test() {
         exit 1
     fi
     sleep 2
-    local temp_path="$XDG_RUNTIME_DIR/hyde/hyprlock-test.conf"
+    local temp_path="$XDG_RUNTIME_DIR/prodi/hyprlock-test.conf"
     generate_conf "$hyprlock_conf_path" "$temp_path"
     append_label_to_file "$temp_path"
     app.sh -S both -u "$HYPRLOCK_SCOPE_NAME" -t scope -- hyprlock --no-fade-in --immediate-render --grace 99999999 -c "$temp_path"
@@ -404,23 +404,23 @@ fn_reload() {
         exit 1
     fi
     generate_conf "$hyprlock_conf_path"
-    "$LIB_DIR/hyde/font.sh" resolve "$hyprlock_conf_path"
+    "$LIB_DIR/prodi/font.sh" resolve "$hyprlock_conf_path"
     fn_profile
     reload_hyprlock
     notify-send -i "system-lock-screen" "Hyprlock config regenerated" "Layout: $layout"
 }
 
 ensure_lockscreen_bg_exist() {
-    if [ ! -f "$HYDE_CACHE_HOME/wallpapers/hyprlock.png" ]; then
-        print_log -sec "hyprlock" -stat "setting" " $HYDE_CACHE_HOME/wallpapers/hyprlock.png"
-        "${LIB_DIR}/hyde/wallpaper.sh" -s "$(readlink "$HYDE_THEME_DIR/wall.set")" --backend hyprlock
+    if [ ! -f "$PRODI_CACHE_HOME/wallpapers/hyprlock.png" ]; then
+        print_log -sec "hyprlock" -stat "setting" " $PRODI_CACHE_HOME/wallpapers/hyprlock.png"
+        "${LIB_DIR}/prodi/wallpaper.sh" -s "$(readlink "$PRODI_THEME_DIR/wall.set")" --backend hyprlock
     fi
 }
 
 argparse_init "$@"
 argparse_header "Hyprlock Manager"
-argparse_program "hyde-shell hyprlock"
-argparse_footer "Use 'hyde-shell hyprlock --help' for more information."
+argparse_program "prodi-shell hyprlock"
+argparse_footer "Use 'prodi-shell hyprlock --help' for more information."
 
 argparse "background,--background,-b" "" "Converts and ensures background to be a png"
 argparse "profile,--profile" "" "Generates the profile picture"
@@ -447,7 +447,7 @@ reload) fn_reload ;;
 *)
     ensure_lockscreen_bg_exist
     check_and_sanitize_process
-    "${LIB_DIR}/hyde/app.sh" -u "$HYPRLOCK_SCOPE_NAME" -t scope -- hyprlock
+    "${LIB_DIR}/prodi/app.sh" -u "$HYPRLOCK_SCOPE_NAME" -t scope -- hyprlock
     exit 0
     ;;
 esac
