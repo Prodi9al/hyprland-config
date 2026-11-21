@@ -2,7 +2,7 @@
 # Source this file in any script that needs localization support. It sets up the _T associative array with translations based on the user's locale.
 
 # Resolve the effective locale with app overrides first, then desktop/system defaults.
-_raw_sys_lang="${PRODI_LANG:-${DESKTOP_LANG:-${LC_ALL:-${LC_MESSAGES:-${LANG:-en_US}}}}}"
+_raw_sys_lang="${HYDE_LANG:-${DESKTOP_LANG:-${LC_ALL:-${LC_MESSAGES:-${LANG:-en_US}}}}}"
 _raw_sys_lang="${_raw_sys_lang%%.*}" # Remove encoding suffix (e.g., .UTF-8)
 _raw_sys_lang="${_raw_sys_lang%%@*}" # Remove modifier suffix (e.g., @calendar)
 _raw_sys_lang="${_raw_sys_lang//_/-}"
@@ -29,8 +29,8 @@ _loc_keys=("$DESKTOP_LOCALE")
 [[ "$DESKTOP_LANG" != "$DESKTOP_LOCALE" ]] && _loc_keys+=("$DESKTOP_LANG")
 for _loc_key in "${_loc_keys[@]}"; do
     for _loc_file in \
-        "${XDG_DATA_HOME:-$HOME/.local/share}/prodi/locale/${_loc_key}.sh" \
-        "${XDG_CONFIG_HOME:-$HOME/.config}/prodi/locale/${_loc_key}.sh"
+        "${XDG_DATA_HOME:-$HOME/.local/share}/hyde/locale/${_loc_key}.sh" \
+        "${XDG_CONFIG_HOME:-$HOME/.config}/hyde/locale/${_loc_key}.sh"
     do
         [[ -r "$_loc_file" ]] && source "$_loc_file"
     done

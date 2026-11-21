@@ -364,7 +364,7 @@ class ColorShuffleQt(QtWidgets.QWidget):
         curve_presets,
     ):
         super().__init__()
-        self.setWindowTitle("Prodi Color Editor")
+        self.setWindowTitle("Hyde Color Editor")
 
         self.setWindowFlags(QtCore.Qt.WindowType.Window)
 
@@ -427,7 +427,7 @@ class ColorShuffleQt(QtWidgets.QWidget):
         top_bar.setSpacing(5)
 
         # Title
-        title_label = QtWidgets.QLabel("Prodi Color Editor")
+        title_label = QtWidgets.QLabel("Hyde Color Editor")
         title_label.setStyleSheet("font-weight: bold; font-size: 14px;")
         top_bar.addWidget(title_label)
 
@@ -509,7 +509,7 @@ class ColorShuffleQt(QtWidgets.QWidget):
             hbox.addWidget(txt_btn)
             acc_btns = []
             for j in range(9):
-                _color = getattr(self.color_rows[i], f"accent{j + 1}")
+                color = getattr(self.color_rows[i], f"accent{j + 1}")
                 acc_btn = QtWidgets.QPushButton()
                 acc_btn.setFixedSize(35, 25)  # Smaller color boxes for compact layout
                 acc_btn.setSizePolicy(
@@ -1105,8 +1105,8 @@ class ColorShuffleQt(QtWidgets.QWidget):
                 i = int(m.group(1)) - 1
                 j = accent_idx[i]
                 if i < 4 and j < 9:
-                    _color = getattr(self.color_rows[i], f"accent{j + 1}")
-                    new_lines.append(f'dcol_{i + 1}xa{j + 1}="{_color}"\n')
+                    color = getattr(self.color_rows[i], f"accent{j + 1}")
+                    new_lines.append(f'dcol_{i + 1}xa{j + 1}="{color}"\n')
                     accent_idx[i] += 1
                 else:
                     new_lines.append(line)
@@ -1213,7 +1213,7 @@ def main():
     # Set default input/output if --gui and not provided
     if args.gui and not args.input:
         xdg_cache = os.environ.get("XDG_CACHE_HOME", os.path.expanduser("~/.cache"))
-        args.input = os.path.join(xdg_cache, "prodi", "wall.dcol")
+        args.input = os.path.join(xdg_cache, "hyde", "wall.dcol")
         if not args.output:
             args.output = args.input
 

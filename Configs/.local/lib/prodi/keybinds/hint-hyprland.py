@@ -8,7 +8,7 @@ import time
 
 # Bit -> modifier name Hyprland reports in a bind's modmask. Same table
 # map_modDisplay() below uses for display purposes; kept separate because the
-# ordering rules differ (this one has to match prodi/binds.lua's canonicalize,
+# ordering rules differ (this one has to match hyde/binds.lua's canonicalize,
 # alphabetical, not the display order below).
 _MODIFIER_BITS = {
     64: "SUPER",
@@ -22,14 +22,14 @@ _MODIFIER_BITS = {
 
 
 def canonical_combo(modmask, key):
-    """Mirrors prodi/binds.lua's canonicalize(): decompose modmask into
+    """Mirrors hyde/binds.lua's canonicalize(): decompose modmask into
     modifier names, sort them alphabetically, append the upper-cased key,
     join with " + ". Returns None for a bind with no key at all (a bare
     modmask, which Hyprland never emits for a real bind and canonicalize()
     itself also treats as empty).
 
     This has to reproduce that algorithm exactly, not just resemble it --
-    it is the lookup key into the cache prodi/binds.lua writes, computed
+    it is the lookup key into the cache hyde/binds.lua writes, computed
     independently on the other side of a file, in a different language.
     """
     if not isinstance(key, str) or key == "":
@@ -58,15 +58,15 @@ def _escape_lua_string(value):
 
 
 def load_bind_commands():
-    """Reads the combo->command cache prodi/binds.lua writes on every config
-    load (see Configs/.local/share/hypr/lua/prodi/binds.lua). Missing file,
+    """Reads the combo->command cache hyde/binds.lua writes on every config
+    load (see Configs/.local/share/hypr/lua/hyde/binds.lua). Missing file,
     unreadable file, malformed JSON, or JSON that isn't a flat string->string
     object all resolve to an empty map -- __lua binds simply stay
     unresolved, which is the existing, already-correct fallback behavior for
     binds that can't be reduced to one command at all.
     """
     cache_home = os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache")
-    cache_path = os.path.join(cache_home, "prodi", "lua_bind_commands.json")
+    cache_path = os.path.join(cache_home, "hyde", "lua_bind_commands.json")
 
     try:
         with open(cache_path, "r") as f:
@@ -429,12 +429,12 @@ def expand_meta_data(binds_data, bind_commands=None):
 
         # A Lua-registered bind (#1996): hyprctl only ever exposes it as an
         # opaque "__lua" registry reference, which Hyprland itself has no way
-        # to dispatch from the outside. If prodi/binds.lua's cache has the
+        # to dispatch from the outside. If hyde/binds.lua's cache has the
         # command this exact combo was built from, rewrite it into a fresh
         # exec_cmd call instead -- that runs the same way any other dispatch
         # does. A combo the cache doesn't have (window/workspace operations,
         # or any bind not built from hl.dsp.exec_cmd) runs the bind's own
-        # action, which prodi/binds.lua keeps by combo. Mouse binds only act
+        # action, which hyde/binds.lua keeps by combo. Mouse binds only act
         # on a drag, so they are left as they were.
         if bind["dispatcher"] == "__lua":
             combo = canonical_combo(bind["modmask"], bind["key"])
@@ -443,7 +443,7 @@ def expand_meta_data(binds_data, bind_commands=None):
                 bind["dispatcher"] = f'hl.dsp.exec_cmd("{_escape_lua_string(command)}")'
                 bind["arg"] = ""
             elif combo and not bind["key"].startswith("mouse:"):
-                bind["dispatcher"] = f'prodi.binds.action("{_escape_lua_string(combo)}")'
+                bind["dispatcher"] = f'hyde.binds.action("{_escape_lua_string(combo)}")'
                 bind["arg"] = ""
 
         # Handle submaps

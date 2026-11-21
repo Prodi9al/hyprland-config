@@ -1,21 +1,21 @@
 [Colors:Button]
-BackgroundNormal=23,6,9
+BackgroundNormal=8,8,19
 ForegroundNormal=255,255,255
 
 [Colors:Selection]
-BackgroundNormal=65,62,230
-ForegroundNormal=221,221,215
+BackgroundNormal=34,40,64
+ForegroundNormal=255,255,255
 
 [Colors:Tooltip]
-BackgroundNormal=23,6,9
+BackgroundNormal=8,8,19
 ForegroundNormal=255,255,255
 
 [Colors:View]
-BackgroundNormal=23,6,9
+BackgroundNormal=8,8,19
 ForegroundNormal=255,255,255
 
 [Colors:Window]
-BackgroundNormal=23,6,9
+BackgroundNormal=8,8,19
 ForegroundNormal=255,255,255
 
 [General]

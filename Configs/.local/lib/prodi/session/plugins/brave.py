@@ -45,7 +45,7 @@ def build_restore_cmd(client: dict, ws_target: str) -> str | None:
     """
     global _rule_counter
     command = client.get("_launchString") or "flatpak run com.brave.Browser"
-    rule_name = f"_prodisession_brave_{_rule_counter}"
+    rule_name = f"_hydesession_brave_{_rule_counter}"
     _rule_counter += 1
 
     try:

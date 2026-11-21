@@ -6,7 +6,7 @@ import shutil
 from subprocess import run, CalledProcessError, TimeoutExpired
 from typing import Optional
 
-DEFAULT_APP_NAME = "Prodi"
+DEFAULT_APP_NAME = "HyDE"
 DEFAULT_URGENCY = "normal"
 
 _notify_send_path: Optional[str] = None

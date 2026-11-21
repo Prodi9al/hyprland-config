@@ -10,7 +10,7 @@ _BASE_DIR = _Path(__file__).resolve().parent
 if str(_BASE_DIR) not in sys.path:
     sys.path.insert(0, str(_BASE_DIR))
 
-from meta import PMMetadata  # noqa: E402
+from meta import PMMetadata
 
 PackageEntry = tuple[str, str | None, str | None, str | None]
 

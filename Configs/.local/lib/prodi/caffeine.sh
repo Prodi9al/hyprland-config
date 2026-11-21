@@ -5,7 +5,7 @@
 # state only in Waybar's own process memory. Waybar hot-reloads its config via
 # SIGUSR2 on routine theme/wallpaper changes (not just --hide), which
 # reinitializes every module -- silently resetting Caffeine mode to off with
-# no notification (Prodi-Project/Prodi#2117).
+# no notification (HyDE-Project/HyDE#2117).
 #
 # Fix: track the on/off state in a small state file (`$XDG_RUNTIME_DIR`, since
 # it is inherently boot/session-scoped, not a persistent user preference), and
@@ -17,10 +17,10 @@
 # while Caffeine mode is toggled. hypridle.conf already has
 # `ignore_systemd_inhibit = false`, so it respects this natively -- no custom
 # Wayland idle-inhibit protocol client needed.
-# Checked before prodi-shell/globalcontrol.sh is sourced below: that source
+# Checked before hyde-shell/globalcontrol.sh is sourced below: that source
 # sets its own XDG_RUNTIME_DIR fallback ("/run/user/$(id -u)"), which would
 # make this check unreachable. A shared, world-writable fallback like
-# /tmp/prodi would let another local user pre-plant that path (a directory
+# /tmp/hyde would let another local user pre-plant that path (a directory
 # they own, or a symlink) and read or interfere with this user's caffeine
 # state and inhibitor pid (CWE-377). XDG_RUNTIME_DIR is always set on a
 # normal systemd/logind-managed session, so its absence means a broken or
@@ -30,13 +30,13 @@ if [ -z "$XDG_RUNTIME_DIR" ]; then
     exit 1
 fi
 
-if ! source "$(command -v prodi-shell)"; then
-    echo "[$0] :: Error: prodi-shell not found."
-    echo "[$0] :: Is Prodi installed?"
+if ! source "$(command -v hyde-shell)"; then
+    echo "[$0] :: Error: hyde-shell not found."
+    echo "[$0] :: Is HyDE installed?"
     exit 1
 fi
 
-state_dir="$XDG_RUNTIME_DIR/prodi"
+state_dir="$XDG_RUNTIME_DIR/hyde"
 state_file="$state_dir/caffeine"
 lock_file="$state_dir/caffeine.lock"
 mkdir -p "$state_dir"
@@ -187,7 +187,7 @@ start_inhibitor() {
     # script's output (command substitution, a pipe) would otherwise hang
     # forever, since the backgrounded, disowned process still holds that
     # fd open long after this script itself has exited.
-    setsid "${scope[@]}" systemd-inhibit --what=idle:sleep --who=Prodi --why="Caffeine mode" \
+    setsid "${scope[@]}" systemd-inhibit --what=idle:sleep --who=HyDE --why="Caffeine mode" \
         sleep infinity </dev/null >/dev/null 2>&1 &
     disown
     inhibitor_pid=$!
@@ -217,9 +217,9 @@ stop_inhibitor() {
 
 send_notification() {
     if [ "$intended" -eq 1 ]; then
-        notify-send -a "Prodi Notify" -r 21 -t 800 "Caffeine Mode: ON"
+        notify-send -a "HyDE Notify" -r 21 -t 800 "Caffeine Mode: ON"
     else
-        notify-send -a "Prodi Notify" -r 21 -t 800 "Caffeine Mode: OFF"
+        notify-send -a "HyDE Notify" -r 21 -t 800 "Caffeine Mode: OFF"
     fi
 }
 

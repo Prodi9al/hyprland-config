@@ -150,5 +150,5 @@ def xdg_state_home() -> Path:
 
 
 def user_lib_dir() -> Path:
-    """Return Prodi-specific library directory."""
+    """Return HyDE-specific library directory."""
     return Path.home() / ".local" / "lib"

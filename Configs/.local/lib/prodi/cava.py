@@ -22,16 +22,16 @@ import shlex
 from pathlib import Path
 
 
-class ProdiConfig:
-    """Handle Prodi configuration loading and parsing"""
+class HydeConfig:
+    """Handle Hyde configuration loading and parsing"""
 
     def __init__(self):
         self.config = self._load_config()
 
     def _load_config(self):
-        """Load Prodi configuration from $XDG_STATE_HOME/prodi/config"""
+        """Load Hyde configuration from $XDG_STATE_HOME/hyde/config"""
         state_dir = os.path.expanduser(os.getenv("XDG_STATE_HOME", "~/.local/state"))
-        config_file = os.path.join(state_dir, "prodi", "config")
+        config_file = os.path.join(state_dir, "hyde", "config")
 
         if not os.path.exists(config_file):
             return {}
@@ -54,12 +54,12 @@ class ProdiConfig:
                                 value = value.strip("\"'")
                             config[key] = value
         except Exception as e:
-            print(f"Warning: Could not load Prodi config: {e}", file=sys.stderr)
+            print(f"Warning: Could not load Hyde config: {e}", file=sys.stderr)
 
         return config
 
     def get_value(self, key, default=None):
-        """Get value from Prodi config, falling back to environment, then default"""
+        """Get value from Hyde config, falling back to environment, then default"""
         return self.config.get(key, os.getenv(key, default))
 
 
@@ -140,9 +140,9 @@ class CavaServer:
 
     def __init__(self):
         self.runtime_dir = os.getenv("XDG_RUNTIME_DIR", os.path.join("/run/user", str(os.getuid())))
-        self.socket_file = os.path.join(self.runtime_dir, "prodi", "cava.sock")
-        self.pid_file = os.path.join(self.runtime_dir, "prodi", "cava.pid")
-        self.temp_dir = Path(os.path.join(self.runtime_dir, "prodi"))
+        self.socket_file = os.path.join(self.runtime_dir, "hyde", "cava.sock")
+        self.pid_file = os.path.join(self.runtime_dir, "hyde", "cava.pid")
+        self.temp_dir = Path(os.path.join(self.runtime_dir, "hyde"))
         self.config_file = self.temp_dir / "cava.manager.conf"
 
         self.clients = []
@@ -338,11 +338,11 @@ class CavaServer:
             except subprocess.TimeoutExpired:
                 self.cava_process.kill()
         # Always use latest config values
-        prodi_config = ProdiConfig()
-        bars = int(prodi_config.get_value("CAVA_BARS", 16))
-        range_val = int(prodi_config.get_value("CAVA_RANGE", 15))
-        channels = prodi_config.get_value("CAVA_CHANNELS", "stereo")
-        reverse = prodi_config.get_value("CAVA_REVERSE", 0)
+        hyde_config = HydeConfig()
+        bars = int(hyde_config.get_value("CAVA_BARS", 16))
+        range_val = int(hyde_config.get_value("CAVA_RANGE", 15))
+        channels = hyde_config.get_value("CAVA_CHANNELS", "stereo")
+        reverse = hyde_config.get_value("CAVA_REVERSE", 0)
         try:
             reverse = int(reverse)
         except Exception:
@@ -360,15 +360,15 @@ class CavaServer:
             print("Error: cava not found. Please install cava.")
 
     def _create_cava_config(self, bars=16, range_val=15, channels="stereo", reverse=0, prefix=""):
-        """Create cava configuration file with channels and reverse support, using ProdiConfig with or without prefix as appropriate"""
-        prodi_config = ProdiConfig()
+        """Create cava configuration file with channels and reverse support, using HydeConfig with or without prefix as appropriate"""
+        hyde_config = HydeConfig()
 
         if prefix:
-            config_channels = prodi_config.get_value(f"CAVA_{prefix}_CHANNELS")
-            config_reverse = prodi_config.get_value(f"CAVA_{prefix}_REVERSE")
+            config_channels = hyde_config.get_value(f"CAVA_{prefix}_CHANNELS")
+            config_reverse = hyde_config.get_value(f"CAVA_{prefix}_REVERSE")
         else:
-            config_channels = prodi_config.get_value("CAVA_CHANNELS")
-            config_reverse = prodi_config.get_value("CAVA_REVERSE")
+            config_channels = hyde_config.get_value("CAVA_CHANNELS")
+            config_reverse = hyde_config.get_value("CAVA_REVERSE")
         if config_channels in ("mono", "stereo"):
             channels = config_channels
         if config_reverse is not None:
@@ -598,7 +598,7 @@ class CavaClient:
 
     def __init__(self):
         self.runtime_dir = os.getenv("XDG_RUNTIME_DIR", os.path.join("/run/user", str(os.getuid())))
-        self.socket_file = os.path.join(self.runtime_dir, "prodi", "cava.sock")
+        self.socket_file = os.path.join(self.runtime_dir, "hyde", "cava.sock")
         self.parser = CavaDataParser()
 
     def _auto_start_manager_if_needed(self, bars=16, range_val=15):
@@ -695,7 +695,7 @@ class CavaClient:
                 pass
 
     @staticmethod
-    def parse_command_config(prodi_config, command, args):
+    def parse_command_config(hyde_config, command, args):
         """Parse configuration for a specific command type"""
         prefix = f"CAVA_{command.upper()}"
 
@@ -704,18 +704,18 @@ class CavaClient:
             bar_chars = args.bar_array
         else:
             # Prefer BAR_ARRAY from config if present and is a list
-            bar_array = prodi_config.get_value(f"{prefix}_BAR_ARRAY")
+            bar_array = hyde_config.get_value(f"{prefix}_BAR_ARRAY")
             if bar_array and isinstance(bar_array, list):
                 bar_chars = bar_array
             else:
-                bar_chars = args.bar or prodi_config.get_value(f"{prefix}_BAR", "▁▂▃▄▅▆▇█")
+                bar_chars = args.bar or hyde_config.get_value(f"{prefix}_BAR", "▁▂▃▄▅▆▇█")
                 if isinstance(bar_chars, str):
                     bar_chars = list(bar_chars)
 
         width = (
             args.width
             if args.width is not None
-            else int(prodi_config.get_value(f"{prefix}_WIDTH", "0") or 0)
+            else int(hyde_config.get_value(f"{prefix}_WIDTH", "0") or 0)
         )
         if not width:
             width = len(bar_chars) if bar_chars else 8
@@ -725,7 +725,7 @@ class CavaClient:
             if isinstance(standby_mode, str) and standby_mode.isdigit():
                 standby_mode = int(standby_mode)
         else:
-            standby_mode = prodi_config.get_value(f"{prefix}_STANDBY", "0")
+            standby_mode = hyde_config.get_value(f"{prefix}_STANDBY", "0")
             if standby_mode is None or standby_mode == "":
                 standby_mode = "\n"
             elif isinstance(standby_mode, str) and standby_mode.isdigit():
@@ -739,7 +739,7 @@ class CavaReloadClient:
 
     def __init__(self):
         self.runtime_dir = os.getenv("XDG_RUNTIME_DIR", os.path.join("/run/user", str(os.getuid())))
-        self.socket_file = os.path.join(self.runtime_dir, "prodi", "cava.sock")
+        self.socket_file = os.path.join(self.runtime_dir, "hyde", "cava.sock")
 
     def reload(self):
         if not os.path.exists(self.socket_file):
@@ -818,14 +818,14 @@ def main():
         server.start(args.bars, args.range, args.channels, args.reverse)
 
     elif args.command in ["waybar", "stdout", "hyprlock"]:
-        prodi_config = ProdiConfig()
+        hyde_config = HydeConfig()
 
         bar_chars, width, standby_mode = CavaClient.parse_command_config(
-            prodi_config, args.command, args
+            hyde_config, args.command, args
         )
 
         bars = width
-        range_val = int(prodi_config.get_value("CAVA_RANGE", "15"))
+        range_val = int(hyde_config.get_value("CAVA_RANGE", "15"))
 
         json_output = args.command == "waybar" and hasattr(args, "json") and args.json
 

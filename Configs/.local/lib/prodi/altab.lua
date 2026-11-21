@@ -18,14 +18,14 @@ local json = require("luautils.json")
 local argparse = require("luautils.argparse")
 local logger = require("luautils.global.log")
 
-local parser = argparse("prodi-shell altab", "Window Alt-Tab Switcher (index-based, optimized)")
+local parser = argparse("hyde-shell altab", "Window Alt-Tab Switcher (index-based, optimized)")
 parser:flag("--next", "Select next window index (save only)")
 parser:flag("--prev", "Select previous window index (save only)")
 parser:flag("--apply", "Apply saved window index (focus and clear state)")
 parser:flag("--no-notify", "Disable notifications")
 parser:flag("--no-capture", "Disable screenshot capture")
 parser:flag("--debug", "Enable debug logging")
-parser:flag("--log", "Enable file logging to XDG_RUNTIME_DIR/prodi-altab/log.txt")
+parser:flag("--log", "Enable file logging to XDG_RUNTIME_DIR/hyde-altab/log.txt")
 parser:flag("--clear", "Clear saved state")
 local args = parser:parse()
 
@@ -42,7 +42,7 @@ local append_log_file
 
 if DEBUG then
     logger.level = "debug"
-    logger.debug("[prodi-altab] debug mode enabled")
+    logger.debug("[hyde-altab] debug mode enabled")
 end
 
 local action_count = (NEXT and 1 or 0) + (PREV and 1 or 0) + (APPLY and 1 or 0) + (args["clear"] and 1 or 0)
@@ -65,7 +65,7 @@ local NO_CAPTURE = args["no_capture"] or args["no-capture"]
 local CAPTURE = DEFAULT_CAPTURE and not NO_CAPTURE
 
 local xdg_runtime = os.getenv("XDG_RUNTIME_DIR") or "/tmp"
-local state_dir = xdg_runtime .. "/prodi-altab"
+local state_dir = xdg_runtime .. "/hyde-altab"
 local state_file = state_dir .. "/state"
 local preview_dir = state_dir .. "/previews"
 local log_file_path = state_dir .. "/log.txt"
@@ -99,17 +99,17 @@ append_log_file = function(level, msg)
 end
 
 if DEBUG and LOG then
-    append_log_file("DEBUG", "[prodi-altab] debug mode enabled")
+    append_log_file("DEBUG", "[hyde-altab] debug mode enabled")
 end
 
 local function log(msg)
-    local formatted = string.format("[prodi-altab] %s", tostring(msg))
+    local formatted = string.format("[hyde-altab] %s", tostring(msg))
     logger.info("%s", formatted)
     append_log_file("INFO", formatted)
 end
 
 local function debug(msg)
-    local formatted = string.format("[prodi-altab] %s", tostring(msg))
+    local formatted = string.format("[hyde-altab] %s", tostring(msg))
     logger.debug("%s", formatted)
     append_log_file("DEBUG", formatted)
 end

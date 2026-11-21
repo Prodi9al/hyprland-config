@@ -27,7 +27,7 @@ sys.path.insert(0, _here)
 from pyutils.xdg_base_dirs import xdg_cache_home  # noqa: E402
 from pyutils.logger import get_logger  # noqa: E402
 from session.compositor import detect as _detect_compositor  # noqa: E402
-from session.pluginloader import (  # noqa: E402
+from session.pluginloader import (
     load_plugins,
     find_plugin,
     call_save_enrich,
@@ -296,7 +296,7 @@ def save(dest: Path, *, verbose: bool = False) -> None:
     monitors = backend.get_monitors()
 
     desktop_cache = _build_desktop_cache()
-    _plugins = load_plugins()
+    plugins = load_plugins()
 
     # Collect addresses being swallowed — these are hidden originals
     swallowed_addrs: set[str] = set()
@@ -459,7 +459,7 @@ def restore(src: Path, *, apply_snapshot: bool = True, dry_run: bool = False) ->
         print("Snapshot contains no windows.", file=sys.stderr)
         return
 
-    _plugins = load_plugins()
+    plugins = load_plugins()
 
     expanded_clients: list[dict] = []
     for c in clients:
@@ -795,11 +795,11 @@ def restore(src: Path, *, apply_snapshot: bool = True, dry_run: bool = False) ->
 # ── CLI ───────────────────────────────────────────────────────────────────
 
 
-from session.manager import build_parser  # noqa: E402
+from session.manager import build_parser
 
 
 def main() -> None:
-    from session.manager import save_named, restore_named, delete_session
+    from session.manager import save_named, restore_named, list_sessions, delete_session
 
     args = build_parser().parse_args()
     # support verbose/debug passed as global or per subcommand

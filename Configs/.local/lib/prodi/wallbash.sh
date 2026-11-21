@@ -61,7 +61,7 @@ if ! magick -ping "$wallbashImg" -format "%t" info: &> /dev/null; then
     exit 1
 fi
 echo -e "wallbash $colorProfile profile :: $sortMode :: Colors $wallbashColors :: Fuzzy $wallbashFuzz :: \"$wallbashOut\""
-cacheDir="${cacheDir:-$XDG_CACHE_HOME/prodi}"
+cacheDir="${cacheDir:-$XDG_CACHE_HOME/hyde}"
 thmDir="${thmDir:-$cacheDir/thumbs}"
 mkdir -p "$thmDir"
 : > "$wallbashOut"

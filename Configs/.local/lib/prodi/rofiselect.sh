@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-[[ $PRODI_SHELL_INIT -ne 1 ]] && eval "$(prodi-shell init)"
-rofiStyleDir="$SHARE_DIR/prodi/rofi/themes"
-rofiAssetDir="$SHARE_DIR/prodi/rofi/assets"
+[[ $HYDE_SHELL_INIT -ne 1 ]] && eval "$(hyde-shell init)"
+rofiStyleDir="$SHARE_DIR/hyde/rofi/themes"
+rofiAssetDir="$SHARE_DIR/hyde/rofi/assets"
 font_scale=$ROFI_SELECT_SCALE
 [[ $font_scale =~ ^[0-9]+$ ]] || font_scale=${ROFI_SCALE:-10}
 font_name=${ROFI_SELECT_FONT:-$ROFI_FONT}
@@ -39,8 +39,8 @@ done | sort -n | rofi -dmenu \
     -select "$rofiStyle")
 if [ -n "$RofiSel" ]; then
     set_conf "rofiStyle" "$RofiSel"
-    notify-send -a "Prodi Alert" -r 2 -t 2200 -i "$rofiAssetDir/$RofiSel.png" " style $RofiSel applied..."
+    notify-send -a "HyDE Alert" -r 2 -t 2200 -i "$rofiAssetDir/$RofiSel.png" " style $RofiSel applied..."
 fi
 if [ -n "$ROFI_LAUNCH_STYLE" ]; then
-    notify-send -a "Prodi Alert" -r 3 -u critical "Style: '$ROFI_LAUNCH_STYLE' is explicitly set, remove it in ~/.config/prodi/config.toml for changes to take effect."
+    notify-send -a "HyDE Alert" -r 3 -u critical "Style: '$ROFI_LAUNCH_STYLE' is explicitly set, remove it in ~/.config/hyde/config.toml for changes to take effect."
 fi

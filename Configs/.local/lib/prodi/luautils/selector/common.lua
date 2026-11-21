@@ -1,5 +1,5 @@
 -- luautils/selector/common.lua
--- Generic selector factory + CLI runner for Prodi.
+-- Generic selector factory + CLI runner for Hyde.
 --
 -- FACTORY — builds a full module from a config table:
 --
@@ -8,7 +8,7 @@
 --       dirs                   = { "/path/a", "/path/b" },  -- dirs scanned for item files
 --       state_name             = "mymodule",                -- state file base name
 --       waybar_class           = "custom-mymodule",         -- class field in waybar JSON output
---       state_dir              = "/optional/override",      -- default: $XDG_STATE_HOME/prodi/lua_state
+--       state_dir              = "/optional/override",      -- default: $XDG_STATE_HOME/hyde/lua_state
 --       item_ext               = ".lua",                    -- extension stripped for item names
 --       file_pattern           = "%.lua$",                  -- file pattern matched in directories
 --       load_item              = function(path, base) return { ... } end,
@@ -152,7 +152,7 @@ end
 function M.new(opts)
     opts = opts or {}
 
-    local sd = opts.state_dir or (xdg.state .. "/prodi/lua_state")
+    local sd = opts.state_dir or (xdg.state .. "/hyde/lua_state")
     local sf = sd .. "/" .. (opts.state_name or "selector") .. ".lua"
     local wbcl = opts.waybar_class or "custom-module"
     local dirs = filter_dirs(opts.dirs)
@@ -273,7 +273,7 @@ end
 -- opts.description description shown in help
 function M.run(module, opts)
     opts = opts or {}
-    local parser = argparse(opts.name or "prodi-shell", opts.description or "Prodi Selector")
+    local parser = argparse(opts.name or "hyde-shell", opts.description or "HyDE Selector")
     parser:flag("--list", "List available items")
     parser:option("--set", "Set the given item"):argname("NAME")
     parser:flag("--select", "Select an item with rofi (runs rofi.*command)")

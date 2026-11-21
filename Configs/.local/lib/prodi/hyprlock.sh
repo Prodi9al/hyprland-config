@@ -1,17 +1,17 @@
 #! /bin/bash
-if ! source "$(command -v prodi-shell)"; then
-    echo "Error: prodi-shell not found."
-    echo "Is Prodi installed?"
+if ! source "$(command -v hyde-shell)"; then
+    echo "Error: hyde-shell not found."
+    echo "Is HyDE installed?"
     exit 1
 fi
 
 # Source argparse.sh for argument parsing
-source "${LIB_DIR}/prodi/shutils/argparse.sh"
+source "${LIB_DIR}/hyde/shutils/argparse.sh"
 
 confDir="${confDir:-$XDG_CONFIG_HOME}"
-cacheDir="${PRODI_CACHE_HOME:-"$XDG_CACHE_HOME/prodi"}"
+cacheDir="${HYDE_CACHE_HOME:-"$XDG_CACHE_HOME/hyde"}"
 WALLPAPER="$cacheDir/wall.set"
-HYPRLOCK_SCOPE_NAME="prodi-${XDG_SESSION_DESKTOP:-unknown}-lockscreen.scope"
+HYPRLOCK_SCOPE_NAME="hyde-${XDG_SESSION_DESKTOP:-unknown}-lockscreen.scope"
 
 fn_background() {
     WP="$(realpath "$WALLPAPER")"
@@ -19,8 +19,8 @@ fn_background() {
     is_video=$(file --mime-type -b "$WP" | grep -c '^video/')
     if [ "$is_video" -eq 1 ]; then
         print_log -sec "wallpaper" -stat "converting video" "$WP"
-        mkdir -p "$PRODI_CACHE_HOME/wallpapers/thumbnails"
-        cached_thumb="$PRODI_CACHE_HOME/wallpapers/$(${hashMech:-sha1sum} "$WP" | cut -d' ' -f1).png"
+        mkdir -p "$HYDE_CACHE_HOME/wallpapers/thumbnails"
+        cached_thumb="$HYDE_CACHE_HOME/wallpapers/$(${hashMech:-sha1sum} "$WP" | cut -d' ' -f1).png"
         extract_thumbnail "$WP" "$cached_thumb"
         WP="$cached_thumb"
     fi
@@ -33,7 +33,7 @@ fn_profile() {
     if [ -f "$HOME/.face.icon" ]; then
         cp "$HOME/.face.icon" "$profilePath.png"
     else
-        cp "$XDG_DATA_HOME/icons/Wallbash-Icon/prodi.png" "$profilePath.png"
+        cp "$XDG_DATA_HOME/icons/Wallbash-Icon/hyde.png" "$profilePath.png"
     fi
     return 0
 }
@@ -68,8 +68,8 @@ fn_mpris() {
                 reload_hyprlock
             fi
         else
-            if ! cmp -s "$XDG_DATA_HOME/icons/Wallbash-Icon/prodi.png" "$THUMB.png"; then
-                cp "$XDG_DATA_HOME/icons/Wallbash-Icon/prodi.png" "$THUMB.png"
+            if ! cmp -s "$XDG_DATA_HOME/icons/Wallbash-Icon/hyde.png" "$THUMB.png"; then
+                cp "$XDG_DATA_HOME/icons/Wallbash-Icon/hyde.png" "$THUMB.png"
                 reload_hyprlock
             fi
         fi
@@ -99,17 +99,17 @@ mpris_thumb() {
     artUrl=$(playerctl -p "$player" metadata --format '{{mpris:artUrl}}')
     [ "$artUrl" == "$(cat "$THUMB".lnk)" ] && [ -f "$THUMB".png ] && exit 0
     echo "$artUrl" >"$THUMB".lnk
-    curl -L --proto '=http,https' --max-filesize 5242880 -so "$THUMB.art" "$artUrl"
-    magick "$THUMB.art"[0] -quality 50 "$THUMB.png"
+    curl -Lso "$THUMB.art" "$artUrl"
+    magick "$THUMB.art" -quality 50 "$THUMB.png"
     reload_hyprlock
 }
 fn_cava() {
-    local tempFile="${XDG_RUNTIME_DIR:-/tmp}/hyprlock-cava"
+    local tempFile=/tmp/hyprlock-cava
     [ -f "$tempFile" ] && tail -n 1 "$tempFile"
-    config_file="$XDG_RUNTIME_DIR/prodi/cava.hyprlock"
+    config_file="$XDG_RUNTIME_DIR/hyde/cava.hyprlock"
     if [ "$(pgrep -c -f "cava -p $config_file")" -eq 0 ]; then
         trap 'rm -f ${tempFile}' EXIT
-        "${LIB_DIR}/prodi/cava.py" hyprlock >"$tempFile" 2>&1
+        "${LIB_DIR}/hyde/cava.py" hyprlock >$tempFile 2>&1
     fi
 }
 fn_art() {
@@ -119,7 +119,7 @@ find_filepath() {
     local filename="${*:-$1}"
     local search_dirs=(
         "${XDG_CONFIG_HOME:-$HOME/.config}/hypr/hyprlock"
-        "${XDG_CONFIG_HOME:-$HOME/.config}/prodi/hyprlock"
+        "${XDG_CONFIG_HOME:-$HOME/.config}/hyde/hyprlock"
         "$HYPRLOCK_CONF_DIR")
     print_log -sec "hyprlock" -stat "Searching for layout" "$filename"
     find "${search_dirs[@]}" -type f -name "$filename*" 2>/dev/null | head -n 1
@@ -150,7 +150,7 @@ $layout_items"
         -theme-str "$font_override" \
         -theme-str "$r_override" \
         -theme-str "$(get_rofi_pos)" \
-        -on-selection-changed 'prodi-shell hyprlock.sh --test-preview  "{entry}"' \
+        -on-selection-changed 'hyde-shell hyprlock.sh --test-preview  "{entry}"' \
         -theme "${ROFI_HYPRLOCK_STYLE:-clipboard}")
     if [ -z "$selected_layout" ]; then
         echo "No selection made"
@@ -163,7 +163,7 @@ $layout_items"
     local hyprlock_conf_path
     hyprlock_conf_path=$(find_filepath "$selected_layout")
     generate_conf "$hyprlock_conf_path"
-    "$LIB_DIR/prodi/font.sh" resolve "$hyprlock_conf_path"
+    "$LIB_DIR/hyde/font.sh" resolve "$hyprlock_conf_path"
     fn_profile
     notify-send -i "system-lock-screen" "Hyprlock layout:" "$selected_layout"
 }
@@ -229,7 +229,7 @@ layout_test() {
         exit 1
     fi
     sleep 2
-    local temp_path="$XDG_RUNTIME_DIR/prodi/hyprlock-test.conf"
+    local temp_path="$XDG_RUNTIME_DIR/hyde/hyprlock-test.conf"
     generate_conf "$hyprlock_conf_path" "$temp_path"
     append_label_to_file "$temp_path"
     app.sh -S both -u "$HYPRLOCK_SCOPE_NAME" -t scope -- hyprlock --no-fade-in --immediate-render --grace 99999999 -c "$temp_path"
@@ -240,7 +240,7 @@ rofi_test_preview() {
     if [[ $hyprlock_conf_name == "Theme Preference" ]]; then
         hyprlock_conf_name="theme"
     fi
-    local unit_name="prodi-${XDG_SESSION_DESKTOP:-unknown}-lockscreen-preview.scope"
+    local unit_name="hyde-${XDG_SESSION_DESKTOP:-unknown}-lockscreen-preview.scope"
     check_and_sanitize_process "$unit_name"
     send_notifs "Hyprlock layout: $hyprlock_conf_name" "Please swipe, press a key or click to exit." \
         -i "system-lock-screen" -t 3000 \
@@ -250,7 +250,7 @@ rofi_test_preview() {
 generate_conf() {
     local path="${1:-$confDir/hypr/hyprlock/theme.conf}"
     local target_file="${2:-$confDir/hypr/hyprlock.conf}"
-    local prodi_hyprlock_conf=${SHARE_DIR:-$XDG_DATA_HOME}/hypr/hyprlock.conf
+    local hyde_hyprlock_conf=${SHARE_DIR:-$XDG_DATA_HOME}/hypr/hyprlock.conf
     cat <<CONF >"$target_file"
 #! █░█ █▄█ █▀█ █▀█ █░░ █▀█ █▀▀ █▄▀
 #! █▀█ ░█░ █▀▀ █▀▄ █▄▄ █▄█ █▄▄ █░█
@@ -278,7 +278,7 @@ generate_conf() {
 #*┌────────────────────────────────────────────────────────────────────────────┐
 #*│    Persistent layout declaration                                        │
 #*│ # If a persistent layout path is declared in                               │
-#*│ \$XDG_CONFIG_HOME/hypr/prodi.conf,                                          │
+#*│ \$XDG_CONFIG_HOME/hypr/hyde.conf,                                          │
 #*│ # the above layout setting will be ignored.                                │
 #*│ # this should be the full path to the layout file.                         │
 #*│                                                                            │
@@ -286,10 +286,10 @@ generate_conf() {
 
 
 #*┌──────────────────────────────────────────────────────────────────────────┐
-#*│    All boilerplate configurations are handled by Prodi                  │
+#*│    All boilerplate configurations are handled by HyDE                  │
 #*└──────────────────────────────────────────────────────────────────────────┘
 
-source = $prodi_hyprlock_conf
+source = $hyde_hyprlock_conf
 
 
 #┌────────────────────────────────────────────────────────────────────────────┐
@@ -300,7 +300,7 @@ source = $prodi_hyprlock_conf
 #│ - \$LAYOUT_PATH=your_custom                                                │
 #│ - The custom layout will be sourced automatically.                         │
 #│ - Alternatively, you can statically source the layout in                   │
-#│          '~/.config/hypr/prodi.conf'.                                       │
+#│          '~/.config/hypr/hyde.conf'.                                       │
 #│ - This will take precedence over the variable in                           │
 #│            '~/.config/hypr/hyprlock.conf'.                                 │
 #│                                                                            │
@@ -316,7 +316,7 @@ source = $prodi_hyprlock_conf
  #└────────────────────────────────────────────────────────────────────────────┘
 
 #┌────────────────────────────────────────────────────────────────────────────┐
-#│ Prodi also provides custom variables to extend hyprlock's functionality.  │
+#│ HyDE also provides custom variables to extend hyprlock's functionality.  │
 #│                                                                            │
 #│   \$BACKGROUND_PATH                                                        │
 #│   - The path to the wallpaper image.                                       │
@@ -328,12 +328,12 @@ source = $prodi_hyprlock_conf
 #│   \$MPRIS_IMAGE                                                            │
 #│   - The path to the MPRIS image.                                           │
 #│   - If MPRIS is not available, it will show the ~/.face.icon image         │
-#│   - if available, otherwise, it will show the Prodi logo.                   │
+#│   - if available, otherwise, it will show the HyDE logo.                   │
 #│                                                                            │
 #│   \$PROFILE_IMAGE                                                          │
 #│   - The path to the profile image.                                         │
 #│   - If the image is not available, it will show the ~/.face.icon image     │
-#│   - if available, otherwise, it will show the Prodi logo.                   │
+#│   - if available, otherwise, it will show the HyDE logo.                   │
 #│                                                                            │
 #│   \$GREET_TEXT                                                             │
 #│   - A greeting text to be displayed on the lock screen.                    │
@@ -341,7 +341,7 @@ source = $prodi_hyprlock_conf
 #│                                                                            │
 #│   \$resolve.font                                                           │
 #│   - Resolves the font name and download link.                              │
-#│   - Prodi will run 'font.sh resolve' to install the font for you.           │
+#│   - HyDE will run 'font.sh resolve' to install the font for you.           │
 #│   - Note that you needed to have a network connection to download the      │
 #│ font.                                                                      │
 #│   - You also need to restart Hyprlock to apply the font.                   │
@@ -393,7 +393,7 @@ CONF
 }
 
 fn_reload() {
-    local layout="${HYPRLOCK_LAYOUT:-Prodi}"
+    local layout="${HYPRLOCK_LAYOUT:-HyDE}"
     if [[ $layout == "Theme Preference" ]]; then
         layout="theme"
     fi
@@ -404,23 +404,23 @@ fn_reload() {
         exit 1
     fi
     generate_conf "$hyprlock_conf_path"
-    "$LIB_DIR/prodi/font.sh" resolve "$hyprlock_conf_path"
+    "$LIB_DIR/hyde/font.sh" resolve "$hyprlock_conf_path"
     fn_profile
     reload_hyprlock
     notify-send -i "system-lock-screen" "Hyprlock config regenerated" "Layout: $layout"
 }
 
 ensure_lockscreen_bg_exist() {
-    if [ ! -f "$PRODI_CACHE_HOME/wallpapers/hyprlock.png" ]; then
-        print_log -sec "hyprlock" -stat "setting" " $PRODI_CACHE_HOME/wallpapers/hyprlock.png"
-        "${LIB_DIR}/prodi/wallpaper.sh" -s "$(readlink "$PRODI_THEME_DIR/wall.set")" --backend hyprlock
+    if [ ! -f "$HYDE_CACHE_HOME/wallpapers/hyprlock.png" ]; then
+        print_log -sec "hyprlock" -stat "setting" " $HYDE_CACHE_HOME/wallpapers/hyprlock.png"
+        "${LIB_DIR}/hyde/wallpaper.sh" -s "$(readlink "$HYDE_THEME_DIR/wall.set")" --backend hyprlock
     fi
 }
 
 argparse_init "$@"
 argparse_header "Hyprlock Manager"
-argparse_program "prodi-shell hyprlock"
-argparse_footer "Use 'prodi-shell hyprlock --help' for more information."
+argparse_program "hyde-shell hyprlock"
+argparse_footer "Use 'hyde-shell hyprlock --help' for more information."
 
 argparse "background,--background,-b" "" "Converts and ensures background to be a png"
 argparse "profile,--profile" "" "Generates the profile picture"
@@ -428,7 +428,7 @@ argparse "mpris,--mpris" "MPRIS_PLAYER" "Handles mpris thumbnail generation [fie
 argparse "cava,--cava" "" "Placeholder function for cava"
 argparse "art,--art" "" "Prints the path to the mpris art"
 argparse "--select,-S" "" "Selects the hyprlock layout"
-argparse "--reload,-r" "" "Regenerates hyprlock.conf using HYPRLOCK_LAYOUT (defaults to Prodi)"
+argparse "--reload,-r" "" "Regenerates hyprlock.conf using HYPRLOCK_LAYOUT (defaults to HyDE)"
 argparse "--test" "TEST_LAYOUT" "Test layout" "parameter"
 argparse "--test-preview" "TEST_PREVIEW_LAYOUT" "Test preview layout" "parameter"
 
@@ -447,7 +447,7 @@ reload) fn_reload ;;
 *)
     ensure_lockscreen_bg_exist
     check_and_sanitize_process
-    "${LIB_DIR}/prodi/app.sh" -u "$HYPRLOCK_SCOPE_NAME" -t scope -- hyprlock
+    "${LIB_DIR}/hyde/app.sh" -u "$HYPRLOCK_SCOPE_NAME" -t scope -- hyprlock
     exit 0
     ;;
 esac

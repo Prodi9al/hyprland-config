@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-[[ $PRODI_SHELL_INIT -ne 1 ]] && eval "$(prodi-shell init)"
+[[ $HYDE_SHELL_INIT -ne 1 ]] && eval "$(hyde-shell init)"
 setup_rofi_config() {
     local font_scale="$ROFI_CALC_SCALE"
     [[ $font_scale =~ ^[0-9]+$ ]] || font_scale=${ROFI_SCALE:-10}

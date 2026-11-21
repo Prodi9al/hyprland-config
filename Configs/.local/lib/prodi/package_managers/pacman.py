@@ -4,17 +4,18 @@ from __future__ import annotations
 
 import os
 import shutil
-import sys
 from contextlib import contextmanager
-from pathlib import Path, Path as _Path
+from pathlib import Path
 from tempfile import TemporaryDirectory, mktemp
 from typing import Iterator, Sequence
 
+import sys
+from pathlib import Path as _Path
 _BASE_DIR = _Path(__file__).resolve().parent
 if str(_BASE_DIR) not in sys.path:
     sys.path.insert(0, str(_BASE_DIR))
 
-from meta import PMMetadata  # noqa: E402
+from meta import PMMetadata
 
 AUR_HELPERS = ("paru", "paru-bin", "yay", "yay-bin")
 PackageEntry = tuple[str, str | None, str | None, str | None]

@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-if [[ $PRODI_SHELL_INIT -ne 1 ]]; then
-    eval "$(prodi-shell init)"
+if [[ $HYDE_SHELL_INIT -ne 1 ]]; then
+    eval "$(hyde-shell init)"
 else
-    export_prodi_config
+    export_hyde_config
 fi
 
 # shellcheck disable=SC1091
-[[ -f "${LIB_DIR}/prodi/shutils/l10n.sh" ]] && source "${LIB_DIR}/prodi/shutils/l10n.sh"
+[[ -f "${LIB_DIR}/hyde/shutils/l10n.sh" ]] && source "${LIB_DIR}/hyde/shutils/l10n.sh"
 
 USAGE() {
     cat <<"USAGE"
@@ -61,7 +61,7 @@ done
 
 set -- "${SCREENSHOT_ARGS[@]}"
 
-temp_screenshot=${XDG_RUNTIME_DIR:-/tmp}/prodi_screenshot.png
+temp_screenshot=${XDG_RUNTIME_DIR:-/tmp}/hyde_screenshot.png
 if [ -z "$XDG_PICTURES_DIR" ]; then
     XDG_PICTURES_DIR="$HOME/Pictures"
 fi
@@ -106,16 +106,16 @@ take_screenshot() {
 
     [[ ${SCREENSHOT_ANNOTATION_ENABLED} == false ]] && target_file="$save_dir/$save_file"
 
-    command=("$LIB_DIR/prodi/screenshot/grimblast" "${extra_args[@]}" "copysave" "${mode}" "${target_file}")
+    command=("$LIB_DIR/hyde/screenshot/grimblast" "${extra_args[@]}" "copysave" "${mode}" "${target_file}")
     print_log -g "Executing screenshot command: ${command[*]}"
-    if "${command[@]}"; then
+    if eval "${command[*]}"; then
         [[ ${SCREENSHOT_ANNOTATION_ENABLED} == false ]] && return 0
         if ! run_annotation_tool; then
-            send_notifs -r 9 -a "Prodi Alert" "Screenshot Error" "Failed to open annotation tool"
+            send_notifs -r 9 -a "HyDE Alert" "Screenshot Error" "Failed to open annotation tool"
             return 1
         fi
     else
-        send_notifs -a "Prodi Alert" "Screenshot Error" "Failed to take screenshot"
+        send_notifs -a "HyDE Alert" "Screenshot Error" "Failed to take screenshot"
         return 1
     fi
 }
@@ -123,17 +123,17 @@ ocr_screenshot() {
     local mode=$1
     shift
     local extra_args=("$@")
-    if "$LIB_DIR/prodi/screenshot/grimblast" "${extra_args[@]}" copysave "$mode" "$temp_screenshot"; then
-        source "${LIB_DIR}/prodi/shutils/ocr.sh"
-        source ${XDG_STATE_HOME}/prodi/config
+    if "$LIB_DIR/hyde/screenshot/grimblast" "${extra_args[@]}" copysave "$mode" "$temp_screenshot"; then
+        source "${LIB_DIR}/hyde/shutils/ocr.sh"
+        source ${XDG_STATE_HOME}/hyde/config
         print_log -g "Performing OCR on $temp_screenshot"
         send_notifs "OCR" "Performing OCR on screenshot..." -i "document-scan" -r 9
         if ! ocr_extract "$temp_screenshot"; then
-            send_notifs -r 9 -a "Prodi Alert" "OCR: extraction error" -e -i "dialog-error"
+            send_notifs -r 9 -a "HyDE Alert" "OCR: extraction error" -e -i "dialog-error"
             return 1
         fi
     else
-        send_notifs -a "Prodi Alert" "OCR: screenshot error" -e -i "dialog-error"
+        send_notifs -a "HyDE Alert" "OCR: screenshot error" -e -i "dialog-error"
         return 1
     fi
     exit 0
@@ -142,16 +142,16 @@ qr_screenshot() {
     local mode=$1
     shift
     local extra_args=("$@")
-    if "$LIB_DIR/prodi/screenshot/grimblast" "${extra_args[@]}" copysave "$mode" "$temp_screenshot"; then
-        source "${LIB_DIR}/prodi/shutils/qr.sh"
+    if "$LIB_DIR/hyde/screenshot/grimblast" "${extra_args[@]}" copysave "$mode" "$temp_screenshot"; then
+        source "${LIB_DIR}/hyde/shutils/qr.sh"
         print_log -g "Performing QR scan on $temp_screenshot"
         send_notifs "QR Scan" "Performing QR scan on screenshot..." -i "document-scan" -r 9
         if ! qr_extract "$temp_screenshot"; then
-            send_notifs -r 9 -a "Prodi Alert" "QR: extraction error" -e -i "dialog-error"
+            send_notifs -r 9 -a "HyDE Alert" "QR: extraction error" -e -i "dialog-error"
             return 1
         fi
     else
-        send_notifs -a "Prodi Alert" "QR: screenshot error" -e -i "dialog-error"
+        send_notifs -a "HyDE Alert" "QR: screenshot error" -e -i "dialog-error"
         return 1
     fi
 }
@@ -170,6 +170,6 @@ esac
 
 [ -f "$temp_screenshot" ] && rm "$temp_screenshot"
 if [ -f "$save_dir/$save_file" ] && [[ "${SCREENSHOT_NOTIFY}" != false ]]; then
-    send_notifs -r 9 -a "Prodi Alert" -i "$save_dir/$save_file" "saved in $save_dir"
+    send_notifs -r 9 -a "HyDE Alert" -i "$save_dir/$save_file" "saved in $save_dir"
     exit 0
 fi

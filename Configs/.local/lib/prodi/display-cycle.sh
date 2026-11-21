@@ -1,9 +1,9 @@
 #!/bin/bash
 # display-cycle.sh — Cycle projection modes via F1
 # Modes: laptop-only → mirror → extend-right → external-only → (repeat)
-# State stored in ~/.local/state/prodi/display-mode
+# State stored in ~/.local/state/hyde/display-mode
 
-STATE_FILE="$HOME/.local/state/prodi/display-mode"
+STATE_FILE="$HOME/.local/state/hyde/display-mode"
 STATE_DIR="$(dirname "$STATE_FILE")"
 mkdir -p "$STATE_DIR"
 

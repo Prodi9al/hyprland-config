@@ -54,8 +54,8 @@ if _is_main then
     common.run(
         M,
         {
-            name = "prodi-shell layouts",
-            description = "Prodi Layout Selector"
+            name = "hyde-shell layouts",
+            description = "HyDE Layout Selector"
         }
     )
 end

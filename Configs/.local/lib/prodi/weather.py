@@ -329,10 +329,10 @@ def build_forecast(weather: WttrResponse, now_hour: int, forecast_days: int) -> 
     are right-aligned, headings follow their column. Needs a monospace tooltip font.
     Fog, Frost and Snow are columns rather than rare events: a row with more than one at once used
     to push the unlabeled trailing text past the GTK tooltip's wrap width, breaking the table
-    mid-row (Prodi-Project/Prodi weather tooltip report, 2026-11-06).
+    mid-row (HyDE-Project/HyDE weather tooltip report, 2026-11-06).
     A chance column that is 0% for every row of every requested day is dropped entirely: a
     region without fog, frost or snow (or without clouds, for that matter) shouldn't permanently
-    pay tooltip width for a column it never uses (Prodi-Project/Prodi#2224 review)."""
+    pay tooltip width for a column it never uses (HyDE-Project/HyDE#2224 review)."""
     days = [d for d in weather.get("weather", [])[:forecast_days] if isinstance(d, dict)]
     rows_per_day = []
     for i, day in enumerate(days):
@@ -384,7 +384,7 @@ def build_forecast(weather: WttrResponse, now_hour: int, forecast_days: int) -> 
         ]
         # One space, not two: six chance columns plus Sky made the two-space table wide
         # enough to cross the Waybar tooltip's GTK wrap width on every row, not just
-        # outliers (Prodi-Project/Prodi weather tooltip report, 2026-10-16).
+        # outliers (HyDE-Project/HyDE weather tooltip report, 2026-10-16).
         return " ".join(parts).rstrip()
 
     out = []
@@ -511,8 +511,8 @@ def main() -> None:
     ### Variables ###
     def_lang, def_temp, def_time, def_wind = get_default_locale()  # default vals based on locale
     home = Path.home()
-    load_env_file(home / ".local" / "state" / "prodi" / "staterc")
-    load_env_file(home / ".local" / "state" / "prodi" / "config")
+    load_env_file(home / ".local" / "state" / "hyde" / "staterc")
+    load_env_file(home / ".local" / "state" / "hyde" / "config")
 
     user_lang = os.getenv("WEATHER_LANG")
     weather_lang = user_lang.lower() if user_lang else def_lang

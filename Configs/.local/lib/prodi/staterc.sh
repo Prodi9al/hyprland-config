@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 ##
-# Locked, atomic writer for $XDG_STATE_HOME/prodi/staterc.
+# Locked, atomic writer for $XDG_STATE_HOME/hyde/staterc.
 #
 # Usage: staterc.sh set KEY VALUE
 #
 # waybar.py, set_conf() and the Lua selectors all rewrite staterc. Unlocked
 # and truncated in place, two of them running at once could wipe it down to
 # one line, since a writer that read it mid-rewrite saw an empty file
-# (Prodi-Project/Prodi#2194). Here the read-modify-write runs under an flock
+# (HyDE-Project/HyDE#2194). Here the read-modify-write runs under an flock
 # on staterc.lock, which waybar.py takes too (fcntl.flock is the same lock),
 # and the result replaces staterc with a rename, so a script sourcing it
 # never sees half a file.
@@ -16,7 +16,7 @@
 # command, which ate backslashes ("a\nb" became two lines). Scripts read
 # staterc with `source`, so \ " $ and the backtick are escaped with a
 # backslash, which is what bash undoes inside double quotes: a theme name
-# with $(...) in it is read back as text, not run (Prodi-Project/Prodi#2197).
+# with $(...) in it is read back as text, not run (HyDE-Project/HyDE#2197).
 # A value with a newline can't fit on one line and is refused. A key
 # present twice is collapsed instead of appended again.
 #
@@ -47,7 +47,7 @@ value=${value//'"'/"$bs\""}
 value=${value//'$'/"$bs\$"}
 value=${value//'`'/"$bs\`"}
 
-state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/prodi"
+state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/hyde"
 staterc="$state_dir/staterc"
 mkdir -p "$state_dir" || exit 1
 

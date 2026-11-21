@@ -22,9 +22,9 @@ while [ "$#" -gt 0 ] && [ "$1" != "--" ]; do
 done
 [ "$#" -gt 0 ] && shift
 # A Waybar module destroyed and recreated by a SIGUSR2 hot-reload (the only
-# reload path left without systemd, Prodi-Project/Prodi#2216) kills the process
+# reload path left without systemd, HyDE-Project/HyDE#2216) kills the process
 # group of any on-click command it started. `setsid` takes this command out
-# of that group, so a reload can no longer reach it (Prodi-Project/Prodi#2217,
+# of that group, so a reload can no longer reach it (HyDE-Project/HyDE#2217,
 # the non-systemd counterpart to the #2141 fix). `-f` is required: this
 # process is the group leader Waybar's fork made it, and plain `setsid`
 # refuses to run on one. `-w` makes this wrapper wait for the command and

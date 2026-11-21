@@ -43,10 +43,10 @@ local xdg_config_home = getenv_or(os.getenv("HOME") .. "/.config", "XDG_CONFIG_H
 local xdg_state_home = getenv_or(os.getenv("HOME") .. "/.local/state", "XDG_STATE_HOME")
 
 local config = {
-    ConfigFile = xdg_config_home .. "/prodi/config.toml",
-    EnvFile = xdg_state_home .. "/prodi/config",
-    HyprFile = xdg_state_home .. "/prodi/hyprland.conf",
-    HyprEnvFile = xdg_state_home .. "/prodi/hypr.conf",
+    ConfigFile = xdg_config_home .. "/hyde/config.toml",
+    EnvFile = xdg_state_home .. "/hyde/config",
+    HyprFile = xdg_state_home .. "/hyde/hyprland.conf",
+    HyprEnvFile = xdg_state_home .. "/hyde/hypr.conf",
     NoDaemon = false,
     NoExport = false,
     Verbose = false,
@@ -54,12 +54,12 @@ local config = {
 }
 
 local noStartup = false
-local prodiConfigNotificationID = 19
+local hydeConfigNotificationID = 19
 local isInitialStartup = true
 
 -- CLI parsing
 local function parse_args(argv)
-    local parser = argparse("prodi-shell config", "Parse Prodi config.toml and generate Prodi/Hyprland output files.")
+    local parser = argparse("hyde-shell config", "Parse HyDE config.toml and generate HyDE/Hyprland output files.")
     parser:option("--input", "Path to the input TOML config file."):argname("PATH")
     parser:option("--env", "Path to the generated shell env file."):argname("PATH")
     parser:option("--hypr", "Path to the generated Hyprland config file."):argname("PATH")
@@ -153,9 +153,9 @@ local function load_toml_file(path)
                 msg = msg:sub(1, 250) .. "..."
             end
             notify.send(
-                "Prodi Config: TOML Syntax Error",
+                "Hyde Config: TOML Syntax Error",
                 msg,
-                {urgency = "normal", replace_id = prodiConfigNotificationID}
+                {urgency = "normal", replace_id = hydeConfigNotificationID}
             )
         end
         return nil, "failed to parse TOML"
@@ -505,7 +505,7 @@ local function parse_config_files(tomlFile, envFile, hyprFile, hyprEnvFile, expo
 
     local success = success1 and success2 and success3
     if success and not config.NoDaemon and not isInitialStartup then
-        sendSuccessNotification("Prodi Config", "Configuration reloaded successfully")
+        sendSuccessNotification("Hyde Config", "Configuration reloaded successfully")
     end
     if isInitialStartup then
         isInitialStartup = false

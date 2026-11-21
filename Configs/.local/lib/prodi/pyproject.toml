@@ -1,5 +1,5 @@
 [project]
-name = "prodi-pyutils"
+name = "hyde-pyutils"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
@@ -31,4 +31,4 @@ indent-width = 4
 
 [tool.uv.sources]
 xdg-prefs = { git = "https://github.com/rchaput/xdg-prefs" }
-deez-dots = { git = "https://github.com/Prodi-Project/deez-dots.git", branch = "main" }
+deez-dots = { git = "https://github.com/HyDE-Project/deez-dots.git", branch = "main" }

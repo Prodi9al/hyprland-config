@@ -10,10 +10,10 @@ import random
 
 logger = logger.get_logger()
 
-REPO_URL = "https://github.com/Prodi-Project/prodi-gallery.git"
+REPO_URL = "https://github.com/HyDE-Project/hyde-gallery.git"
 CLONE_DIR = os.path.join(
     os.getenv("XDG_CACHE_HOME", os.path.expanduser("~/.cache")),
-    "prodi/gallery-database",
+    "hyde/gallery-database",
 )
 JSON_DATA = None
 # A leading, colored checkmark -- not a repeated "installed" text label -- so
@@ -35,7 +35,7 @@ NOT_INSTALLED_PREFIX = "  "  # same 2-column width, keeps names aligned
 
 def get_installed_themes():
     config_home = os.getenv("XDG_CONFIG_HOME", os.path.expanduser("~/.config"))
-    themes_dir = os.path.join(config_home, "prodi/themes")
+    themes_dir = os.path.join(config_home, "hyde/themes")
     if not os.path.exists(themes_dir):
         return set()
     return {d for d in os.listdir(themes_dir) if os.path.isdir(os.path.join(themes_dir, d))}
@@ -69,7 +69,7 @@ def fetch_theme_preview_path(theme):
 
 def fetch_data():
     global JSON_DATA
-    json_file_path = os.path.join(CLONE_DIR, "prodi-themes.json")
+    json_file_path = os.path.join(CLONE_DIR, "hyde-themes.json")
     if os.path.exists(json_file_path):
         with open(json_file_path, "r") as json_file:
             JSON_DATA = json.load(json_file)
@@ -155,7 +155,7 @@ def get_theme_preview(theme):
         preview_text = bar_top + "\n\n"
 
         preview_text += (
-            "👋 Let's Prodirate your system with more cool themes!\n\n"
+            "👋 Let's HyDErate your system with more cool themes!\n\n"
             "  [TAB] to mark a theme\n"
             "  [Enter] or choose [CONFIRM] to confirm selected themes\n"
             "  [Esc] to exit/cancel\n\n"
@@ -164,7 +164,7 @@ def get_theme_preview(theme):
             "   CTRL A : mark all\n"
             "   CTRL D : un-mark all\n"
             "\n"
-            "Stay Prodirated! 🌊"
+            "Stay HyDErated! 🌊"
             "\n\n"
         )
 
@@ -322,7 +322,7 @@ def fzf_menu():
             return
         print("\n🚀 Proceeding with theme installation...\n")
         patch_themes(SELECTED_THEMES)
-        subprocess.run(["prodi-shell", "reload"], check=True)
+        subprocess.run(["hyde-shell", "reload"], check=True)
 
     except KeyboardInterrupt:
         print("\n❌ Operation cancelled by user.\n")
@@ -331,7 +331,7 @@ def fzf_menu():
 
 def fetch_all_themes():
     config_home = os.getenv("XDG_CONFIG_HOME", os.path.expanduser("~/.config"))
-    themes_dir = os.path.join(config_home, "prodi/themes")
+    themes_dir = os.path.join(config_home, "hyde/themes")
     if os.path.exists(themes_dir):
         theme_dirs = [
             d for d in os.listdir(themes_dir) if os.path.isdir(os.path.join(themes_dir, d))
@@ -343,7 +343,7 @@ def fetch_all_themes():
             else:
                 print(f"⚠️  Theme '{theme_name}' not found in the JSON data.")
                 logger.debug(f"Theme '{theme_name}' not found in the JSON data.")
-        subprocess.run(["prodi-shell", "reload"], check=True)
+        subprocess.run(["hyde-shell", "reload"], check=True)
     else:
         print(f"❌ Themes directory '{themes_dir}' not found.")
         logger.debug(f"Themes directory '{themes_dir}' not found.")
@@ -357,7 +357,7 @@ def fetch_theme(theme_name):
         theme_data = next((t for t in JSON_DATA if t["THEME"] == theme_name), None)
         if theme_data:
             patch_themes([theme_name])
-            subprocess.run(["prodi-shell", "reload"], check=True)
+            subprocess.run(["hyde-shell", "reload"], check=True)
         else:
             print(f"❌ Theme '{theme_name}' not found in the JSON data.")
             logger.debug(f"Theme '{theme_name}' not found in the JSON data.")
@@ -365,7 +365,7 @@ def fetch_theme(theme_name):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Imports themes from prodi-gallery repository",
+        description="Imports themes from hyde-gallery repository",
         epilog="Env:\n"
         "'export FULL_THEME_UPDATE=true' Overwrites the archived files (useful for updates and changes in archives)",
     )
@@ -382,7 +382,7 @@ def main():
         "-f",
         type=str,
         metavar="THEME",
-        help="Fetch and update a specific theme by name (`all` to fetch all themes located in 'xdg_config/prodi/themes')",
+        help="Fetch and update a specific theme by name (`all` to fetch all themes located in 'xdg_config/hyde/themes')",
     )
 
     args = parser.parse_args()

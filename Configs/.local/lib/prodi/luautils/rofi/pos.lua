@@ -53,7 +53,7 @@ function M.get_rofi_pos(opts)
     local rel_x = cursor.x - (mon.x or 0)
     local rel_y = cursor.y - (mon.y or 0)
 
-    local cfg_m = (prodi and prodi.config and prodi.config.monitor and prodi.config.monitor.edge_margin) or {0}
+    local cfg_m = (hyde and hyde.config and hyde.config.monitor and hyde.config.monitor.edge_margin) or {0}
     local u, r, d, l = 0, 0, 0, 0
     local n = #cfg_m
     if n == 1 then

@@ -1,12 +1,12 @@
 {
   "custom/htb": {
-    "exec": "$XDG_CONFIG_HOME/waybar/scripts/htb.py",
+    "exec": "$HOME/.config/waybar/scripts/htb.py",
     "return-type": "json",
     "format": "{}",
     "rotate": 0,
-    "on-click": "xdg-open https://app.hackthebox.com/users/YOUR_HTB_USER_ID",
-    "on-click-right": "$XDG_CONFIG_HOME/waybar/scripts/htb.py --refresh",
-    "on-click-middle": "$XDG_CONFIG_HOME/waybar/scripts/htb.py --notify",
+    "on-click": "xdg-open https://app.hackthebox.com/users/2426022",
+    "on-click-right": "$HOME/.config/waybar/scripts/htb.py --refresh",
+    "on-click-middle": "$HOME/.config/waybar/scripts/htb.py --notify",
     "interval": 900,
     "tooltip": true
   }

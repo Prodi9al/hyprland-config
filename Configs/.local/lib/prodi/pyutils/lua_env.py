@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-Prodi's system Lua environment manager using system luarocks
+HyDE's system Lua environment manager using system luarocks
 usage: lua_env.py [command] <options>
 
 
 Commands:
     create     Ensure system luarocks is available and install bootstrap packages
-    destroy    Remove the Prodi Lua rocks tree
-    rebuild    Recreate the Prodi Lua rocks tree and reinstall packages
+    destroy    Remove the Hyde Lua rocks tree
+    rebuild    Recreate the Hyde Lua rocks tree and reinstall packages
     sync       Reinstall bootstrap packages and snapshot installed rocks
     install    Install a luarocks package
     uninstall  Uninstall a luarocks package
@@ -22,11 +22,11 @@ import argparse
 import json
 
 XDG_STATE_HOME = os.environ.get("XDG_STATE_HOME", os.path.expanduser("~/.local/state"))
-PRODI_STATE_DIR = os.path.join(XDG_STATE_HOME, "prodi")
-LUA_ENV_DIR = os.path.join(PRODI_STATE_DIR, "lua_env")
+HYDE_STATE_DIR = os.path.join(XDG_STATE_HOME, "hyde")
+LUA_ENV_DIR = os.path.join(HYDE_STATE_DIR, "lua_env")
 LUA_BIN = os.environ.get("LUA") or shutil.which("lua") or shutil.which("lua5.5") or shutil.which("lua5.4") or shutil.which("lua5.3")
 LUAROCKS_BIN = os.environ.get("LUAROCKS") or shutil.which("luarocks") or shutil.which("luarocks-5.5") or shutil.which("luarocks-5.4") or shutil.which("luarocks-5.3")
-ROCKS_SNAPSHOT = os.path.join(PRODI_STATE_DIR, "luarocks_env.json")
+ROCKS_SNAPSHOT = os.path.join(HYDE_STATE_DIR, "luarocks_env.json")
 BOOTSTRAP_CONFIG = os.path.join(os.path.dirname(__file__), "lua_env.json")
 LUA_ENV_ARGS = ["--tree", LUA_ENV_DIR]
 
@@ -229,7 +229,7 @@ def install_bootstrap(bootstrap_install, force=False):
 
     if skipped:
         print(f"[lua_env] {len(skipped)} optional package(s) skipped: {', '.join(skipped)}")
-        print("[lua_env] install their build dependencies and run 'prodi-shell luainit' to retry")
+        print("[lua_env] install their build dependencies and run 'hyde-shell luainit' to retry")
 
     return skipped
 
@@ -301,13 +301,13 @@ def main():
     parser = argparse.ArgumentParser(
         prog="lua_env",
         usage="lua_env.py [command] <options>",
-        description="Prodi's system Lua environment manager",
+        description="HyDE's system Lua environment manager",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     subparsers = parser.add_subparsers(dest="command", metavar="[command]")
     subparsers.add_parser("create", help="Ensure system luarocks is available and install bootstrap packages")
-    subparsers.add_parser("destroy", help="Remove the Prodi Lua rocks tree")
-    subparsers.add_parser("rebuild", help="Recreate the Prodi Lua rocks tree and reinstall packages")
+    subparsers.add_parser("destroy", help="Remove the Hyde Lua rocks tree")
+    subparsers.add_parser("rebuild", help="Recreate the Hyde Lua rocks tree and reinstall packages")
     subparsers.add_parser("sync", help="Reinstall bootstrap packages and snapshot installed rocks")
     install_p = subparsers.add_parser("install", help="Install a luarocks package")
     install_p.add_argument("package", metavar="package")

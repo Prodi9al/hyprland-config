@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-[[ $PRODI_SHELL_INIT -ne 1 ]] && eval "$(prodi-shell init)"
-rofiAssetDir="$SHARE_DIR/prodi/rofi/assets"
+[[ $HYDE_SHELL_INIT -ne 1 ]] && eval "$(hyde-shell init)"
+rofiAssetDir="$SHARE_DIR/hyde/rofi/assets"
 hypr_border=${hypr_border:-"$(hyprctl -j getoption decoration:rounding | jq '.int')"}
 hypr_border=${hypr_border:-2}
 if [[ -n $HYPRLAND_INSTANCE_SIGNATURE ]]; then
@@ -42,7 +42,7 @@ selector_menu() {
         -theme "${ROFI_THEME_MENU_STYLE:-selector}")
     if [ -n "$RofiSel" ]; then
         selectedStyle=$(echo "$RofiSel" | awk -F '\x00' '{print $1}' | sed 's/Style //')
-        notify-send -a "Prodi Alert" -i "$rofiAssetDir/theme_style_$selectedStyle.png" "Style $selectedStyle applied..."
+        notify-send -a "HyDe Alert" -i "$rofiAssetDir/theme_style_$selectedStyle.png" "Style $selectedStyle applied..."
         set_conf "ROFI_THEME_STYLE" "$selectedStyle"
     fi
     exit 0
@@ -115,9 +115,9 @@ rofiSel=$(
         -theme-str "$font_override" \
         -theme-str "$r_override" \
         -theme "${ROFI_THEME_STYLE:-selector}" \
-        -select "$PRODI_THEME"
+        -select "$HYDE_THEME"
 )
 if [ -n "$rofiSel" ]; then
-    "$LIB_DIR/prodi/theme.switch.sh" -s "$rofiSel"
-    notify-send -a "Prodi Alert" -i "$iconsDir/Wallbash-Icon/prodi.png" " $rofiSel"
+    "$LIB_DIR/hyde/theme.switch.sh" -s "$rofiSel"
+    notify-send -a "HyDE Alert" -i "$iconsDir/Wallbash-Icon/hyde.png" " $rofiSel"
 fi

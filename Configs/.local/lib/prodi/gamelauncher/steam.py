@@ -136,7 +136,7 @@ def should_exclude_game(name: str) -> bool:
 def list_games(steamapps_dirs: List[Path], fetch_icons: bool = False) -> List[Dict]:
     games = []
     xdg_cache = Path(os.environ.get("XDG_CACHE_HOME", str(Path.home() / ".cache")))
-    cache_dir = xdg_cache / "prodi" / "gamelauncher"
+    cache_dir = xdg_cache / "hyde" / "gamelauncher"
 
     # Collect all unique appcache/librarycache dirs across all Steam roots
     librarycache_roots: List[Path] = []
@@ -249,7 +249,7 @@ def list_games(steamapps_dirs: List[Path], fetch_icons: bool = False) -> List[Di
 def fetch_all_icons(steamapps_dirs: List[Path]) -> None:
     """Fetch icons for all games in the Steam libraries, excluding unwanted entries."""
     xdg_cache = Path(os.environ.get("XDG_CACHE_HOME", str(Path.home() / ".cache")))
-    cache_dir = xdg_cache / "prodi" / "gamelauncher"
+    cache_dir = xdg_cache / "hyde" / "gamelauncher"
 
     for sa in steamapps_dirs:
         try:

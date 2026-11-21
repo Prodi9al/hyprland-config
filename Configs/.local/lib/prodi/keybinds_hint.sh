@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 pkill -x rofi && exit
-[[ $PRODI_SHELL_INIT -ne 1 ]] && eval "$(prodi-shell init)"
-kb_cache="$XDG_RUNTIME_DIR/prodi/keybinds_hint.rofi"
+[[ $HYDE_SHELL_INIT -ne 1 ]] && eval "$(hyde-shell init)"
+kb_cache="$XDG_RUNTIME_DIR/hyde/keybinds_hint.rofi"
 
 if [[ $1 == "--reload" ]]; then
-    "${LIB_DIR}/prodi/keybinds/hint-hyprland.py" --format rofi >"$kb_cache" && echo "Key Bind cache updated"
+    "${LIB_DIR}/hyde/keybinds/hint-hyprland.py" --format rofi >"$kb_cache" && echo "Key Bind cache updated"
     exit 0
 fi
 
 [ -f "$kb_cache" ] && {
-    trap '${LIB_DIR}/prodi/keybinds/hint-hyprland.py --format rofi > "$kb_cache" && echo "Key Bind cache updated" ' EXIT
+    trap '${LIB_DIR}/hyde/keybinds/hint-hyprland.py --format rofi > "$kb_cache" && echo "Key Bind cache updated" ' EXIT
 }
 output="$(if
     ! cat "$kb_cache" 2>/dev/null
 then
-    "${LIB_DIR}/prodi/keybinds/hint-hyprland.py" --format rofi | tee "$kb_cache"
+    "${LIB_DIR}/hyde/keybinds/hint-hyprland.py" --format rofi | tee "$kb_cache"
 fi)"
 wait
 if [ -z "$output" ]; then

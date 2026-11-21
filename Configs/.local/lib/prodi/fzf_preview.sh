@@ -34,5 +34,5 @@ fi
 if [ -e "$PREVIEW" ]; then
     img_preview "$PREVIEW"
 elif [ ! -e "$PREVIEW" ]; then
-    img_preview "$XDG_CACHE_HOME/prodi/gallery-database/preview.png"
+    img_preview "$XDG_CACHE_HOME/hyde/gallery-database/preview.png"
 fi

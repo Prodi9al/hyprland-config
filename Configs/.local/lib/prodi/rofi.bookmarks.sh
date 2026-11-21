@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-[[ $PRODI_SHELL_INIT -ne 1 ]] && eval "$(prodi-shell init)"
+[[ $HYDE_SHELL_INIT -ne 1 ]] && eval "$(hyde-shell init)"
 setup_rofi_config() {
     local font_scale="$ROFI_BOOKMARKS_SCALE"
     [[ $font_scale =~ ^[0-9]+$ ]] || font_scale=${ROFI_SCALE:-10}
@@ -16,7 +16,7 @@ setup_rofi_config() {
 setup_rofi_config
 browser_name=$(basename "$(xdg-settings get default-web-browser)" .desktop)
 browser_name=${BROWSER:-$browser_name}
-rofi -modi "bookmarks:python $LIB_DIR/prodi/bookmarks.py \
+rofi -modi "bookmarks:python $LIB_DIR/hyde/bookmarks.py \
 --list" -i \
     -theme-str "entry { placeholder: \" 🌐 Launch: $browser_name \";}" \
     -config "${ROFI_BOOKMARK_STYLE:-clipboard}" \

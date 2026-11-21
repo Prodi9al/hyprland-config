@@ -12,6 +12,7 @@ import shutil
 import time
 import sys
 import hashlib
+import signal
 import tempfile
 
 from pathlib import Path
@@ -74,12 +75,12 @@ INCLUDES_DIRS = [
 ]
 
 CONFIG_JSONC = Path(os.path.join(str(xdg_config_home()), "waybar", "config.jsonc"))
-STATE_FILE = Path(os.path.join(str(xdg_state_home()), "prodi", "staterc"))
-PRODI_CONFIG = Path(os.path.join(str(xdg_state_home()), "prodi", "config"))
+STATE_FILE = Path(os.path.join(str(xdg_state_home()), "hyde", "staterc"))
+HYDE_CONFIG = Path(os.path.join(str(xdg_state_home()), "hyde", "config"))
 _desktop = os.environ.get('XDG_CURRENT_DESKTOP') or os.environ.get('XDG_SESSION_DESKTOP') or 'Hyprland'
-if _desktop in ('Prodi', 'unknown', ''):
+if _desktop in ('HyDE', 'unknown', ''):
     _desktop = 'Hyprland'
-UNIT_NAME = f"prodi-{_desktop}-bar.service"
+UNIT_NAME = f"hyde-{_desktop}-bar.service"
 
 
 def source_env_file(filepath):
@@ -118,7 +119,7 @@ def find_layout_files(include_backups=False):
     directory, so a plain walk returns them as layouts. They sort before most
     names ("backup/..."), which made the fallbacks that take layouts[0] or
     match config.jsonc by hash settle on a backup, and --next/--prev then
-    crashed on it (Prodi-Project/Prodi#2133). Only list_layouts(), which shows
+    crashed on it (HyDE-Project/HyDE#2133). Only list_layouts(), which shows
     backups as their own entry, asks for them.
     """
     layouts = []
@@ -137,7 +138,7 @@ def _quote_state_value(value):
 
     staterc is read with `source`, so \\ " $ and the backtick are escaped
     with a backslash, which bash undoes inside double quotes; a value with
-    $(...) in it is read back as text, not run (Prodi-Project/Prodi#2197).
+    $(...) in it is read back as text, not run (HyDE-Project/HyDE#2197).
     """
     value = str(value)
     if "\n" in value or "\r" in value:
@@ -170,8 +171,8 @@ def get_state_value(key, default=None):
 
 def get_config_value(key, default=None):
     """Get a value from the config file or state file."""
-    if PRODI_CONFIG.exists():
-        with open(PRODI_CONFIG, "r") as file:
+    if HYDE_CONFIG.exists():
+        with open(HYDE_CONFIG, "r") as file:
             for line in file:
                 clean_line = line.strip()
                 if clean_line.startswith("export "):
@@ -186,7 +187,7 @@ def _staterc_lock():
     """Hold the flock on staterc.lock that staterc.sh (set_conf, Lua) takes too.
 
     Unlocked, two writers rewriting staterc at once could wipe it down to one
-    line (Prodi-Project/Prodi#2194). fcntl.flock is the same lock as the
+    line (HyDE-Project/HyDE#2194). fcntl.flock is the same lock as the
     flock command. A writer still waiting after 10s writes anyway: losing the
     setting is worse than the rare race. Never delete staterc.lock.
     """
@@ -354,7 +355,7 @@ def ensure_state_file():
     The values are worked out first, then added in one locked step that skips
     any key another writer set in the meantime. Holding the lock while working
     them out would deadlock: get_current_layout_from_config() writes staterc
-    too (Prodi-Project/Prodi#2194).
+    too (HyDE-Project/HyDE#2194).
     """
     STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
 
@@ -605,8 +606,8 @@ def modify_json_key(data, key, value):
 def _atomic_write(path, data):
     """Replace path with data in one step: write a temp file next to it, then rename.
 
-    Waybar reads its config and CSS files while Prodi rewrites them; a plain
-    open(..., "w") lets it see an empty or half-written file (Prodi-Project/Prodi#2184).
+    Waybar reads its config and CSS files while HyDE rewrites them; a plain
+    open(..., "w") lets it see an empty or half-written file (HyDE-Project/HyDE#2184).
     """
     # Write through a symlinked config instead of replacing the link.
     path = os.path.realpath(path)
@@ -641,7 +642,7 @@ def _atomic_copy(src, dst):
 
 def write_style_file(style_filepath, source_filepath):
     """Override the style file with the given source style."""
-    wallbash_gtk_css_file = os.path.join(str(xdg_cache_home()), "prodi", "wallbash", "gtk.css")
+    wallbash_gtk_css_file = os.path.join(str(xdg_cache_home()), "hyde", "wallbash", "gtk.css")
     wallbash_gtk_css_file_str = (
         f'@import "{wallbash_gtk_css_file}";'
         if os.path.exists(wallbash_gtk_css_file)
@@ -659,7 +660,7 @@ def write_style_file(style_filepath, source_filepath):
     *    ░▒▓▓   ▓▓  //____/
     */
 
-    /* Modified by Prodi */
+    /* Modified by Hyde */
 
     /* Modify/add style in ~/.config/waybar/styles/ */
     @import "{source_filepath}";
@@ -739,7 +740,7 @@ def run_waybar():
             "--property=PartOf=graphical-session.target",
             # Without --collect a unit that lands in `failed` (e.g.
             # start-limit-hit) keeps the name, so this same systemd-run call
-            # fails next time with "Unit already exists" (Prodi-Project/Prodi#2160).
+            # fails next time with "Unit already exists" (HyDE-Project/HyDE#2160).
             "--collect", "--quiet", "--", "waybar"
         ])
         logger.debug(f"Launched {UNIT_NAME} via systemd")
@@ -751,8 +752,7 @@ def run_waybar():
 def kill_waybar():
     """Stop Waybar for current session."""
     if HAS_SYSTEMD:
-        for u in [UNIT_NAME, "prodi-Prodi-bar.service", "prodi-Hyprland-bar.service"]:
-            subprocess.run(["systemctl", "--user", "--no-block", "stop", u])
+        for u in [UNIT_NAME, "hyde-HyDE-bar.service", "hyde-Hyprland-bar.service"]: subprocess.run(["systemctl", "--user", "--no-block", "stop", u])
     else:
         subprocess.run(["pkill", "-u", str(os.getuid()), "-x", "waybar"])
     logger.debug("Stopped Waybar processes.")
@@ -762,7 +762,7 @@ def restart_waybar():
     """Restart Waybar to load the new config, or start it if it isn't running.
 
     With systemd the unit is restarted instead of hot-reloaded with SIGUSR2
-    (Prodi-Project/Prodi#2184): systemctl kill signals every process in the unit's
+    (HyDE-Project/HyDE#2184): systemctl kill signals every process in the unit's
     cgroup, not only Waybar; Waybar's reload handler can crash and leaks memory
     on each reload; and a Waybar started a moment earlier by a concurrent call
     is killed by the signal before it installs its handler. systemd serializes
@@ -1050,7 +1050,7 @@ def update_global_css():
 
     global_css_content = f"""/*
  Dynamic Style Configuration *
- This is handled by Prodi
+ This is handled by HyDE
 
  To generate a dynamic configuration
  base on theme and user settings
@@ -1153,7 +1153,7 @@ def get_value_from_hypr_theme(variable_name):
         try:
             with open(STATE_FILE, "r") as file:
                 for line in file:
-                    if line.startswith("PRODI_THEME="):
+                    if line.startswith("HYDE_THEME="):
                         theme_name = line.strip().split("=", 1)[1].strip('"').strip("'")
                         logger.debug(f"Found theme name in state file: {theme_name}")
                         break
@@ -1165,7 +1165,7 @@ def get_value_from_hypr_theme(variable_name):
         logger.debug("No theme name found in state file")
         return None
 
-    hypr_theme_path = os.path.join(str(xdg_config_home()), "prodi", "themes", theme_name, "hypr.theme")
+    hypr_theme_path = os.path.join(str(xdg_config_home()), "hyde", "themes", theme_name, "hypr.theme")
     logger.debug(f"Looking for hypr.theme at: {hypr_theme_path}")
 
     if not os.path.exists(hypr_theme_path):
@@ -1223,8 +1223,8 @@ def update_border_radius():
             logger.error("Template for border-radius.css not found in INCLUDES_DIRS")
             # defaults.css @imports this file and Waybar exits on a missing
             # import, so leave an empty stylesheet (square corners) rather than
-            # nothing (Prodi-Project/Prodi#2160).
-            _atomic_write(css_filepath, "/* border-radius template not found; Prodi writes this file */\n")
+            # nothing (HyDE-Project/HyDE#2160).
+            _atomic_write(css_filepath, "/* border-radius template not found; HyDE writes this file */\n")
             return
 
     border_radius = os.getenv("WAYBAR_BORDER_RADIUS")
@@ -1288,7 +1288,7 @@ def generate_includes():
 
     # An empty, truncated or non-object includes.json is rebuilt from scratch;
     # this now runs on the --watch autostart path, where raising would keep
-    # Waybar from starting at all (Prodi-Project/Prodi#2160).
+    # Waybar from starting at all (HyDE-Project/HyDE#2160).
     includes_data = {"include": []}
     try:
         with open(includes_file, "r") as file:
@@ -1342,7 +1342,7 @@ def update_style(style_path):
 
     if not os.path.exists(theme_style_filepath):
         logger.error(
-            f"Missing '{theme_style_filepath}', Please run 'prodi-shell reload' to generate it."
+            f"Missing '{theme_style_filepath}', Please run 'hyde-shell reload' to generate it."
         )
 
     if not style_path:
@@ -1375,7 +1375,7 @@ def watch_waybar():
     # border-radius.css and global.css from ~/.config/waybar/includes, and this
     # is the one place they get generated on a clean install; without them
     # waybar exits 1 and systemd gives up with start-limit-hit
-    # (Prodi-Project/Prodi#2160).
+    # (HyDE-Project/HyDE#2160).
     try:
         update_border_radius()
         generate_includes()
@@ -1390,7 +1390,7 @@ def watch_waybar():
             "systemd-run", "--user", f"--unit={UNIT_NAME}", "--slice=app-graphical.slice",
             "--property=Type=exec", "--property=ExitType=cgroup", "--property=Restart=always",
             "--property=RestartSec=1", "--property=PartOf=graphical-session.target",
-            # See the matching --collect note in run_waybar() (Prodi-Project/Prodi#2160):
+            # See the matching --collect note in run_waybar() (HyDE-Project/HyDE#2160):
             # a unit that hits start-limit-hit must free its name immediately, or the
             # next watch_waybar()/run_waybar() call fails with "Unit already exists".
             "--collect", "--quiet", "--", "waybar"
@@ -1408,8 +1408,8 @@ def main():
     logger.debug("Starting waybar.py")
     logger.debug(f"Looking for state file at: {STATE_FILE}")
 
-    source_env_file(os.path.join(str(xdg_runtime_dir()), "prodi", "environment"))
-    source_env_file(os.path.join(str(xdg_state_home()), "prodi", "config"))
+    source_env_file(os.path.join(str(xdg_runtime_dir()), "hyde", "environment"))
+    source_env_file(os.path.join(str(xdg_state_home()), "hyde", "config"))
 
     if STATE_FILE.exists():
         logger.debug(f"State file found: {STATE_FILE}")
@@ -1443,12 +1443,8 @@ def main():
             if layout_name:
                 logger.debug(f"Looking for layout by name: {layout_name}")
                 found_layout = next(
-                    (
-                        layout_file
-                        for layout_file in find_layout_files()
-                        if os.path.basename(layout_file).replace(".jsonc", "")
-                        == layout_name
-                    ),
+                    (l for l in find_layout_files()
+                     if os.path.basename(l).replace(".jsonc", "") == layout_name),
                     None
                 )
 
@@ -1559,7 +1555,7 @@ def main():
 
     if args.update:
         # The color/theme hook uses --update; a theme may opt into a paired
-        # layout and stylesheet (Mac OS: Prodi #2089 / prodi-gallery #127).
+        # layout and stylesheet (Mac OS: HyDE #2089 / hyde-gallery #127).
         apply_theme_layout()
         if not _layout_applied:
             # A preset already refreshed the files and restarted Waybar.

@@ -1,5 +1,5 @@
 /* Import wallbash */
-@import "$HOME/.cache/prodi/wallbash/gtk.css";
+@import "/home/prodi9al/.cache/hyde/wallbash/gtk.css";
 
 
 /*
@@ -25,7 +25,7 @@ notificationwindow, blankwindow {
  *
  * */
 /* background */
-@define-color sw-cc-bg #170609;
+@define-color sw-cc-bg #080813;
 /* border */
 @define-color sw-cc-border-color #eb6f92;
 /*
@@ -34,9 +34,9 @@ notificationwindow, blankwindow {
 *
 * */
 /* foreground */
-/* @define-color sw-noti-titl-fg #AA0F0E; */
+/* @define-color sw-noti-titl-fg #585571; */
 /* shadow */
-/* @define-color sw-noti-titl-shad #E2D1D3; */
+/* @define-color sw-noti-titl-shad #998DA3; */
 
 
 .control-center {
@@ -55,13 +55,13 @@ notificationwindow, blankwindow {
 *
 * */
 /* background */
-@define-color sw-noti-window-bg #170609;
+@define-color sw-noti-window-bg #080813;
 /* border */
 @define-color sw-noti-window-br #eb6f92;
 /* color */
-@define-color sw-noti-window-txt #DDDDD7;
+@define-color sw-noti-window-txt #FFFFFF;
 /* hover */
-@define-color sw-noti-bg-hover #413EE6;
+@define-color sw-noti-bg-hover #222840;
 
 /* @define-color noti-bg-opaque #5A8FB2; */
 /* @define-color noti-bg-hover-opaque #4B697D; */
@@ -97,13 +97,13 @@ notificationwindow, blankwindow {
 *
 * */
 /* foreground */
-@define-color sw-msg-sum-fg #AA0F0E;
+@define-color sw-msg-sum-fg #585571;
 /* shadow */
-/* @define-color sw-msg-sum-shad #E2D1D3; */
+/* @define-color sw-msg-sum-shad #998DA3; */
 /* time */
-/* @define-color sw-msg-time #E2D1D3; */
+/* @define-color sw-msg-time #998DA3; */
 /* body */
-@define-color sw-msg-body #E2D1D3;
+@define-color sw-msg-body #998DA3;
 
 
 .notification-row .notification-background .notification .notification-default-action .notification-content .text-box .summary {
@@ -122,15 +122,15 @@ notificationwindow, blankwindow {
 *
 * */
 /* icon */
-@define-color sw-noti-gr-icon #E2D1D3;
+@define-color sw-noti-gr-icon #998DA3;
 /* button */
-@define-color sw-noti-gr-collapse-but-hvr #E2D1D3;
+@define-color sw-noti-gr-collapse-but-hvr #998DA3;
 /* icon */
-@define-color sw-noti-gr-collapse-but-icon #E2D1D3;
+@define-color sw-noti-gr-collapse-but-icon #998DA3;
 /* button */
-/* @define-color sw-noti-gr-close-btn-hvr #E2D1D3; */
+/* @define-color sw-noti-gr-close-btn-hvr #998DA3; */
 /* icon */
-/* @define-color sw-noti-gr-close-btn-icon #E2D1D3; */
+/* @define-color sw-noti-gr-close-btn-icon #998DA3; */
 
 .notification-group .notification-group-headers .notification-group-icon {
   /* color: @text-color; */

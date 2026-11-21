@@ -45,7 +45,7 @@ local M =
     }
 )
 
--- current() checks $HYPR_ANIMATION env first (set by prodi globalcontrol)
+-- current() checks $HYPR_ANIMATION env first (set by hyde globalcontrol)
 local _base_current = M.current
 M.current = function()
     local env = os.getenv("HYPR_ANIMATION")
@@ -64,8 +64,8 @@ if _is_main then
     common.run(
         M,
         {
-            name = "prodi-shell animations",
-            description = "Prodi Animation Selector"
+            name = "hyde-shell animations",
+            description = "HyDE Animation Selector"
         }
     )
 end

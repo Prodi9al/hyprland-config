@@ -9,7 +9,7 @@ local common = require("luautils.selector.common")
 local lfs = require("lfs")
 local hyprctl = require("luautils.hypr.hyprctl")
 
-local state_file = xdg.state .. "/prodi/lua_state/blurs.lua"
+local state_file = xdg.state .. "/hyde/lua_state/blurs.lua"
 local first_time = not lfs.attributes(state_file)
 
 local excluded = {
@@ -87,8 +87,8 @@ if _is_main then
     common.run(
         M,
         {
-            name = "prodi-shell blurs",
-            description = "Prodi Blurs Selector"
+            name = "hyde-shell blurs",
+            description = "HyDE Blurs Selector"
         }
     )
 end

@@ -3,7 +3,7 @@
 -- Use lgi (Gio) to subscribe to UPower DBus updates and read device properties.
 -- Notifications via `luautils.global.notify` (lgi/libnotify preferred, else background notify-send).
 
--- Bootstrap Prodi luautils paths
+-- Bootstrap HyDE luautils paths
 local root = debug.getinfo(1, "S").source:match("^@(.*/)") or "./"
 package.path = package.path .. ";" .. root .. "?.lua;" .. root .. "?/init.lua;"
 require('luautils.init')
@@ -175,7 +175,7 @@ conf.XDG_RUNTIME_DIR = os.getenv('XDG_RUNTIME_DIR') or '/run/user/' .. tostring(
 
 
 local function show_config()
-    io.write('\nModify ' .. conf.XDG_CONFIG_HOME .. '/prodi/config.toml to set options.\n')
+    io.write('\nModify ' .. conf.XDG_CONFIG_HOME .. '/hyde/config.toml to set options.\n')
     io.write('      STATUS      THRESHOLD    INTERVAL\n')
     io.write(string.format('      Full        %d          %d Minutes\n', conf.battery_full_threshold, conf.notify))
     io.write(string.format("      Critical    %d           %d Seconds then '%s'\n", conf.battery_critical_threshold,
@@ -212,7 +212,7 @@ local function start_critical_countdown()
             local mm = math.floor(crit_remaining / 60); local ss = crit_remaining % 60
             notify_send('Battery Critically Low',
                 string.format('%d%% is critically low. Device will execute %s in %d:%02d.', pct, conf.execute_critical,
-                    mm, ss), { urgency = 'critical', icon = 'battery-empty-symbolic', synchronous = 'prodi.battery' })
+                    mm, ss), { urgency = 'critical', icon = 'battery-empty-symbolic', synchronous = 'hyde.battery' })
             crit_remaining = crit_remaining - 1
             if crit_remaining <= 0 then
                 run_cmd_shell(conf.execute_critical); crit_source = nil; return false
@@ -230,7 +230,7 @@ local function start_critical_countdown()
             local mm = math.floor(crit_remaining / 60); local ss = crit_remaining % 60
             notify_send('Battery Critically Low',
                 string.format('%d%% is critically low. Device will execute %s in %d:%02d.', pct, conf.execute_critical,
-                    mm, ss), { urgency = 'critical', icon = 'battery-empty-symbolic', synchronous = 'prodi.battery' })
+                    mm, ss), { urgency = 'critical', icon = 'battery-empty-symbolic', synchronous = 'hyde.battery' })
             crit_remaining = crit_remaining - 1
             if crit_remaining <= 0 then
                 run_cmd_shell(conf.execute_critical); timer:stop(); timer:close(); crit_source = nil
@@ -285,7 +285,7 @@ if unplug_cond then
         log.debug('Prompt: UNPLUG threshold=%d status=%s percentage=%d steps=%d',
             conf.unplug_charger_threshold, tostring(status), percentage, steps)
         notify_send('Unplug Charger', string.format('Battery is at %d%%. You can unplug the charger.', percentage),
-            { urgency = 'normal', icon = icon, synchronous = 'prodi.battery' })
+            { urgency = 'normal', icon = icon, synchronous = 'hyde.battery' })
         last_notified_percentage = percentage
         cancel_critical_countdown()
 end
@@ -309,7 +309,7 @@ if low_cond then
         log.debug('Prompt: LOW threshold=%d status=%s percentage=%d',
             conf.battery_low_threshold, tostring(status), percentage)
         notify_send('Battery Low', string.format('Battery is at %d%%. Connect the charger.', percentage),
-            { urgency = 'critical', icon = icon, synchronous = 'prodi.battery' })
+            { urgency = 'critical', icon = icon, synchronous = 'hyde.battery' })
         last_notified_percentage = percentage
 end
 
@@ -321,7 +321,7 @@ end
                 local steps = math.floor(((percentage + 5) / 10) + 0.00001) * 10
                 local icon = 'battery-level-' .. tostring((steps > 0) and steps or 10) .. '-symbolic'
                 notify_send('Charger Plug Out', string.format('Battery is at %d%%.', percentage),
-                    { urgency = urgency, icon = icon, synchronous = 'prodi.battery' })
+                    { urgency = urgency, icon = icon, synchronous = 'hyde.battery' })
                 if conf.execute_discharging ~= '' then run_cmd_shell(conf.execute_discharging) end
             end
         elseif starts_with(tostring(status), 'Not') or starts_with(tostring(status), 'Charging') then
@@ -335,7 +335,7 @@ end
                 -- set (e.g. Tela-circle-dracula) rendered no icon at all (#798).
                 local icon = 'battery-level-' .. tostring((steps > 0) and steps or 100) .. '-charging-symbolic'
                 notify_send('Charger Plug In', string.format('Battery is at %d%%.', percentage),
-                    { urgency = urgency, icon = icon, synchronous = 'prodi.battery' })
+                    { urgency = urgency, icon = icon, synchronous = 'hyde.battery' })
                 if conf.execute_charging ~= '' then run_cmd_shell(conf.execute_charging) end
             end
         elseif status == 'Full' then
@@ -346,14 +346,14 @@ end
                 if not do_notify and (now - lt) >= (conf.notify * 60) then do_notify = true end
                 if do_notify then
                     notify_send('Battery Full', 'Please unplug your Charger',
-                        { urgency = 'critical', icon = 'battery-full-charging-symbolic', synchronous = 'prodi.battery' })
+                        { urgency = 'critical', icon = 'battery-full-charging-symbolic', synchronous = 'hyde.battery' })
                     prev_status = status
                     lt = now
                     if conf.execute_charging ~= '' then run_cmd_shell(conf.execute_charging) end
                 end
             end
         else
-            local fname = '/tmp/prodi.battery.notify.status.fallback.' ..
+            local fname = '/tmp/hyde.battery.notify.status.fallback.' ..
                 tostring(status or 'unk') .. '-' .. tostring((os.getpid and os.getpid()) or 0)
             local fh = io.open(fname)
             if not fh then

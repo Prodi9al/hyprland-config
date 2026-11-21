@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-[[ $PRODI_SHELL_INIT -ne 1 ]] && eval "$(prodi-shell init)"
+[[ $HYDE_SHELL_INIT -ne 1 ]] && eval "$(hyde-shell init)"
 setMode=0
 wallbashModes=("theme" "auto" "dark" "light")
 rofi_wallbash() {
@@ -41,5 +41,5 @@ esac
 export reload_flag=1
 [[ $setMode -lt 0 ]] && setMode=$((${#wallbashModes[@]} - 1))
 set_conf "enableWallDcol" "$setMode"
-"$LIB_DIR/prodi/theme.switch.sh"
-notify-send -a "Prodi Alert" -i "$ICONS_DIR/Wallbash-Icon/prodi.png" " ${wallbashModes[setMode]} mode"
+"$LIB_DIR/hyde/theme.switch.sh"
+notify-send -a "HyDE Alert" -i "$ICONS_DIR/Wallbash-Icon/hyde.png" " ${wallbashModes[setMode]} mode"

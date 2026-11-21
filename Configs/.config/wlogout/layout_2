@@ -7,7 +7,7 @@
 
 {
     "label": "logout",
-    "action": "prodi-shell logout",
+    "action": "hyde-shell logout",
     "text": "Logout",
     "keybind": "e"
 }

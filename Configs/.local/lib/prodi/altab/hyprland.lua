@@ -2,7 +2,7 @@ local socket = require("socket.unix")
 local json = require("luautils.json")
 
 --[[
-Hypr backend adapter for prodi-shell altab.
+Hypr backend adapter for hyde-shell altab.
 
 This module implements the backend interface expected by altab.lua.
 Other compositor backends should expose the same API surface and data shape.

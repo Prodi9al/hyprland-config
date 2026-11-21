@@ -182,7 +182,7 @@ SAVEHIST=10000
 export HISTFILE ZSH_AUTOSUGGEST_STRATEGY HISTSIZE SAVEHIST
 
 # HyDE Package Manager
-PM_COMMAND=(prodi-shell pm)
+PM_COMMAND=(hyde-shell pm)
 
 # Optionally load user configuration // useful for customizing the shell without modifying the main file
 if [[ -f $HOME/.hyde.zshrc ]]; then

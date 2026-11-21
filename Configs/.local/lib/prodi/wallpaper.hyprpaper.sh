@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-[[ $PRODI_SHELL_INIT -ne 1 ]] && eval "$(prodi-shell init)"
+[[ $HYDE_SHELL_INIT -ne 1 ]] && eval "$(hyde-shell init)"
 
 wallpaper_acquire_lock 15
 trap 'flock -u "$WALLPAPER_LOCK_FD"' EXIT
@@ -12,14 +12,14 @@ if [[ ! -f "$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/hyprpaper.lock" ]
     { systemctl --user start hyprpaper.service || setsid hyprpaper; } </dev/null &>/dev/null &
     sleep 1
 fi
-selected_wall="${1:-${XDG_CACHE_HOME:-$HOME/.cache}/prodi/wall.set}"
+selected_wall="${1:-${XDG_CACHE_HOME:-$HOME/.cache}/hyde/wall.set}"
 [ -z "$selected_wall" ] && echo "No input wallpaper" && exit 1
 selected_wall="$(readlink -f "$selected_wall")"
 is_video=$(file --mime-type -b "$selected_wall" | grep -c '^video/')
 if [ "$is_video" -eq 1 ]; then
     print_log -sec "wallpaper" -stat "converting video" "$selected_wall"
-    mkdir -p "$PRODI_CACHE_HOME/wallpapers/thumbnails"
-    cached_thumb="$PRODI_CACHE_HOME/wallpapers/$(${hashMech:-sha1sum} "$selected_wall" | cut -d' ' -f1).png"
+    mkdir -p "$HYDE_CACHE_HOME/wallpapers/thumbnails"
+    cached_thumb="$HYDE_CACHE_HOME/wallpapers/$(${hashMech:-sha1sum} "$selected_wall" | cut -d' ' -f1).png"
     extract_thumbnail "$selected_wall" "$cached_thumb"
     selected_wall="${cached_thumb}"
 fi
@@ -28,7 +28,7 @@ if [[ -n $HYPRLAND_INSTANCE_SIGNATURE ]]; then
     hyprctl hyprpaper wallpaper ",${selected_wall}" ||
         hyprctl hyprpaper reload ,"${selected_wall}" #TODO: I do not know when did they change this command but yeah will remove this line after some time
 else
-    cat <<EOF >"$XDG_STATE_HOME/prodi/hyprpaper.conf"
+    cat <<EOF >"$XDG_STATE_HOME/hyde/hyprpaper.conf"
 splash = false
 wallpaper:path = "${selected_wall}"
 EOF
@@ -36,7 +36,7 @@ EOF
     if systemctl --user is-active --quiet hyprpaper.service; then
         systemctl --user restart hyprpaper.service
     else
-        app.sh -- hyprpaper --config "$XDG_STATE_HOME/prodi/hyprpaper.conf"
+        app.sh -- hyprpaper --config "$XDG_STATE_HOME/hyde/hyprpaper.conf"
     fi
 
 fi

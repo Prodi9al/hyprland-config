@@ -1,5 +1,5 @@
 -- log.lua
--- A simple logger for Prodi scripts that uses lgi logging when available.
+-- A simple logger for HyDE scripts that uses lgi logging when available.
 -- Falls back to console output with optional colors and file logging.
 
 local log = {}

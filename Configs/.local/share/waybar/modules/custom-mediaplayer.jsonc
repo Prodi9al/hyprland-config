@@ -1,6 +1,6 @@
 {
   "custom/mediaplayer": {
-    "exec": "prodi-shell mediaplayer.py",
+    "exec": "hyde-shell mediaplayer.py",
     "return-type": "json",
     "format": "{0}",
     "tooltip": true,

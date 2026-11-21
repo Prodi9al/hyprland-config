@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
-# This script resolves $PATHS and LIB_DIR specific to prodi.
-# @name: prodi-shell
-# @short: Prodi Command-Line Interface and Script Runner
+# This script resolves $PATHS and LIB_DIR specific to hyde.
+# @name: hyde-shell
+# @short: HyDE Command-Line Interface and Script Runner
 # @ver: 1.1.0
-# @usage: prodi-shell [command] [args]
+# @usage: hyde-shell [command] [args]
 # @global.flag: -h,--help | Show this help message
 # @global.flag: -v,--version | Show version information
 # @cmd: help
 # @cmd.alias: -h
-# @cmd.desc: Show help for prodi-shell commands and scripts
+# @cmd.desc: Show help for hyde-shell commands and scripts
 # @cmd.opt: <topic> | Show detailed help for a command or script
 # @cmd: man
 # @cmd.desc: Render metadata in man-style format
 # @cmd.opt: <topic> | Render a man-style page for a command or script
 # @cmd: reload
 # @cmd.alias: -r
-# @cmd.desc: Reload Prodi assets or environment
+# @cmd.desc: Reload HyDE assets or environment
 # @cmd.opt: all | Reload all components
 # @cmd.opt: cache | Clear and rebuild asset cache
 # @cmd.opt: theme | Apply new color scheme
@@ -43,7 +43,7 @@
 # @cmd.opt: fish | Generate fish completion
 # @cmd.opt: --help | Show completion help
 # @cmd: validate
-# @cmd.desc: Validate Prodi configuration files
+# @cmd.desc: Validate HyDE configuration files
 # @cmd: pyinit
 # @cmd.desc: Initialize Python virtual environment
 # @cmd: uv
@@ -82,8 +82,8 @@
 # shellcheck disable=SC1090
 
 python_initialized() {
-    local python_script="${LIB_DIR}/prodi/pyutils/python_env.py"
-    local venv="${XDG_STATE_HOME:-$HOME/.local/state}/prodi/python_env"
+    local python_script="${LIB_DIR}/hyde/pyutils/python_env.py"
+    local venv="${XDG_STATE_HOME:-$HOME/.local/state}/hyde/python_env"
 
     if [[ -x "${venv}/bin/python" ]]; then
         source "${venv}/bin/activate"
@@ -100,33 +100,33 @@ python_initialized() {
 }
 
 python_activate() {
-    local python_env="${XDG_STATE_HOME:-$HOME/.local/state}/prodi/python_env/bin/activate"
+    local python_env="${XDG_STATE_HOME:-$HOME/.local/state}/hyde/python_env/bin/activate"
     if [[ -r "${python_env}" ]]; then
         source "${python_env}"
     else
         printf "Warning: Python virtual environment not found at %s\n" "${python_env}"
-        printf "You may need to run 'prodi-shell pyinit' to set it up.\n"
+        printf "You may need to run 'hyde-shell pyinit' to set it up.\n"
         python_initialized
     fi
 }
 
 lua_initialized() {
     python_activate
-    python3 "${LIB_DIR}/prodi/pyutils/lua_env.py" sync ||
-        python3 "${LIB_DIR}/prodi/pyutils/lua_env.py" rebuild
+    python3 "${LIB_DIR}/hyde/pyutils/lua_env.py" sync ||
+        python3 "${LIB_DIR}/hyde/pyutils/lua_env.py" rebuild
 }
 
 initialized() {
     cat <<EOF
-PRODI_SHELL_INIT=1
+HYDE_SHELL_INIT=1
 BIN_DIR="${BIN_DIR}"
 LIB_DIR="${LIB_DIR}"
 SHARE_DIR="${SHARE_DIR}"
 PATH=${PATH}
-PRODI_SCRIPTS_PATH=${PRODI_SCRIPTS_PATH}
-export BIN_DIR LIB_DIR SHARE_DIR PATH PRODI_SCRIPTS_PATH PRODI_SHELL_INIT
+HYDE_SCRIPTS_PATH=${HYDE_SCRIPTS_PATH}
+export BIN_DIR LIB_DIR SHARE_DIR PATH HYDE_SCRIPTS_PATH HYDE_SHELL_INIT
 EOF
-    command cat "${LIB_DIR}/prodi/globalcontrol.sh"
+    command cat "${LIB_DIR}/hyde/globalcontrol.sh"
 }
 
 USAGE() {
@@ -137,22 +137,22 @@ USAGE() {
 
     local _R=$'\e[0m' _BOLD=$'\e[1m' _DIM=$'\e[2m' _CYAN=$'\e[36m'
 
-    printf '\n%s  Prodi Shell%s\n' "$_BOLD" "$_R"
+    printf '\n%s  HyDE Shell%s\n' "$_BOLD" "$_R"
     printf '  %s%s%s\n\n' "$_DIM" "$sep" "$_R"
 
     printf '  %sUSAGE%s\n' "$_BOLD" "$_R"
-    printf '    prodi-shell %s[command]%s %s[args]%s\n\n' "$_CYAN" "$_R" "$_DIM" "$_R"
+    printf '    hyde-shell %s[command]%s %s[args]%s\n\n' "$_CYAN" "$_R" "$_DIM" "$_R"
 
     printf '  %sCOMMANDS%s\n' "$_BOLD" "$_R"
     local cmds=(
         'help, -h [topic]' 'Show help (or topic-specific help)'
-        '-r, reload' 'Reload Prodi'
+        '-r, reload' 'Reload HyDE'
         '-s, scripts' 'List available scripts (formatted)'
         'wallbash <script>' 'Execute a wallbash script'
         'version, -v' 'Show version information'
         'release-notes' 'Show release notes'
         'completion <subcmd>' 'Completion utilities (--list-builtins|--list-script|--list-script-path|bash|zsh|fish)'
-        'validate [args]' 'Validate Prodi configuration'
+        'validate [args]' 'Validate HyDE configuration'
         'pyinit' 'Initialize Python virtual environment'
         'uv <cmd> [pkg]' 'Manage packages (install|uninstall|list)'
         'init' 'Source initialization script'
@@ -166,9 +166,9 @@ USAGE() {
 
     printf '  %sSCRIPTS%s\n' "$_BOLD" "$_R"
     printf '    Run any script by name (without extension):\n'
-    printf '      %sprodi-shell theme.switch%s\n' "$_DIM" "$_R"
-    printf '      %sprodi-shell wallpaper%s\n\n' "$_DIM" "$_R"
-    printf '    Use %sprodi-shell -s%s to list all available scripts.\n\n' "$_CYAN" "$_R"
+    printf '      %shyde-shell theme.switch%s\n' "$_DIM" "$_R"
+    printf '      %shyde-shell wallpaper%s\n\n' "$_DIM" "$_R"
+    printf '    Use %shyde-shell -s%s to list all available scripts.\n\n' "$_CYAN" "$_R"
 
     printf '  %s%s%s\n\n' "$_DIM" "$sep" "$_R"
 }
@@ -219,13 +219,13 @@ call_wallbashScript() {
     fi
 }
 
-prodi_reload() {
+hyde_reload() {
     python_activate
-    python3 "${LIB_DIR}/prodi/reload.py" "${@}"
+    python3 "${LIB_DIR}/hyde/reload.py" "${@}"
 }
 
 list_script_path() {
-    IFS=':' read -ra RAW_DIRS <<<"$PRODI_SCRIPTS_PATH"
+    IFS=':' read -ra RAW_DIRS <<<"$HYDE_SCRIPTS_PATH"
     declare -A _seen_dirs
     for dir in "${RAW_DIRS[@]}"; do
         [[ -z "$dir" ]] && continue
@@ -247,49 +247,49 @@ list_script() {
 }
 
 get_version() {
-    if [[ ! -f "${XDG_STATE_HOME:-$HOME/.local/state}/prodi/version" ]]; then
-        echo "Prodi version file not found. Please update Prodi."
+    if [[ ! -f "${XDG_STATE_HOME:-$HOME/.local/state}/hyde/version" ]]; then
+        echo "HyDE version file not found. Please update HyDE."
         exit 1
     fi
-    source "${XDG_STATE_HOME:-$HOME/.local/state}/prodi/version"
+    source "${XDG_STATE_HOME:-$HOME/.local/state}/hyde/version"
     cat <<VERSION
-Prodi, your Development Environment
+HyDE, your Development Environment
 
-Version: $PRODI_VERSION
-Branch: $PRODI_BRANCH
-Commit Hash: $PRODI_COMMIT_HASH
-Remote: $PRODI_REMOTE
-Restore Date: $PRODI_VERSION_LAST_CHECKED
-Last Commit Message: $PRODI_VERSION_COMMIT_MSG
+Version: $HYDE_VERSION
+Branch: $HYDE_BRANCH
+Commit Hash: $HYDE_COMMIT_HASH
+Remote: $HYDE_REMOTE
+Restore Date: $HYDE_VERSION_LAST_CHECKED
+Last Commit Message: $HYDE_VERSION_COMMIT_MSG
 
 Tools:
-prodictl: $(prodictl version 2>/dev/null || echo "prodictl not found")
+hydectl: $(hydectl version 2>/dev/null || echo "hydectl not found")
 $(hyprland -v 2>/dev/null | head -n1 || echo "hyprland not found")
 $(if hyprctl_output=$(hyprctl version 2>/dev/null | head -n1); then echo "$hyprctl_output (Running Instance)"; else echo "hyprctl not found or not running"; fi)
-$(prodi-ipc --version 2>/dev/null || echo "prodi-ipc not found")
+$(hyde-ipc --version 2>/dev/null || echo "hyde-ipc not found")
 
-Prodi updates every Friday, so please check for updates regularly.
-Run 'prodi-shell release-notes' to see the latest changes.
-Prodi is a community-driven project, and contributions are welcome.
+HyDE updates every Friday, so please check for updates regularly.
+Run 'hyde-shell release-notes' to see the latest changes.
+HyDE is a community-driven project, and contributions are welcome.
 VERSION
 }
 
 get_release_notes() {
-    if [[ ! -f "${XDG_STATE_HOME:-$HOME/.local/state}/prodi/version" ]]; then
-        echo "Prodi version file not found. Please update Prodi."
+    if [[ ! -f "${XDG_STATE_HOME:-$HOME/.local/state}/hyde/version" ]]; then
+        echo "HyDE version file not found. Please update HyDE."
         exit 1
     fi
-    source "${XDG_STATE_HOME:-$HOME/.local/state}/prodi/version"
-    echo "Prodi Release Notes:"
-    echo "$PRODI_RELEASE_NOTES"
+    source "${XDG_STATE_HOME:-$HOME/.local/state}/hyde/version"
+    echo "HyDE Release Notes:"
+    echo "$HYDE_RELEASE_NOTES"
 }
 
-prodi-logout() {
+hyde-logout() {
     if uwsm check is-active; then
         uwsm stop
     elif [[ -n "${HYPRLAND_INSTANCE_SIGNATURE}" ]]; then
         if command -v hyprshutdown >/dev/null 2>&1; then
-            hyprshutdown --top-label "Stay Prodirated!🫧"
+            hyprshutdown --top-label "Stay HyDErated!🫧"
         else
             hyprctl dispatch 'hl.dsp.exit()'
         fi
@@ -297,7 +297,7 @@ prodi-logout() {
 }
 
 run_command() {
-    IFS=':' read -ra RAW_DIRS <<<"$PRODI_SCRIPTS_PATH"
+    IFS=':' read -ra RAW_DIRS <<<"$HYDE_SCRIPTS_PATH"
     declare -A seen_dirs
     SCRIPT_DIRS=()
     for dir in "${RAW_DIRS[@]}"; do
@@ -311,27 +311,27 @@ run_command() {
     # cannot shadow the implementation that replaced it.
     for dir in "${SCRIPT_DIRS[@]}"; do
         if [[ -f "$dir/${1}.lua" ]]; then
-            l_env="${XDG_STATE_HOME:-$HOME/.local/state}/prodi/lua_env"
+            l_env="${XDG_STATE_HOME:-$HOME/.local/state}/hyde/lua_env"
             if [[ ! -d "$l_env" ]]; then
-                print_log -warn "Lua environment not found!" " Please run 'prodi-shell luainit' to set up the environment."
-                send_notifs "Lua environment not found!" "Please run 'prodi-shell luainit' to set up the environment."
+                print_log -warn "Lua environment not found!" " Please run 'hyde-shell luainit' to set up the environment."
+                send_notifs "Lua environment not found!" "Please run 'hyde-shell luainit' to set up the environment."
                 exit 1
             fi
-            __prodi_lua_ver_file="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/prodi/lua_ver"
-            if [[ -f "$__prodi_lua_ver_file" ]]; then
-                read -r lua_ver _ <"$__prodi_lua_ver_file"
+            __hyde_lua_ver_file="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/hyde/lua_ver"
+            if [[ -f "$__hyde_lua_ver_file" ]]; then
+                read -r lua_ver _ <"$__hyde_lua_ver_file"
             elif command -v lua &>/dev/null; then
                 read -r lua_ver _ < <(lua -e 'io.write(_VERSION:match("%d+%.%d+"))')
-                echo "$lua_ver" >"$__prodi_lua_ver_file"
+                echo "$lua_ver" >"$__hyde_lua_ver_file"
             fi
-            unset __prodi_lua_ver_file
+            unset __hyde_lua_ver_file
             export LUA_PATH="$l_env/share/lua/$lua_ver/?.lua;$l_env/share/lua/$lua_ver/?/init.lua;$LUA_PATH"
             export LUA_CPATH="$l_env/lib/lua/$lua_ver/?.so;$LUA_CPATH"
             exec lua "$dir/${1}.lua" "${@:2}"
         elif [[ -f "$dir/${1}.sh" ]]; then
             exec bash "$dir/${1}.sh" "${@:2}"
         elif [[ -f "$dir/${1}.py" ]]; then
-            exec "${XDG_STATE_HOME:-$HOME/.local/state}/prodi/python_env/bin/python" "$dir/${1}.py" "${@:2}"
+            exec "${XDG_STATE_HOME:-$HOME/.local/state}/hyde/python_env/bin/python" "$dir/${1}.py" "${@:2}"
         elif [[ -f "$dir/${1}" && -x "$dir/${1}" ]]; then
             exec "$dir/${1}" "${@:2}"
         fi
@@ -347,8 +347,8 @@ run_command() {
 }
 
 run_uv() {
-    local project_dir="${LIB_DIR}/prodi"
-    local venv_path="${XDG_STATE_HOME:-$HOME/.local/state}/prodi/python_env"
+    local project_dir="${LIB_DIR}/hyde"
+    local venv_path="${XDG_STATE_HOME:-$HOME/.local/state}/hyde/python_env"
     shift
     local subcmd="${1:-help}"
     shift 2>/dev/null || true
@@ -363,14 +363,14 @@ run_uv() {
         UV_PROJECT_ENVIRONMENT="$venv_path" uv pip list --python "${venv_path}/bin/python"
         ;;
     *)
-        echo "Usage: prodi-shell uv [install|uninstall|list] [packages...]"
+        echo "Usage: hyde-shell uv [install|uninstall|list] [packages...]"
         ;;
     esac
 }
 
 run_luarocks() {
     shift
-    local lua_env_dir="${XDG_STATE_HOME:-$HOME/.local/state}/prodi/lua_env"
+    local lua_env_dir="${XDG_STATE_HOME:-$HOME/.local/state}/hyde/lua_env"
     if command -v luarocks >/dev/null 2>&1; then
         luarocks --tree "${lua_env_dir}" "$@"
     else
@@ -408,7 +408,7 @@ run_pypr() {
             exec app.sh -t service pypr
         fi
     else
-        UV_PROJECT_ENVIRONMENT="${XDG_STATE_HOME:-$HOME/.local/state}/prodi/python_env" uv add "pyprland==3.3.1" --project "${LIB_DIR}/prodi"
+        UV_PROJECT_ENVIRONMENT="${XDG_STATE_HOME:-$HOME/.local/state}/hyde/python_env" uv add "pyprland==3.3.1" --project "${LIB_DIR}/hyde"
     fi
 }
 
@@ -421,7 +421,7 @@ list_scripts_pretty() {
     local _R=$'\e[0m' _BOLD=$'\e[1m' _DIM=$'\e[2m'
     local _VIOLET=$'\e[35m' _GREEN=$'\e[92m'
 
-    IFS=':' read -ra RAW_DIRS <<<"$PRODI_SCRIPTS_PATH"
+    IFS=':' read -ra RAW_DIRS <<<"$HYDE_SCRIPTS_PATH"
     declare -A seen_dirs
     local SCRIPT_DIRS=()
 
@@ -511,36 +511,36 @@ else
     EXECUTABLE="${BASH_SOURCE[0]}"
 fi
 
-BIN_DIR=$(dirname "$(which "${EXECUTABLE:-prodi-shell}")")
+BIN_DIR=$(dirname "$(which "${EXECUTABLE:-hyde-shell}")")
 LIB_DIR=$(realpath "${BIN_DIR}/../lib")
 SHARE_DIR=$(realpath "${BIN_DIR}/../share")
-# Prepend prodi paths to PATH only if not already present
-for _p in "$LIB_DIR/prodi" "$BIN_DIR" "${XDG_CONFIG_HOME:-$HOME/.config}/prodi/scripts"; do
+# Prepend hyde paths to PATH only if not already present
+for _p in "$LIB_DIR/hyde" "$BIN_DIR" "${XDG_CONFIG_HOME:-$HOME/.config}/hyde/scripts"; do
     [[ ":$PATH:" != *":$_p:"* ]] && PATH="$_p:$PATH"
 done
 unset _p
-# Define prodi scripts search paths (colon-separated, user configurable)
-PRODI_SCRIPTS_PATH="${PRODI_SCRIPTS_PATH:-${XDG_CONFIG_HOME:-$HOME/.config}/prodi/scripts:${LIB_DIR}/prodi}:${XDG_DATA_HOME:-$HOME/.local/share}/waybar/scripts:${XDG_CONFIG_HOME:-$HOME/.config}/waybar/scripts"
-export BIN_DIR LIB_DIR SHARE_DIR PATH PRODI_SCRIPTS_PATH
+# Define hyde scripts search paths (colon-separated, user configurable)
+HYDE_SCRIPTS_PATH="${HYDE_SCRIPTS_PATH:-${XDG_CONFIG_HOME:-$HOME/.config}/hyde/scripts:${LIB_DIR}/hyde}:${XDG_DATA_HOME:-$HOME/.local/share}/waybar/scripts:${XDG_CONFIG_HOME:-$HOME/.config}/waybar/scripts"
+export BIN_DIR LIB_DIR SHARE_DIR PATH HYDE_SCRIPTS_PATH
 
 # -----------------------------------------------------------------
 
-[[ -d "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/prodi" ]] || mkdir -p "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/prodi"
+[[ -d "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/hyde" ]] || mkdir -p "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/hyde"
 
 case "$1" in
 app)
     # app launches a service/scope that outlives this shell via exec, so
-    # anything it needs from Prodi's generated config (e.g. config.toml ->
+    # anything it needs from HyDE's generated config (e.g. config.toml ->
     # env vars like BATTERY_NOTIFY_DOCK) has to be sourced and exported
     # before the exec below -- this path used to skip globalcontrol.sh
     # entirely and reach it only on the fallback branch further down,
     # silently launching every app-managed service without it (#1951).
-    if ! source "${LIB_DIR}/prodi/globalcontrol.sh"; then
-        echo "Error: Could not load Prodi, broken installation?"
+    if ! source "${LIB_DIR}/hyde/globalcontrol.sh"; then
+        echo "Error: Could not load HyDE, broken installation?"
         exit 1
     fi
-    export PATH="${PRODI_SCRIPTS_PATH}:${PATH}"
-    [[ "${PRODIPY}" -eq 1 ]] && python_activate
+    export PATH="${HYDE_SCRIPTS_PATH}:${PATH}"
+    [[ "${HYDEPY}" -eq 1 ]] && python_activate
     shift
     exec app.sh "$@"
     ;;
@@ -553,12 +553,12 @@ lock-session)
     exit 0
     ;;
 *)
-    export PRODI_SHELL_INIT=1
+    export HYDE_SHELL_INIT=1
     ;;
 esac
 
-if ! source "${LIB_DIR}/prodi/globalcontrol.sh"; then
-    echo "Error: Could not load Prodi, broken installation?"
+if ! source "${LIB_DIR}/hyde/globalcontrol.sh"; then
+    echo "Error: Could not load HyDE, broken installation?"
     exit 1
 fi
 
@@ -567,7 +567,7 @@ fi
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     case $1 in
     logout)
-        prodi-logout
+        hyde-logout
         ;;
     pypr)
         run_pypr "${@}"
@@ -583,7 +583,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
         ;;
     -r | reload)
         shift
-        prodi_reload "${@}"
+        hyde_reload "${@}"
         ;;
     wallbash)
         shift
@@ -593,7 +593,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     completion | completions)
         # Delegate all completion operations to the Python backend
         python_activate
-        python3 "${LIB_DIR}/prodi/completions.py" "${@:2}"
+        python3 "${LIB_DIR}/hyde/completions.py" "${@:2}"
         exit $?
         ;;
     --release-notes | release-notes)
@@ -605,14 +605,14 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     help)
         shift
         if [[ $# -gt 0 ]]; then
-            python3 "${LIB_DIR}/prodi/help.py" "$@"
+            python3 "${LIB_DIR}/hyde/help.py" "$@"
             exit $?
         fi
         USAGE
         ;;
     man)
         shift
-        python3 "${LIB_DIR}/prodi/man.py" "$@"
+        python3 "${LIB_DIR}/hyde/man.py" "$@"
         exit $?
         ;;
     --help | -h)
@@ -623,10 +623,10 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
         ;;
     validate)
         shift
-        if command -v prodi-config >/dev/null 2>&1; then
-            prodi-config -no-daemon "${@}"
+        if command -v hyde-config >/dev/null 2>&1; then
+            hyde-config -no-daemon "${@}"
         else
-            echo "prodi-config not found."
+            echo "hyde-config not found."
         fi
         exit 0
         ;;

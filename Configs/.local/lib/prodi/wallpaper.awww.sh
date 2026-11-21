@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-selected_wall="${1:-"$$PRODI_CACHE_HOME/wall.set"}"
+selected_wall="${1:-"$$HYDE_CACHE_HOME/wall.set"}"
 scrDir="$(dirname "$(realpath "$0")")"
 source "$scrDir/globalcontrol.sh"
 wallpaper_acquire_lock 15
@@ -27,8 +27,8 @@ fi
 is_video=$(file --mime-type -b "$selected_wall" | grep -c '^video/')
 if [ "$is_video" -eq 1 ]; then
     print_log -sec "wallpaper" -stat "converting video" "$selected_wall"
-    mkdir -p "$PRODI_CACHE_HOME/wallpapers/thumbnails"
-    cached_thumb="$PRODI_CACHE_HOME/wallpapers/$(${hashMech:-sha1sum} "$selected_wall" | cut -d' ' -f1).png"
+    mkdir -p "$HYDE_CACHE_HOME/wallpapers/thumbnails"
+    cached_thumb="$HYDE_CACHE_HOME/wallpapers/$(${hashMech:-sha1sum} "$selected_wall" | cut -d' ' -f1).png"
     extract_thumbnail "$selected_wall" "$cached_thumb"
     selected_wall="$cached_thumb"
 fi

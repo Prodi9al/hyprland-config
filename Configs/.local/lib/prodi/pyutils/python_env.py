@@ -22,7 +22,7 @@ import wrapper.libnotify as notify  # noqa: E402
 
 def get_venv_path() -> str:
     """Returns the path to the virtual environment directory."""
-    return os.path.join(str(xdg_base_dirs.xdg_state_home()), "prodi", "python_env")
+    return os.path.join(str(xdg_base_dirs.xdg_state_home()), "hyde", "python_env")
 
 
 def get_project_dir() -> str:
@@ -58,7 +58,7 @@ def check_uv_version(uv_path: str) -> None:
         current_version_str = ".".join(str(part) for part in version)
         raise RuntimeError(
             f"uv {current_version_str} is too old. "
-            f"Prodi requires uv >= {min_version_str} for sync/add/remove. "
+            f"HyDE requires uv >= {min_version_str} for sync/add/remove. "
             "Please upgrade uv with 'pip install --upgrade uv' or 'pacman -Syu uv'."
         )
 
@@ -80,17 +80,17 @@ def ensure_venv(venv_path: str) -> None:
     )
     if result.returncode != 0:
         err = result.stderr.strip() or result.stdout.strip() or "uv venv failed"
-        notify.send("Prodi UV", f"Failed to create virtual environment:\n{err}", urgency="critical")
+        notify.send("HyDE UV", f"Failed to create virtual environment:\n{err}", urgency="critical")
         raise RuntimeError(f"Failed to create virtual environment: {err}")
 
 
 
 def get_uv() -> str:
-    """Finds or installs the 'uv' executable in the Prodi venv."""
+    """Finds or installs the 'uv' executable in the HyDE venv."""
     venv_path = get_venv_path()
     uv_venv = os.path.join(venv_path, "bin", "uv")
 
-    # Check if uv exists in the Prodi venv
+    # Check if uv exists in the HyDE venv
     if os.path.isfile(uv_venv) and os.access(uv_venv, os.X_OK):
         return uv_venv
 
@@ -131,7 +131,7 @@ def setup_venv_with_uv() -> None:
     subprocess.run([python_exe, "-m", "pip", "install", "--upgrade", "pip"], check=True)
     subprocess.run([pip_exe, "install", "uv"], check=True)
 
-    notify.send("Prodi UV", "✅ Python environment and uv installed")
+    notify.send("HyDE UV", "✅ Python environment and uv installed")
 
 
 # =========================
@@ -149,7 +149,7 @@ def run_uv(
     try:
         uv = get_uv()
     except FileNotFoundError as e:
-        notify.send("Prodi UV", str(e), urgency="critical")
+        notify.send("HyDE UV", str(e), urgency="critical")
         raise
 
     venv_path = venv_path or get_venv_path()
@@ -159,14 +159,14 @@ def run_uv(
     env["UV_PROJECT_ENVIRONMENT"] = venv_path
 
     if notify_msg:
-        notify.send("Prodi UV", notify_msg, replace_id=9)
+        notify.send("HyDE UV", notify_msg, replace_id=9)
 
     cmd = [uv] + args + ["--project", project_dir]
     # uv sync (and the sync phase of add/remove) creates the project environment
-    # in a .venv directory by default. Point it at the Prodi venv with --active
+    # in a .venv directory by default. Point it at the HyDE venv with --active
     # and force a copy-based install to avoid silent reflink failures on ext4.
     if args and args[0] in ("sync", "add", "remove"):
-        # If system uv is too old for --active, bootstrap uv in Prodi's venv and retry.
+        # If system uv is too old for --active, bootstrap uv in HyDE's venv and retry.
         try:
             check_uv_version(uv)
         except RuntimeError:
@@ -185,7 +185,7 @@ def run_uv(
     if stream:
         result = subprocess.run(cmd, env=env)
         if result.returncode != 0:
-            notify.send("Prodi UV", "Command failed", urgency="critical")
+            notify.send("HyDE UV", "Command failed", urgency="critical")
             raise RuntimeError(f"uv {args[0]} failed with exit code {result.returncode}")
         return result
 
@@ -193,7 +193,7 @@ def run_uv(
 
     if result.returncode != 0:
         err = result.stderr.strip() or result.stdout.strip() or "Unknown error"
-        notify.send("Prodi UV", f"Error:\n{err}", urgency="critical")
+        notify.send("HyDE UV", f"Error:\n{err}", urgency="critical")
         raise RuntimeError(err)
 
     return result
@@ -233,12 +233,12 @@ def create_venv() -> None:
     venv_path = get_venv_path()
     if os.path.exists(venv_path):
         if is_venv_valid(venv_path):
-            notify.send("Prodi UV", "ℹ️ Virtual environment already exists and is valid")
+            notify.send("HyDE UV", "ℹ️ Virtual environment already exists and is valid")
             return
-        notify.send("Prodi UV", "⚠️ Broken venv detected, recreating…")
+        notify.send("HyDE UV", "⚠️ Broken venv detected, recreating…")
         destroy_venv(venv_path)
     run_uv(["sync"], notify_msg="⏳ Creating virtual environment...")
-    notify.send("Prodi UV", "✅ Virtual environment ready")
+    notify.send("HyDE UV", "✅ Virtual environment ready")
 
 
 def destroy_venv(venv_path=None) -> None:
@@ -246,7 +246,7 @@ def destroy_venv(venv_path=None) -> None:
     venv_path = venv_path or get_venv_path()
     if os.path.exists(venv_path):
         shutil.rmtree(venv_path)
-        notify.send("Prodi UV", "🗑️ Virtual environment removed")
+        notify.send("HyDE UV", "🗑️ Virtual environment removed")
 
 
 def rebuild_venv() -> None:
@@ -257,7 +257,7 @@ def rebuild_venv() -> None:
         destroy_venv(venv_path)
 
     run_uv(["sync"])
-    notify.send("Prodi UV", "✅ Rebuild complete")
+    notify.send("HyDE UV", "✅ Rebuild complete")
 
 
 # =========================
@@ -268,7 +268,7 @@ def rebuild_venv() -> None:
 def sync_packages() -> None:
     """Installs dependencies from pyproject.toml using uv sync."""
     run_uv(["sync"], notify_msg="📦 Syncing dependencies...")
-    notify.send("Prodi UV", "✅ Dependencies are up to date", replace_id=9)
+    notify.send("HyDE UV", "✅ Dependencies are up to date", replace_id=9)
 
 
 def install_package(package: str | Iterable[str]) -> None:
@@ -279,14 +279,14 @@ def install_package(package: str | Iterable[str]) -> None:
         pkgs = list(package)
 
     if not pkgs:
-        notify.send("Prodi UV", "No packages specified for installation", urgency="warning")
+        notify.send("HyDE UV", "No packages specified for installation", urgency="warning")
         return
 
-    notify.send("Prodi UV", f"Installing {', '.join(pkgs)}...")
+    notify.send("HyDE UV", f"Installing {', '.join(pkgs)}...")
     try:
         run_uv(["add"] + pkgs, stream=True)
     except RuntimeError as e:
-        notify.send("Prodi UV", f"Error installing packages: {e}", urgency="critical")
+        notify.send("HyDE UV", f"Error installing packages: {e}", urgency="critical")
         raise
 
 
@@ -298,14 +298,14 @@ def uninstall_package(package: str | Iterable[str]) -> None:
         pkgs = list(package)
 
     if not pkgs:
-        notify.send("Prodi UV", "No packages specified for uninstallation", urgency="warning")
+        notify.send("HyDE UV", "No packages specified for uninstallation", urgency="warning")
         return
 
-    notify.send("Prodi UV", f"Uninstalling {', '.join(pkgs)}...")
+    notify.send("HyDE UV", f"Uninstalling {', '.join(pkgs)}...")
     try:
         run_uv(["remove"] + pkgs, stream=True)
     except RuntimeError as e:
-        notify.send("Prodi UV", f"Error uninstalling packages: {e}", urgency="critical")
+        notify.send("HyDE UV", f"Error uninstalling packages: {e}", urgency="critical")
         raise
 
 
@@ -343,7 +343,7 @@ def v_import(module_name: str, auto_install: bool = True, extra: str = None) -> 
         if not auto_install:
             raise ImportError(f"Module '{module_name}' not found and auto_install is disabled")
 
-        notify.send("Prodi UV", f"Installing missing module: {module_name}")
+        notify.send("HyDE UV", f"Installing missing module: {module_name}")
         if extra:
             run_uv(["sync", "--extra", extra])
         else:
@@ -354,11 +354,11 @@ def v_import(module_name: str, auto_install: bool = True, extra: str = None) -> 
 
         try:
             module = importlib.import_module(module_name)
-            notify.send("Prodi UV", f"{module_name} installed successfully")
+            notify.send("HyDE UV", f"{module_name} installed successfully")
             return module
         except ImportError as e:
             notify.send(
-                "Prodi UV",
+                "HyDE UV",
                 f"Failed to import {module_name} after installation: {e}",
                 urgency="critical",
             )
@@ -398,7 +398,7 @@ def cmd_uv(args) -> None:
     uv = get_uv()
     env = os.environ.copy()
     cmd = [uv] + args.uv_args
-    if args.prodi:
+    if args.hyde:
         env["UV_PROJECT_ENVIRONMENT"] = get_venv_path()
         cmd += ["--project", get_project_dir()]
     result = subprocess.run(cmd, env=env)
@@ -426,7 +426,7 @@ def main(argv) -> None:
     parser = argparse.ArgumentParser(
         prog="python-env",
         usage="%(prog)s [command] <options>",
-        description="Prodi's Python virtual environment manager",
+        description="HyDE's Python virtual environment manager",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
@@ -443,8 +443,8 @@ def main(argv) -> None:
     uninstall_p = subparsers.add_parser("uninstall", help="Uninstall packages")
     uninstall_p.add_argument("packages", nargs="+", metavar="package")
 
-    uv_p = subparsers.add_parser("uv", help="Run a raw uv command. Use --prodi to scope Prodi's venv")
-    uv_p.add_argument("--prodi", action="store_true", help="Run within Prodi's virtualenv context")
+    uv_p = subparsers.add_parser("uv", help="Run a raw uv command. Use --hyde to scope HyDE's venv")
+    uv_p.add_argument("--hyde", action="store_true", help="Run within HyDE's virtualenv context")
     uv_p.add_argument("uv_args", nargs=argparse.REMAINDER, metavar="args")
 
     args = parser.parse_args(argv)
@@ -455,9 +455,9 @@ def main(argv) -> None:
         parser.print_help()
 
 
-def prodi(args) -> None:
+def hyde(args) -> None:
     main(args)
 
 
 if __name__ == "__main__":
-    prodi(sys.argv[1:])
+    hyde(sys.argv[1:])

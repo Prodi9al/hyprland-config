@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Metadata-driven help pages for prodi-shell."""
+"""Metadata-driven help pages for hyde-shell."""
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -10,7 +11,7 @@ HERE = Path(__file__).resolve().parent
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
-import completions  # noqa: E402
+import completions
 
 
 def _sort_key(value: str):
@@ -55,11 +56,11 @@ def _load_script_index():
 
 
 def _print_script_help(script_name: str, meta: dict, subtopic: str = "") -> int:
-    print(f"\nProdi Help: {script_name}\n")
+    print(f"\nHyDE Help: {script_name}\n")
     _print_kv("Name", meta.get("name") or script_name)
     _print_kv("Version", meta.get("version", ""))
     _print_kv("Summary", meta.get("short", ""))
-    usage = meta.get("usage", "").strip() or f"prodi-shell {script_name} [subcommand]"
+    usage = meta.get("usage", "").strip() or f"hyde-shell {script_name} [subcommand]"
     _print_kv("Usage", usage)
 
     commands = meta.get("commands", {})
@@ -95,10 +96,10 @@ def _print_script_help(script_name: str, meta: dict, subtopic: str = "") -> int:
     return 0
 
 
-def _print_prodi_command_help(command: str, cmd_info: dict) -> int:
-    print(f"\nProdi Help: {command}\n")
-    _print_kv("Name", f"prodi-shell {command}")
-    _print_kv("Description", cmd_info.get("desc", "Prodi command"))
+def _print_hyde_command_help(command: str, cmd_info: dict) -> int:
+    print(f"\nHyDE Help: {command}\n")
+    _print_kv("Name", f"hyde-shell {command}")
+    _print_kv("Description", cmd_info.get("desc", "HyDE command"))
     _print_kv("Aliases", ", ".join(cmd_info.get("aliases", [])))
 
     options = [(o["opt"], o.get("desc", "Option")) for o in cmd_info.get("options", [])]
@@ -115,19 +116,19 @@ def _print_prodi_command_help(command: str, cmd_info: dict) -> int:
 
 
 def _print_root_help() -> int:
-    prodi_meta = completions.parse_new_style(str(completions.PRODI_SHELL_PATH))
-    commands = prodi_meta.get("commands", {})
+    hyde_meta = completions.parse_new_style(str(completions.HYDE_SHELL_PATH))
+    commands = hyde_meta.get("commands", {})
 
-    print("\nProdi Help\n")
-    _print_kv("Usage", prodi_meta.get("usage", "prodi-shell [command] [args]"))
-    _print_kv("Summary", prodi_meta.get("short", "Prodi command runner"))
+    print("\nHyDE Help\n")
+    _print_kv("Usage", hyde_meta.get("usage", "hyde-shell [command] [args]"))
+    _print_kv("Summary", hyde_meta.get("short", "HyDE command runner"))
 
     rows = []
     for cmd, info in commands.items():
-        rows.append((cmd, info.get("desc", "Prodi command")))
+        rows.append((cmd, info.get("desc", "HyDE command")))
     print("\nCommands")
     _format_list(sorted(rows, key=lambda pair: _sort_key(pair[0])))
-    print("\nTip: prodi-shell help <command-or-script> [subcommand]")
+    print("\nTip: hyde-shell help <command-or-script> [subcommand]")
     return 0
 
 
@@ -145,10 +146,10 @@ def main(argv: list[str] | None = None) -> int:
         script_name, meta = script_index[topic]
         return _print_script_help(script_name, meta, subtopic)
 
-    prodi_meta = completions.parse_new_style(str(completions.PRODI_SHELL_PATH))
-    cmd_name, cmd_info = _find_cmd(prodi_meta.get("commands", {}), topic)
+    hyde_meta = completions.parse_new_style(str(completions.HYDE_SHELL_PATH))
+    cmd_name, cmd_info = _find_cmd(hyde_meta.get("commands", {}), topic)
     if cmd_info:
-        return _print_prodi_command_help(cmd_name, cmd_info)
+        return _print_hyde_command_help(cmd_name, cmd_info)
 
     print(f"Unknown help topic: {topic}", file=sys.stderr)
     return 1

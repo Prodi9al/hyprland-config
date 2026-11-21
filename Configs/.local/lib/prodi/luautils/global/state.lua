@@ -1,10 +1,10 @@
 -- luautils/global/state.lua
--- Shared state I/O for Prodi Lua scripts.
+-- Shared state I/O for HyDE Lua scripts.
 --
 -- Provides two independent state channels:
---   staterc  — the shell-compatible $XDG_STATE_HOME/prodi/staterc file
+--   staterc  — the shell-compatible $XDG_STATE_HOME/hyde/staterc file
 --              (KEY="value" format, shared with shell and Python)
---   lua_state — per-selector .lua stub files under $XDG_STATE_HOME/prodi/lua_state/
+--   lua_state — per-selector .lua stub files under $XDG_STATE_HOME/hyde/lua_state/
 --              (fast dofile-based cache, Lua-only)
 --
 -- Usage:
@@ -33,12 +33,12 @@ end
 
 -- ── staterc (shell-compatible, shared with shell/Python) ─────────────────────
 
-local staterc_path = xdg.state .. "/prodi/staterc"
+local staterc_path = xdg.state .. "/hyde/staterc"
 
 --- Read a value from staterc. Returns the unquoted string or nil.
 -- staterc.sh escapes \ " $ and the backtick inside the double quotes
--- (Prodi-Project/Prodi#2197); undo that the way `source` does, so a line
--- written by an older Prodi reads the same too. An unquoted value is kept as is.
+-- (HyDE-Project/HyDE#2197); undo that the way `source` does, so a line
+-- written by an older HyDE reads the same too. An unquoted value is kept as is.
 function S.staterc_get(key)
     local f = io.open(staterc_path, "r")
     if not f then
@@ -64,7 +64,7 @@ local function sh_quote(s)
 end
 
 -- staterc.sh sits next to luautils/; found from this file's own path, like
--- luautils/init.lua finds PRODI_SCRIPTS_PATH, else where globalcontrol.sh
+-- luautils/init.lua finds HYDE_SCRIPTS_PATH, else where globalcontrol.sh
 -- puts $scrDir.
 local function find_staterc_helper()
     local src = debug.getinfo(1, "S").source
@@ -72,13 +72,13 @@ local function find_staterc_helper()
     if dir then
         return dir .. "staterc.sh"
     end
-    return (os.getenv("LIB_DIR") or (os.getenv("HOME") .. "/.local/lib")) .. "/prodi/staterc.sh"
+    return (os.getenv("LIB_DIR") or (os.getenv("HOME") .. "/.local/lib")) .. "/hyde/staterc.sh"
 end
 local staterc_helper = find_staterc_helper()
 
 --- Write (or replace) a key in staterc in bash KEY="value" format.
 -- Goes through staterc.sh, which locks staterc against waybar.py and
--- set_conf() and replaces it atomically (Prodi-Project/Prodi#2194).
+-- set_conf() and replaces it atomically (HyDE-Project/HyDE#2194).
 -- Raises an error if the write fails or the key is not a shell variable name.
 function S.staterc_set(key, value)
     -- Pass xdg.state on, so the helper writes the staterc this module reads.

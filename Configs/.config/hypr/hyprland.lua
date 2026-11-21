@@ -1,17 +1,14 @@
 -- Hyprland loads this file when it is started without a config, and it prefers
--- it over hyprland.conf. Prodi9al loads it too, last, as the override layer below.
--- The block keeps the two apart: prodi.lua sets `prodi` on its first line, so it
--- runs only when this file is the entry point and Prodi9al has not been loaded.
+-- it over hyprland.conf. HyDE loads it too, last, as the override layer below.
+-- The block keeps the two apart: hyde.lua sets `hyde` on its first line, so it
+-- runs only when this file is the entry point and HyDE has not been loaded.
 -- Removing it leaves a session with a cursor and nothing else.
-if not prodi then
-	local share = os.getenv("XDG_DATA_HOME")
-	if share == nil or share == "" then
-		share = os.getenv("HOME") .. "/.local/share"
-	end
-	local entry = share .. "/hypr/prodi.lua"
+if not hyde then
+	local share = os.getenv("XDG_DATA_HOME") or (os.getenv("HOME") .. "/.local/share")
+	local entry = share .. "/hypr/hyde.lua"
 	local handle = io.open(entry, "r")
 	if not handle then
-		error("Prodi9al is not installed at " .. entry .. ". Run install.sh -r, or point Hyprland at your own config.")
+		error("HyDE is not installed at " .. entry .. ". Run install.sh -r, or point Hyprland at your own config.")
 	end
 	handle:close()
 	dofile(entry)
@@ -270,6 +267,15 @@ hl.config({
     },
 })
 
+hl.gesture({
+    fingers = 3,
+    direction = "horizontal",
+    action = "workspace"
+})
+
+-- Example per-device config
+-- See https://wiki.hypr.land/configuring/core/devices/ for more
+
 
 ---------------------
 ---- KEYBINDINGS ----
@@ -278,14 +284,16 @@ hl.config({
 local mainMod = "SUPER" -- Sets "Windows" key as main modifier
 
 -- Example binds, see https://wiki.hypr.land/configuring/core/binds/ for more
-hl.bind(mainMod .. " + SHIFT + Q", hl.dsp.exec_cmd(terminal), {description = "[Prodi] open terminal"})
+hl.bind(mainMod .. " + SHIFT + Q", hl.dsp.exec_cmd(terminal), {description = "[Prodigal] open terminal"})
+local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close(), {description = "[Prodigal] close window"})
+-- closeWindowBind:set_enabled(false)
 hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"))
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
-hl.bind(mainMod .. " + SHIFT + V", hl.dsp.window.float({ action = "toggle" }), {description = "[Prodi] toggle floating"})
+hl.bind(mainMod .. " + SHIFT + V", hl.dsp.window.float({ action = "toggle" }), {description = "[Prodigal] toggle floating"})
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
-hl.bind(mainMod .. " + D", hl.dsp.exec_cmd("rofi -show drun -theme ~/.local/share/prodi/rofi/themes/launchpad.rasi -show-icons"), {description = "[Prodi] home screen launchpad"})
-hl.bind(mainMod .. " + A", hl.dsp.exec_cmd("prodi-shell rofilaunch d"), {description = "[Prodi] app selector"})
-hl.bind(mainMod .. " + SHIFT + P", hl.dsp.window.pseudo(), {description = "[Prodi] pseudo tile"})
+hl.bind(mainMod .. " + D", hl.dsp.exec_cmd("rofi -show drun -theme ~/.local/share/hyde/rofi/themes/launchpad.rasi -show-icons"), {description = "[HyDE] home screen launchpad"})
+hl.bind(mainMod .. " + A", hl.dsp.exec_cmd("hyde-shell rofilaunch d"), {description = "[HyDE] app selector"})
+hl.bind(mainMod .. " + SHIFT + P", hl.dsp.window.pseudo(), {description = "[Prodigal] pseudo tile"})
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))    -- dwindle only
 
 -- Move focus with mainMod + arrow keys
@@ -381,17 +389,15 @@ hl.window_rule({
 
 
 
--- Prodigal local comfort overrides (Prodi9al remains the base configuration)
-local prodigalMod = prodi.config.modifiers.main
+-- Prodigal local comfort overrides (HyDE remains the base configuration)
+local prodigalMod = hyde.config.modifiers.main
 hl.bind(prodigalMod .. " + SHIFT + LEFT", hl.dsp.window.move({direction = "left"}), {description = "[Prodigal] move window left", repeating = true})
 hl.bind(prodigalMod .. " + SHIFT + RIGHT", hl.dsp.window.move({direction = "right"}), {description = "[Prodigal] move window right", repeating = true})
 hl.bind(prodigalMod .. " + SHIFT + UP", hl.dsp.window.move({direction = "up"}), {description = "[Prodigal] move window up", repeating = true})
 hl.bind(prodigalMod .. " + SHIFT + DOWN", hl.dsp.window.move({direction = "down"}), {description = "[Prodigal] move window down", repeating = true})
-hl.bind(prodigalMod .. " + Return", prodi.config.exec("app.terminal"), {description = "[Prodigal] terminal"})
-hl.bind(prodigalMod .. " + C", hl.dsp.window.close(), {description = "[Prodigal] close window"})
-hl.bind(prodigalMod .. " + SHIFT + C", prodi.config.exec("app.editor"), {description = "[Prodigal] text editor"})
-hl.bind(prodigalMod .. " + SPACE", hl.dsp.window.float({action = "toggle"}), {description = "[Prodigal] toggle floating"})
+hl.bind(prodigalMod .. " + Return", hyde.config.exec("app.terminal"), {description = "[Prodigal] terminal"})
+hl.bind(prodigalMod .. " + SHIFT + C", hyde.config.exec("app.editor"), {description = "[Prodigal] text editor"})
 hl.bind(prodigalMod .. " + F", hl.dsp.window.fullscreen({action = "toggle"}), {description = "[Prodigal] toggle fullscreen"})
 
 -- F1: Cycle display/projection modes (laptop-only → mirror → extend → external-only)
-hl.bind("F1", hl.dsp.exec_cmd("bash ~/.local/lib/prodi/display-cycle.sh"), {description = "[Prodigal] cycle display mode"})
+hl.bind("F1", hl.dsp.exec_cmd("bash ~/.local/lib/hyde/display-cycle.sh"), {description = "[Prodigal] cycle display mode"})

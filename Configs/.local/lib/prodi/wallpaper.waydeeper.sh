@@ -6,17 +6,17 @@ source "$scrDir/globalcontrol.sh"
 wallpaper_acquire_lock 30
 trap 'flock -u "$WALLPAPER_LOCK_FD"' EXIT
 
-selected_wall="${1:-"$PRODI_CACHE_HOME/wall.set"}"
+selected_wall="${1:-"$HYDE_CACHE_HOME/wall.set"}"
 selected_wall="$(readlink -f "$selected_wall")"
 
 is_video=$(file --mime-type -b "$selected_wall" | grep -c '^video/')
 if [ "$is_video" -eq 1 ]; then
     print_log -sec "wallpaper" -stat "converting video" "$selected_wall"
-    cached_thumb="$PRODI_CACHE_HOME/wallpapers/$(${hashMech:-sha1sum} "$selected_wall" | cut -d' ' -f1).png"
+    cached_thumb="$HYDE_CACHE_HOME/wallpapers/$(${hashMech:-sha1sum} "$selected_wall" | cut -d' ' -f1).png"
     extract_thumbnail "$selected_wall" "$cached_thumb"
     if [ ! -f "$cached_thumb" ]; then
         print_log -err "failed to extract thumbnail from" "$selected_wall"
-        notify-send -a "Prodi Alert" "ERROR: failed to extract thumbnail from video"
+        notify-send -a "HyDE Alert" "ERROR: failed to extract thumbnail from video"
         exit 1
     fi
     selected_wall="$cached_thumb"
@@ -25,7 +25,7 @@ fi
 # Ensure waydeeper is installed
 if ! command -v waydeeper &>/dev/null; then
     print_log -err "waydeeper not found"
-    notify-send -a "Prodi Alert" "ERROR: waydeeper is not installed"
+    notify-send -a "HyDE Alert" "ERROR: waydeeper is not installed"
     exit 1
 fi
 
@@ -40,7 +40,7 @@ if [ -n "$WALLPAPER_WAYDEEPER_MODEL" ]; then
         print_log -sec "wallpaper" -stat "downloading $WALLPAPER_WAYDEEPER_MODEL model"
         if ! waydeeper download-model $WALLPAPER_WAYDEEPER_MODEL; then
             print_log -err "failed to download waydeeper $WALLPAPER_WAYDEEPER_MODEL model"
-            notify-send -a "Prodi Alert" "ERROR: failed to download waydeeper $WALLPAPER_WAYDEEPER_MODEL model"
+            notify-send -a "HyDE Alert" "ERROR: failed to download waydeeper $WALLPAPER_WAYDEEPER_MODEL model"
             exit 1
         fi
     fi

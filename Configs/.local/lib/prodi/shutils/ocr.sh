@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-[[ ${PRODI_SHELL_INIT} -ne 1 ]] && eval "$(prodi-shell init)"
+[[ ${HYDE_SHELL_INIT} -ne 1 ]] && eval "$(hyde-shell init)"
 
 ocr_extract() {
     image_path="$1"
@@ -15,7 +15,7 @@ ocr_extract() {
 
     for pkg in "${tesseract_packages[@]}"; do
         if ! pkg_installed "$pkg"; then
-            notify-send -a "Prodi Alert" "$(echo -e "OCR: required package is not installed\n $pkg")" -e -i "dialog-error"
+            notify-send -a "HyDE Alert" "$(echo -e "OCR: required package is not installed\n $pkg")" -e -i "dialog-error"
             return 1
         fi
     done
@@ -35,6 +35,6 @@ ocr_extract() {
     )
 
     printf "%s" "$tesseract_output" | wl-copy
-    notify-send -a "Prodi Alert" "$(echo -e "OCR: ${#tesseract_output} symbols recognized\n\nLanguages used ${tesseract_languages[*]/#/'\n '}")" -i "$image_path" -e -r 9
+    notify-send -a "HyDE Alert" "$(echo -e "OCR: ${#tesseract_output} symbols recognized\n\nLanguages used ${tesseract_languages[*]/#/'\n '}")" -i "$image_path" -e -r 9
 
 }

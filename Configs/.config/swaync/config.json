@@ -69,11 +69,11 @@
         },
         {
           "label": "  󰃛  ",
-          "command": " prodi-shell hyprsunset --toggle"
+          "command": " hyde-shell hyprsunset --toggle"
         },
         {
           "label": "  ⏻  ",
-          "command": "prodi-shell logoutlaunch"
+          "command": "hyde-shell logoutlaunch"
         }
       ]
     }

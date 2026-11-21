@@ -16,23 +16,23 @@ options:
 
 USAGE
 }
-[ -f "$PRODI_STATE_HOME/staterc" ] && source "$PRODI_STATE_HOME/staterc"
+[ -f "$HYDE_STATE_HOME/staterc" ] && source "$HYDE_STATE_HOME/staterc"
 [ -f "/etc/os-release" ] && source "/etc/os-release"
 confDir="${XDG_CONFIG_HOME:-$HOME/.config}"
 iconDir="${XDG_DATA_HOME:-$HOME/.local/share}/icons"
-cacheDir="${XDG_CACHE_HOME:-$HOME/.cache}/prodi"
+cacheDir="${XDG_CACHE_HOME:-$HOME/.cache}/hyde"
 image_dirs=()
-prodi_distro_logo=$iconDir/Wallbash-Icon/distro/$LOGO
+hyde_distro_logo=$iconDir/Wallbash-Icon/distro/$LOGO
 case $1 in
     logo)
         random() {
             (   
                 image_dirs+=("$confDir/fastfetch/logo")
                 image_dirs+=("$iconDir/Wallbash-Icon/fastfetch/")
-                if [ -n "$PRODI_THEME" ] && [ -d "$confDir/prodi/themes/$PRODI_THEME/logo" ]; then
-                    image_dirs+=("$confDir/prodi/themes/$PRODI_THEME/logo")
+                if [ -n "$HYDE_THEME" ] && [ -d "$confDir/hyde/themes/$HYDE_THEME/logo" ]; then
+                    image_dirs+=("$confDir/hyde/themes/$HYDE_THEME/logo")
                 fi
-                [ -f "$prodi_distro_logo" ] && echo "$prodi_distro_logo"
+                [ -f "$hyde_distro_logo" ] && echo "$hyde_distro_logo"
                 image_dirs+=("$cacheDir/wall.quad")
                 image_dirs+=("$cacheDir/wall.sqre")
                 [ -f "$HOME/.face.icon" ] && image_dirs+=("$HOME/.face.icon")
@@ -50,7 +50,7 @@ options:
   --os      Display the distro logo
   --local   Display a logo inside the fastfetch logo directory
   --wall    Display a logo inside the wallbash fastfetch directory
-  --theme   Display a logo inside the prodi theme directory
+  --theme   Display a logo inside the hyde theme directory
   --rand    Display a random logo
   *         Display a random logo
   *help*    Display this help message
@@ -77,7 +77,7 @@ HELP
                         [ -f "$HOME/.face.icon" ] && image_dirs+=("$HOME/.face.icon")
                         ;;
                     --os)
-                        [ -f "$prodi_distro_logo" ] && image_dirs+=("$prodi_distro_logo")
+                        [ -f "$hyde_distro_logo" ] && image_dirs+=("$hyde_distro_logo")
                         ;;
                     --local)
                         image_dirs+=("$confDir/fastfetch/logo")
@@ -86,9 +86,9 @@ HELP
                         image_dirs+=("$iconDir/Wallbash-Icon/fastfetch/")
                         ;;
                     --theme) if
-                        [ -n "$PRODI_THEME" ] && [ -d "$confDir/prodi/themes/$PRODI_THEME/logo" ]
+                        [ -n "$HYDE_THEME" ] && [ -d "$confDir/hyde/themes/$HYDE_THEME/logo" ]
                     then
-                        image_dirs+=("$confDir/prodi/themes/$PRODI_THEME/logo")
+                        image_dirs+=("$confDir/hyde/themes/$HYDE_THEME/logo")
                     fi ;;
                 esac
             done

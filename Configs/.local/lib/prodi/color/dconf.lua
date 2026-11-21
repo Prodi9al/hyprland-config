@@ -22,7 +22,7 @@ local function _f(font, size)
 end
 
 local lua_u = {}
-local ok, ui = pcall(dofile, xdg.state .. "/prodi/lua_state/ui.lua")
+local ok, ui = pcall(dofile, xdg.state .. "/hyde/lua_state/ui.lua")
 if ok and ui then lua_u = ui.ui end
 
 local function _r(key)
@@ -61,7 +61,7 @@ local wm = Gio.Settings.new("org.gnome.desktop.wm.preferences")
 if BUTTON_LAYOUT then wm:set_string("button-layout", BUTTON_LAYOUT) end
 Gio.Settings.sync()
 
--- TERMINAL comes from the user's own config (prodi.config.ui.terminal), so a
+-- TERMINAL comes from the user's own config (hyde.config.ui.terminal), so a
 -- quote in it must not break the probe or reach the shell unescaped (#1901).
 local function shell_quote(arg)
     arg = tostring(arg)
@@ -81,5 +81,5 @@ if ok_term and term then
 end
 
 if os.getenv("HYPRLAND_INSTANCE_SIGNATURE") then
-    os.execute(string.format("hyprctl setcursor %s %d", shell_quote(CURSOR_THEME), CURSOR_SIZE))
+    os.execute(string.format("hyprctl setcursor '%s' %d", CURSOR_THEME, CURSOR_SIZE))
 end

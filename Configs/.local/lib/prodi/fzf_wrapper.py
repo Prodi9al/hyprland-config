@@ -32,7 +32,7 @@ FZF_CMD = "fzf"
 
 
 def __check_fzf_in_path() -> bool:
-    return which(FZF_CMD) is not None
+    return which(FZF_CMD) != None
 
 
 def prompt(choices: List[str], fzf_options: List[str] = []) -> List[str]:
@@ -63,9 +63,9 @@ def prompt(choices: List[str], fzf_options: List[str] = []) -> List[str]:
         raise ValueError("Argument 'choices' has to be set!")
     if fzf_options is None:
         fzf_options = []
-    if not all(isinstance(x, str) for x in choices):
+    if not all([isinstance(x, str) for x in choices]):
         raise ValueError("Argument 'choices' has to contains only str!")
-    if not all(isinstance(x, str) for x in fzf_options):
+    if not all([isinstance(x, str) for x in fzf_options]):
         raise ValueError("Argument 'fzf_options' has to contains only str!")
     if not __check_fzf_in_path():
         raise AttributeError(f"Unable to find 'fzf' in PATH!\nInstall fzf from {FZF_URL}")

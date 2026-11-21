@@ -1,6 +1,6 @@
 ${confDir}/swaync/theme.css|${WALLBASH_SCRIPTS}/swaync.sh
 /* Import wallbash */
-@import "<<HOME>>/.cache/prodi/wallbash/gtk.css";
+@import "<<HOME>>/.cache/hyde/wallbash/gtk.css";
 
 
 /*

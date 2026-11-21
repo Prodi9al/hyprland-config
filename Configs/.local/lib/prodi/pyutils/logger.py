@@ -37,7 +37,7 @@ def get_logger():
         logger_type = "loguru"
     except ImportError:
         logging.basicConfig(level=getattr(logging, log_level))
-        log = logging.getLogger("prodi")
+        log = logging.getLogger("hyde")
         logger_type = "logging"
 
     class UnifiedLogger:

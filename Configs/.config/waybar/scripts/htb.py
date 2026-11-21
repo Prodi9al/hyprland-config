@@ -7,44 +7,30 @@ import urllib.request
 import urllib.error
 import subprocess
 
-TOKEN_FILE = os.path.expanduser("~/.config/waybar/scripts/htb_token.env")
+USER_ID = "2426022"
 CACHE_DIR = os.path.expanduser("~/.cache/waybar")
 CACHE_FILE = os.path.join(CACHE_DIR, "htb_profile.json")
+TOKEN_FILE = os.path.expanduser("~/.config/waybar/scripts/htb_token.env")
 CACHE_MAX_AGE = 900  # 15 minutes
 
-
-def load_env_file():
-    """Load HTB_TOKEN and HTB_USER_ID from htb_token.env as single source of truth."""
-    env = {}
+def get_token():
+    token = os.environ.get("HTB_TOKEN", "").strip()
+    if token:
+        return token
     if os.path.exists(TOKEN_FILE):
         try:
             with open(TOKEN_FILE, "r") as f:
                 for line in f:
                     line = line.strip()
-                    if not line or line.startswith("#"):
-                        continue
-                    if line.startswith("export "):
-                        line = line[len("export "):]
-                    if "=" in line:
-                        key, val = line.split("=", 1)
-                        key = key.strip()
-                        val = val.strip().strip("\"'")
-                        if key in ("HTB_TOKEN", "HTB_USER_ID"):
-                            env[key] = val
+                    if line.startswith("export HTB_TOKEN="):
+                        val = line.split("=", 1)[1].strip()
+                        return val.strip("\"'")
+                    elif line.startswith("HTB_TOKEN="):
+                        val = line.split("=", 1)[1].strip()
+                        return val.strip("\"'")
         except Exception:
             pass
-    return env
-
-
-def get_token():
-    env = load_env_file()
-    return os.environ.get("HTB_TOKEN", env.get("HTB_TOKEN", "")).strip()
-
-
-def get_user_id():
-    env = load_env_file()
-    return os.environ.get("HTB_USER_ID", env.get("HTB_USER_ID", "YOUR_HTB_USER_ID"))
-
+    return ""
 
 def load_cache():
     if os.path.exists(CACHE_FILE):
@@ -66,15 +52,14 @@ def save_cache(data):
 
 def fetch_profile():
     token = get_token()
-    user_id = get_user_id()
-    url = f"https://labs.hackthebox.com/api/v4/user/profile/basic/{user_id}"
+    url = f"https://labs.hackthebox.com/api/v4/user/profile/basic/{USER_ID}"
     headers = {
         "User-Agent": "Prodigal/1.0",
         "Accept": "application/json"
     }
     if token:
         headers["Authorization"] = f"Bearer {token}"
-
+    
     req = urllib.request.Request(url, headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=7) as resp:
@@ -95,7 +80,7 @@ def format_output(data):
             "tooltip": "Could not reach Hack The Box API\n<small>Right-click to retry</small>",
             "class": "offline"
         }
-
+    
     p = data.get("profile", {})
     name = p.get("name", "HTB")
     rank = p.get("rank", "Player")
@@ -135,7 +120,7 @@ def main():
     data = None
     if force_refresh or not cached or (now - cached.get("_fetched_at", 0) > CACHE_MAX_AGE):
         data = fetch_profile()
-
+    
     if not data:
         data = cached
 

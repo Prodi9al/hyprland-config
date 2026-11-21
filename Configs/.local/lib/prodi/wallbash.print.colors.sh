@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 if [[ -z $dcol_pry1 ]]; then
-    cacheDir=${cacheDir:-$HOME/.cache/prodi}
+    cacheDir=${cacheDir:-$HOME/.cache/hyde}
     source "$cacheDir/wall.dcol"
 fi
 hex_to_rgb() {

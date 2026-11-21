@@ -1,28 +1,22 @@
 #!/usr/bin/env bash
 font_dir="${XDG_DATA_HOME:-$HOME/.local/share}/fonts"
-landing_dir="${XDG_CACHE_HOME:-$HOME/.cache}/prodi/landing/fonts"
+landing_dir="${XDG_CACHE_HOME:-$HOME/.cache}/hyde/landing/fonts"
 mkdir -p "$font_dir" "$landing_dir"
 download_and_extract() {
     local name="$1"
     local url="$2"
-    local expected_sha256="${3:-}"
-    [[ "$name" == */* ]] && { echo "[font] Invalid font name: $name"; return 1; }
     local temp_dir="$landing_dir/$name"
-    rm -rf "$temp_dir"
+    domain=${url#*://}
+    domain=${domain%%/*}
+    if ! ping -c 1 "$domain" &> /dev/null; then
+        echo "[font] Ping to $domain failed"
+        exit 1
+    fi
     mkdir -p "$temp_dir"
     if cd "$temp_dir"; then
         curl -s -O -L "$url" || return 1
     else
         return 1
-    fi
-    if [ -n "$expected_sha256" ]; then
-        local downloaded_file
-        downloaded_file=$(find "$temp_dir" -type f -name '*' | head -n 1)
-        if [ -n "$downloaded_file" ]; then
-            echo "$expected_sha256  $downloaded_file" | sha256sum -c - || { echo "[font] Checksum mismatch for $name"; return 1; }
-        fi
-    else
-        echo "[font] WARNING: no SHA-256 for $name; download is unverified" >&2
     fi
     find "$temp_dir" -type f | while read -r file; do
         case "$file" in
@@ -57,10 +51,10 @@ download_and_extract() {
                 fi
                 ;;
             *.ttf | *.otf)
-                mkdir -p "$font_dir/prodi"
-                mv "$file" "$font_dir/prodi/$name.ttf"
+                mkdir -p "$font_dir/hyde"
+                mv "$file" "$font_dir/hyde/$name.ttf"
                 echo "[font] $name installed successfully. Please restart hyprlock to apply changes."
-                notify-send -i "preferences-desktop-font" "Prodi font" "$name Installed successfully"
+                notify-send -i "preferences-desktop-font" "HyDE font" "$name Installed successfully"
                 return 0
                 ;;
             *)
@@ -71,10 +65,10 @@ download_and_extract() {
         esac
         if ! cp -rn "$temp_dir/$name" "$font_dir"; then
             echo "[font] Failed to extract $file"
-            notify-send -i "preferences-desktop-font" "Prodi font" "Failed to extract $file"
+            notify-send -i "preferences-desktop-font" "HyDE font" "Failed to extract $file"
             return 1
         fi
-        notify-send -i "preferences-desktop-font" "Prodi font" "$name Installed successfully"
+        notify-send -i "preferences-desktop-font" "HyDE font" "$name Installed successfully"
     done
     rm -rf "$temp_dir"
     echo "[font] $name installed successfully. Please restart hyprlock to apply changes."
@@ -88,15 +82,12 @@ resolve() {
         echo "[font] Layout file not found: $layout_path"
         return 1
     fi
-    # shellcheck disable=SC2016
-    grep -Eo '^\s*\$resolve\.font\s*=\s*[^|]+\s*\|\s*[^|]+\s*(\|.*)?$' "$layout_path" | while IFS='=' read -r _ font; do
+    grep -Eo '^\s*\$resolve\.font\s*=\s*[^|]+\s*\|\s*[^ ]+' "$layout_path" | while IFS='=' read -r _ font; do
         name=$(echo "$font" | awk -F'|' '{print $1}' | xargs)
         url=$(echo "$font" | awk -F'|' '{print $2}' | xargs)
-        sha=$(echo "$font" | awk -F'|' '{print $3}' | xargs)
         if ! fc-list | grep -q "$name"; then
-            if download_and_extract "$name" "$url" "$sha"; then
-                fc-cache -f "$font_dir/$name"
-            fi
+            download_and_extract "$name" "$url"
+            fc-cache -f "$font_dir/$name"
         fi
     done
 }

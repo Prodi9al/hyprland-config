@@ -1,16 +1,16 @@
 #!/usr/bin/env sh
 
-[ -n "${PRODI_ACTIVATED:-}" ] && return 0 2>/dev/null
+[ -n "${HYDE_ACTIVATED:-}" ] && return 0 2>/dev/null
 
-PRODI_ACTIVATED=1
+HYDE_ACTIVATED=1
 
-PRODI_MODE=""
+HYDE_MODE=""
 HYPRLAND_CONFIG=""
 
 # A per-user runtime directory. Falling back to a shared directory would put
 # sockets from every session into one namespace, so the fallback is private and
 # only readable by its owner.
-prodi_runtime_dir() {
+hyde_runtime_dir() {
     _uid=$(id -u 2>/dev/null) || _uid=''
 
     if [ -n "$_uid" ] && [ -d "/run/user/$_uid" ] && [ -w "/run/user/$_uid" ]; then
@@ -19,7 +19,7 @@ prodi_runtime_dir() {
         return 0
     fi
 
-    _dir="${TMPDIR:-/tmp}/prodi-${_uid:-$$}"
+    _dir="${TMPDIR:-/tmp}/hyde-${_uid:-$$}"
     mkdir -p "$_dir" 2>/dev/null && chmod 700 "$_dir" 2>/dev/null
     printf '%s\n' "$_dir"
     unset _uid _dir
@@ -32,25 +32,25 @@ setup_xdg() {
     : "${XDG_STATE_HOME:=$HOME/.local/state}"
 
     # fallback only
-    [ -n "${XDG_RUNTIME_DIR:-}" ] || XDG_RUNTIME_DIR=$(prodi_runtime_dir)
+    [ -n "${XDG_RUNTIME_DIR:-}" ] || XDG_RUNTIME_DIR=$(hyde_runtime_dir)
 
     export XDG_CONFIG_HOME XDG_CACHE_HOME XDG_DATA_HOME XDG_STATE_HOME XDG_RUNTIME_DIR
 }
 
-prodi_die() {
+hyde_die() {
     printf '%s\n' "$*" >&2
     return 1
 }
 
-prodi_has() {
+hyde_has() {
     command -v "$1" >/dev/null 2>&1
 }
 
-find_prodi_lua() {
+find_hyde_lua() {
     for path in \
-        "$XDG_DATA_HOME/hypr/prodi.lua" \
-        /usr/local/share/hypr/prodi.lua \
-        /usr/share/hypr/prodi.lua; do
+        "$XDG_DATA_HOME/hypr/hyde.lua" \
+        /usr/local/share/hypr/hyde.lua \
+        /usr/share/hypr/hyde.lua; do
         [ -f "$path" ] && {
             printf '%s\n' "$path"
             return 0
@@ -64,7 +64,7 @@ find_hyprland_bin() {
     for bin in \
         Hyprland \
         hyprland; do
-        if prodi_has "$bin"; then
+        if hyde_has "$bin"; then
             command -v "$bin"
             return 0
         fi
@@ -74,7 +74,7 @@ find_hyprland_bin() {
 }
 
 hyprland_has_lua() {
-    prodi_has readelf || return 0
+    hyde_has readelf || return 0
 
     _hyprbin=$(find_hyprland_bin) || return 1
 
@@ -89,7 +89,7 @@ hyprland_has_lua() {
 
 # Mirrors the resolution order in pyutils/lua_env.py, so a runtime that is good
 # enough to provision the environment is not rejected here.
-prodi_find_bin() {
+hyde_find_bin() {
     for _candidate in "$@"; do
         [ -n "$_candidate" ] || continue
         if command -v "$_candidate" >/dev/null 2>&1; then
@@ -103,18 +103,18 @@ prodi_find_bin() {
     return 1
 }
 
-prodi_find_lua() {
-    prodi_find_bin "${LUA:-}" lua lua5.5 lua5.4 lua5.3
+hyde_find_lua() {
+    hyde_find_bin "${LUA:-}" lua lua5.5 lua5.4 lua5.3
 }
 
-prodi_find_luarocks() {
-    prodi_find_bin "${LUAROCKS:-}" luarocks luarocks-5.5 luarocks-5.4 luarocks-5.3
+hyde_find_luarocks() {
+    hyde_find_bin "${LUAROCKS:-}" luarocks luarocks-5.5 luarocks-5.4 luarocks-5.3
 }
 
 check_lua_runtime() {
     _missing=''
-    prodi_find_lua >/dev/null || _missing='lua'
-    prodi_find_luarocks >/dev/null || _missing="${_missing:+$_missing }luarocks"
+    hyde_find_lua >/dev/null || _missing='lua'
+    hyde_find_luarocks >/dev/null || _missing="${_missing:+$_missing }luarocks"
 
     [ -z "$_missing" ] || {
         printf 'Lua runtime incomplete, missing: %s\n' "$_missing" >&2
@@ -127,7 +127,7 @@ check_lua_runtime() {
 }
 
 setup_lua_mode() {
-    HYPRLAND_CONFIG=$(find_prodi_lua)
+    HYPRLAND_CONFIG=$(find_hyde_lua)
 
     check_lua_runtime || return 1
 
@@ -136,36 +136,36 @@ setup_lua_mode() {
         return 1
     }
 
-    PRODI_MODE="lua"
-    PRODI_FEATURE_LUA=1
+    HYDE_MODE="lua"
+    HYDE_FEATURE_LUA=1
 
-    export PRODI_FEATURE_LUA
+    export HYDE_FEATURE_LUA
 
     return 0
 }
 
 setup_session() {
-    : "${XDG_CURRENT_DESKTOP:=Prodi}"
+    : "${XDG_CURRENT_DESKTOP:=HyDE}"
     : "${XDG_SESSION_DESKTOP:=${XDG_CURRENT_DESKTOP:-Hyprland}}"
     : "${XDG_SESSION_TYPE:=wayland}"
 
     export XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE
 }
 
-prodi_activate() {
+hyde_activate() {
     setup_xdg
     setup_session
 
     if setup_lua_mode; then
         :
     else
-        prodi_die 'No valid Prodi configuration found'
+        hyde_die 'No valid HyDE configuration found'
         return 1
     fi
 
-    export PRODI_ACTIVATED PRODI_MODE HYPRLAND_CONFIG
+    export HYDE_ACTIVATED HYDE_MODE HYPRLAND_CONFIG
 
     return 0
 }
 
-prodi_activate
+hyde_activate

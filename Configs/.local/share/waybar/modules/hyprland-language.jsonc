@@ -2,6 +2,6 @@
   "hyprland/language": {
     "format": "{short}",
     "rotate": 0,
-    "on-click": "prodi-shell keyboardswitch"
+    "on-click": "hyde-shell keyboardswitch"
   }
 }

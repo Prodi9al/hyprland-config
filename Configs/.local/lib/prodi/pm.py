@@ -22,7 +22,7 @@ _BASE_DIR = Path(__file__).resolve().parent
 if str(_BASE_DIR) not in sys.path:
     sys.path.insert(0, str(_BASE_DIR))
 
-from package_managers.meta import PMMetadata, DEFAULT_META  # noqa: E402
+from package_managers.meta import PMMetadata, DEFAULT_META
 
 PACKAGE_ENTRY = tuple[str, str | None, str | None, str | None]
 ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")

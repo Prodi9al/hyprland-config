@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 pkill -u "$USER" rofi && exit 0
-if [[ $PRODI_SHELL_INIT -ne 1 ]]; then
-    eval "$(prodi-shell init)"
+if [[ $HYDE_SHELL_INIT -ne 1 ]]; then
+    eval "$(hyde-shell init)"
 else
-    export_prodi_config
+    export_hyde_config
 fi
-glyph_dir=${PRODI_DATA_HOME:-$HOME/.local/share/prodi}
+glyph_dir=${HYDE_DATA_HOME:-$HOME/.local/share/hyde}
 glyph_data="$glyph_dir/glyph.db"
-cache_dir="${PRODI_CACHE_HOME:-$HOME/.cache/prodi}"
+cache_dir="${HYDE_CACHE_HOME:-$HOME/.cache/hyde}"
 recent_data="$cache_dir/landing/show_glyph.recent"
 save_recent_entry() {
     local glyph_line="$1"

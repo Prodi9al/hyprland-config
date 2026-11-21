@@ -1,5 +1,5 @@
-    # prodi-shell tab completion
-    if command -v prodi-shell &>/dev/null; then
-        compdef _prodi-shell prodi-shell
-        eval "$(prodi-shell completion zsh)"
+    # hydectl tab completion
+    if command -v hydectl &>/dev/null; then
+        compdef _hydectl hydectl
+        eval "$(hydectl completion zsh)"
     fi

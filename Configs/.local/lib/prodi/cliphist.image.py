@@ -35,16 +35,18 @@ def main():
             grp = match.groups()
             img_path = decode_and_save_image(grp)
             print(f"{line}\0icon\x1f{img_path}")
-        elif os.getenv("PRODI_CLIPHIST_IMAGE_ONLY", "").lower() not in (
+        elif os.getenv("HYDE_CLIPHIST_IMAGE_ONLY", "").lower() not in (
             "true",
             "1",
             "yes",
         ):
-            # image path is ~/.cache/prodi/wallbash/pry1.svg but use xdg
+            # image path is ~/.cache/hyde/wallbash/pry1.svg but use xdg
             img_path = os.getenv("XDG_CACHE_HOME", os.path.expanduser("~/.cache"))
-            img_path = os.path.join(img_path, "prodi", "wallbash", "pry1.svg")
+            img_path = os.path.join(img_path, "hyde", "wallbash", "pry1.svg")
             print(f"{line}\0icon\x1f{img_path}")
 
 
 if __name__ == "__main__":
+    import sys
+
     main()

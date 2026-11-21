@@ -309,7 +309,7 @@ class HyprlandBackend:
         self._dispatch_count += 1
 
     def launch_forking(self, command: str, client: dict, ws_target: str) -> None:
-        rule_name = f"_prodisession_{self._dispatch_count}"
+        rule_name = f"_hydesession_{self._dispatch_count}"
 
         if self._apply_transient_rule(rule_name, client, ws_target):
             self._transient_rules.append(rule_name)

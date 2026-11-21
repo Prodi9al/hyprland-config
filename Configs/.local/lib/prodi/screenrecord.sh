@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 set -eo pipefail
-[[ $PRODI_SHELL_INIT -ne 1 ]] && eval "$(prodi-shell init)"
+[[ $HYDE_SHELL_INIT -ne 1 ]] && eval "$(hyde-shell init)"
 RECORDER="wl-screenrec"
 command -v "$RECORDER" &> /dev/null || RECORDER="wf-recorder"
 if ! command -v "$RECORDER" &> /dev/null; then
-    notify-send -a "Prodi Alert" "No screen recorder found. Try installing wl-screenrec or wf-recorder."
+    notify-send -a "HyDE Alert" "No screen recorder found. Try installing wl-screenrec or wf-recorder."
     echo "No screen recorder found. Try installing wl-screenrec or wf-recorder."
     exit 1
 fi
 USAGE() {
     cat << USAGE
 
-Usage: 'prodi-shell screenrecord' [option]
+Usage: 'hyde-shell screenrecord' [option]
 
     Using $RECORDER to record the screen.
 
@@ -32,7 +32,7 @@ Note:
     Additional arguments are passed to '$RECORDER'.
 
 Example:
-        'prodi-shell screenrecord' --start -- --audio --codec libx264
+        'hyde-shell screenrecord' --start -- --audio --codec libx264
 
 
     To see all available options for '$RECORDER', run:
@@ -80,12 +80,12 @@ handle_recording() {
     fi
     tmp_thumbnail=$(mktemp -t thumbnail_XXXXXX.png)
     if [[ -z $GEOM ]]; then
-        "$LIB_DIR/prodi/screenshot/grimblast" save active "$tmp_thumbnail"
+        "$LIB_DIR/hyde/screenshot/grimblast" save active "$tmp_thumbnail"
     else
         grim -g "$GEOM" "$tmp_thumbnail"
     fi
     "$RECORDER" "${parameters[@]}" -f "$save_file_path"
-    notify-send -a "Prodi Alert" "$RECORDER: Recording saved at $save_file_path" -i "$tmp_thumbnail"
+    notify-send -a "HyDE Alert" "$RECORDER: Recording saved at $save_file_path" -i "$tmp_thumbnail"
 }
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -103,7 +103,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         --quit)
             killall "$RECORDER"
-            notify-send -a "Prodi Alert" "Recording stopped"
+            notify-send -a "HyDE Alert" "Recording stopped"
             exit 0
             ;;
         --help)

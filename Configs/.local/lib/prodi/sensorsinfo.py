@@ -16,12 +16,12 @@ and let the bar poll it. Might cause more CPU calls. but frees up RAM.
 
 """
 
-import argparse
 import json
-import os
 import subprocess
-import sys
+import os
+import argparse
 import time
+import sys
 
 DEVICE_GLYPHS = {
     "iwlwifi": "",
@@ -63,8 +63,7 @@ def format_columns(data, max_entries_per_column=15):
 
 
 PAGE_SIZE = 5
-PAGE_FILE = os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "sensorinfo_page")
-SENSORINFO_FILE = os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "sensorinfo")
+PAGE_FILE = "/tmp/sensorinfo_page"
 
 
 def get_current_page(total_pages):
@@ -202,7 +201,7 @@ def get_sensor_data(result_sensors, page=0):
 
     tooltip = "\n".join(tooltip_parts)
 
-    with open(SENSORINFO_FILE, "w", encoding="utf-8") as f:
+    with open("/tmp/sensorinfo", "w", encoding="utf-8") as f:
         f.write(tooltip)
 
     return {"text": text, "tooltip": tooltip}

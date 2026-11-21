@@ -1,6 +1,6 @@
 #!/bin/bash
 # shellcheck disable=SC1090
-cpuinfo_file="${XDG_RUNTIME_DIR:-/tmp}/prodi-$UID-processors"
+cpuinfo_file="${XDG_RUNTIME_DIR:-/tmp}/hyde-$UID-processors"
 
 map_floor() {
     IFS=', ' read -r -a pairs <<<"$1"
