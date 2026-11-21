@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Prodi9al Hyprland Config — Install Script
 # Sets up the full Hyprland desktop environment on Arch and Arch-based distros.
-# Usage: ./Scripts/install.sh [--aur]
+# Usage: ./Scripts/install.sh [--aur] [--skip-sys-update] [--dry-run] [--unattended]
 
 set -euo pipefail
 
@@ -66,7 +66,6 @@ safe_write_file() {
     echo "    [DRY RUN] write \"$dst\""
     return 0
   fi
-  # Write with single-quoted heredoc to avoid shell interpretation of special chars
   printf '%s\n' "$content" > "$dst"
 }
 
@@ -152,86 +151,170 @@ fi
 
 echo ""
 
-# 4. Back up existing configs
+# 4. Deploy dot groups from dots.toml manifest
+echo "==> Deploying dot groups from dots.toml..."
+DOTS_TOML="$SCRIPTS_DIR/dots.toml"
+
+if [[ ! -f "$DOTS_TOML" ]]; then
+  echo "    dots.toml not found — skipping dot group deployment."
+else
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "    [DRY RUN] Would parse $DOTS_TOML and deploy dot groups."
+  else
+    python3 - "$DOTS_TOML" "$CONFIGS_DIR" "$HOME" <<'PYEOF'
+import sys, os, tomllib
+
+dots_toml = sys.argv[1]
+configs_dir = sys.argv[2]
+home = sys.argv[3]
+
+with open(dots_toml, "rb") as f:
+    manifest = tomllib.load(f)
+
+include_list = manifest.get("include", [])
+
+for include_path in include_list:
+    full_path = os.path.join(os.path.dirname(dots_toml), include_path)
+    if not os.path.exists(full_path):
+        print(f"    [skip] {include_path} — not found")
+        continue
+
+    with open(full_path, "rb") as f:
+        dot = tomllib.load(f)
+
+    for section_name, section in dot.items():
+        if section_name == "include":
+            continue
+        if not isinstance(section, dict):
+            continue
+
+        pre_cmd = section.get("pre_command", "")
+        post_cmd = section.get("post_command", "")
+
+        if pre_cmd:
+            print(f"    [pre] {section_name}: {pre_cmd}")
+            os.system(pre_cmd)
+
+        files = section.get("files", [])
+        if isinstance(files, dict):
+            files = [files]
+
+        for file_entry in files:
+            action = file_entry.get("action", "sync")
+            source_root = file_entry.get("source_root", "")
+            target_root = file_entry.get("target_root", "")
+            paths = file_entry.get("paths", [])
+            ignored = file_entry.get("ignored_paths", [])
+
+            if isinstance(paths, str):
+                paths = [paths]
+            if isinstance(ignored, str):
+                ignored = [ignored]
+
+            # Expand env vars in roots
+            source_root = os.path.expandvars(source_root)
+            target_root = os.path.expandvars(target_root)
+
+            abs_source = os.path.join(configs_dir, source_root) if not os.path.isabs(source_root) else source_root
+            abs_target = os.path.expanduser(target_root)
+
+            for p in paths:
+                src = os.path.join(abs_source, p)
+                dst = os.path.join(abs_target, p)
+
+                if not os.path.exists(src):
+                    print(f"    [skip] {p} — source not found")
+                    continue
+
+                if action == "preserve" and os.path.exists(dst):
+                    print(f"    [preserve] {p} — target exists, skipping")
+                    continue
+
+                os.makedirs(os.path.dirname(dst), exist_ok=True)
+
+                if os.path.isdir(src):
+                    if os.path.exists(dst):
+                        import shutil
+                        shutil.rmtree(dst)
+                    import shutil
+                    shutil.copytree(src, dst)
+                else:
+                    import shutil
+                    shutil.copy2(src, dst)
+
+                print(f"    [{action}] {p}")
+
+        if post_cmd:
+            print(f"    [post] {section_name}: {post_cmd}")
+            os.system(post_cmd)
+
+print("    Dot group deployment complete.")
+PYEOF
+  fi
+fi
+
+echo ""
+
+# 5. Back up existing configs (before overwrite)
 echo "==> Backing up existing configs to $BACKUP_DIR..."
 if [[ "$DRY_RUN" == true ]]; then
   echo "    [DRY RUN] Would create backup directory: $BACKUP_DIR"
-  echo "    [DRY RUN] Would back up existing config files/directories"
 else
   mkdir -p "$BACKUP_DIR"
 
-# Back up .config dirs that will be overwritten
-for d in hypr waybar dunst fastfetch gtk-3.0 gtk-4.0 kitty Kvantum nwg-look pypr qt5ct qt6ct swaync wlogout xsettingsd prodi rofi zsh uwsm fish starship swaylock lsd vim satty menus; do
-  if [ -d "$HOME/.config/$d" ]; then
-    safe_backup "$HOME/.config/$d" "$(backup_path_unique ".config/$d")"
-    echo "    backed up .config/$d"
+  # Back up .config dirs that will be overwritten
+  for d in hypr waybar dunst fastfetch gtk-3.0 gtk-4.0 kitty Kvantum nwg-look pypr qt5ct qt6ct swaync wlogout xsettingsd prodi rofi zsh uwsm fish starship swaylock lsd vim satty menus; do
+    if [ -d "$HOME/.config/$d" ]; then
+      safe_backup "$HOME/.config/$d" "$(backup_path_unique ".config/$d")"
+      echo "    backed up .config/$d"
+    fi
+  done
+
+  # Back up .config/ files that will be overwritten
+  for f in dolphinrc kdeglobals xdg-terminals.list electron-flags.conf baloofilerc libinput-gestures.conf spotify-flags.conf starship.toml; do
+    if [ -f "$HOME/.config/$f" ]; then
+      safe_backup "$HOME/.config/$f" "$(backup_path_unique ".config/$f")"
+      echo "    backed up .config/$f"
+    fi
+  done
+
+  # Back up nested .config files/dirs
+  if [[ -e "$HOME/.config/dconf/profile" || -L "$HOME/.config/dconf/profile" ]]; then
+    safe_backup "$HOME/.config/dconf/profile" "$(backup_path_unique ".config/dconf/profile")"
+    echo "    backed up .config/dconf/profile"
   fi
-done
 
-# Back up .config/ files that will be overwritten
-for f in dolphinrc kdeglobals xdg-terminals.list electron-flags.conf baloofilerc libinput-gestures.conf spotify-flags.conf starship.toml; do
-  if [ -f "$HOME/.config/$f" ]; then
-    safe_backup "$HOME/.config/$f" "$(backup_path_unique ".config/$f")"
-    echo "    backed up .config/$f"
+  # Back up .local/share dirs that will be overwritten
+  for d in themes icons fonts waybar sddm rofi prodi wallbash kio kxmlgui5 xdg-desktop-portal dolphin; do
+    if [ -d "$HOME/.local/share/$d" ]; then
+      safe_backup "$HOME/.local/share/$d" "$(backup_path_unique ".local/share/$d")"
+      echo "    backed up .local/share/$d"
+    fi
+  done
+
+  # Back up prodi framework if exists
+  if [ -e "$HOME/.local/lib/prodi" ]; then
+    safe_backup "$HOME/.local/lib/prodi" "$(backup_path_unique ".local/lib/prodi")"
+    echo "    backed up .local/lib/prodi"
   fi
-done
-
-# Back up nested .config files/dirs (path components with subdirectories)
-if [[ -e "$HOME/.config/dconf/profile" || -L "$HOME/.config/dconf/profile" ]]; then
-  safe_backup "$HOME/.config/dconf/profile" "$(backup_path_unique ".config/dconf/profile")"
-  echo "    backed up .config/dconf/profile"
-fi
-
-# Back up .local/share dirs that will be overwritten
-for d in themes icons fonts waybar sddm rofi prodi wallbash kio kxmlgui5 xdg-desktop-portal dolphin; do
-  if [ -d "$HOME/.local/share/$d" ]; then
-    safe_backup "$HOME/.local/share/$d" "$(backup_path_unique ".local/share/$d")"
-    echo "    backed up .local/share/$d"
+  if [ -e "$HOME/.local/bin/prodi-shell" ]; then
+    safe_backup "$HOME/.local/bin/prodi-shell" "$(backup_path_unique ".local/bin/prodi-shell")"
+    echo "    backed up .local/bin/prodi-shell"
   fi
-done
-
-# Back up prodi framework if exists (use unique names to avoid collisions)
-if [ -e "$HOME/.local/lib/prodi" ]; then
-  safe_backup "$HOME/.local/lib/prodi" "$(backup_path_unique ".local/lib/prodi")"
-  echo "    backed up .local/lib/prodi"
-fi
-if [ -e "$HOME/.local/bin/prodi-shell" ]; then
-  safe_backup "$HOME/.local/bin/prodi-shell" "$(backup_path_unique ".local/bin/prodi-shell")"
-  echo "    backed up .local/bin/prodi-shell"
-fi
-if [ -e "$HOME/.local/share/hypr" ]; then
-  safe_backup "$HOME/.local/share/hypr" "$(backup_path_unique ".local/share/hypr")"
-  echo "    backed up .local/share/hypr"
-fi
-
-echo "    Backup complete."
-fi
-
-# 5. Restore configs from Configs/ to target locations
-echo "==> Restoring configs..."
-
-# Restore .config/ dirs
-if [ -d "$CONFIGS_DIR/.config" ]; then
-  if [[ "$DRY_RUN" == true ]]; then
-    echo "    [DRY RUN] cp -a \"$CONFIGS_DIR/.config/\"* \"$HOME/.config/\""
-  else
-    cp -a "$CONFIGS_DIR/.config/"* "$HOME/.config/"
-    echo "    Restored .config/*"
+  if [ -e "$HOME/.local/share/hypr" ]; then
+    safe_backup "$HOME/.local/share/hypr" "$(backup_path_unique ".local/share/hypr")"
+    echo "    backed up .local/share/hypr"
   fi
+
+  echo "    Backup complete."
 fi
 
-# Restore .local/share/ dirs
-if [ -d "$CONFIGS_DIR/.local/share" ]; then
-  if [[ "$DRY_RUN" == true ]]; then
-    echo "    [DRY RUN] mkdir -p \"$HOME/.local/share\" && cp -a \"$CONFIGS_DIR/.local/share/\"* \"$HOME/.local/share/\""
-  else
-    mkdir -p "$HOME/.local/share"
-    cp -a "$CONFIGS_DIR/.local/share/"* "$HOME/.local/share/"
-    echo "    Restored .local/share/*"
-  fi
-fi
+echo ""
 
-# Restore .local/lib/prodi
+# 6. Restore remaining configs not covered by dots.toml (fallback bulk restore)
+echo "==> Restoring remaining configs..."
+
+# Restore .local/lib/prodi (framework scripts)
 if [ -d "$CONFIGS_DIR/.local/lib/prodi" ]; then
   if [[ "$DRY_RUN" == true ]]; then
     echo "    [DRY RUN] cp -a \"$CONFIGS_DIR/.local/lib/prodi/\"* \"$HOME/.local/lib/prodi/\""
@@ -266,7 +349,7 @@ if [ -f "$CONFIGS_DIR/.local/bin/prodi-shell" ]; then
   fi
 fi
 
-# Restore .local/share/hypr
+# Restore .local/share/hypr (lua modules, schema)
 if [ -d "$CONFIGS_DIR/.local/share/hypr" ]; then
   if [[ "$DRY_RUN" == true ]]; then
     echo "    [DRY RUN] cp -a \"$CONFIGS_DIR/.local/share/hypr/\"* \"$HOME/.local/share/hypr/\""
@@ -277,9 +360,68 @@ if [ -d "$CONFIGS_DIR/.local/share/hypr" ]; then
   fi
 fi
 
-echo "    Config restore complete."
+echo "    Remaining config restore complete."
 
-# 6. Make scripts executable
+echo ""
+
+# 7. Run restore helpers (app/link restoration after config deploy)
+if [[ "$DRY_RUN" != true ]]; then
+  echo "==> Running restore helpers..."
+  if [ -f "$SCRIPTS_DIR/extra/restore_app.sh" ]; then
+    bash "$SCRIPTS_DIR/extra/restore_app.sh" --dry-run="$DRY_RUN" 2>/dev/null || echo "    Warning: restore_app.sh completed with warnings"
+  fi
+  if [ -f "$SCRIPTS_DIR/extra/restore_lnk.sh" ]; then
+    bash "$SCRIPTS_DIR/extra/restore_lnk.sh" --dry-run="$DRY_RUN" 2>/dev/null || echo "    Warning: restore_lnk.sh completed with warnings"
+  fi
+  echo "    Restore helpers complete."
+else
+  echo "==> Skipping restore helpers (dry run mode)."
+fi
+
+echo ""
+
+# 8. Generate theme state on fresh install (themes applied via theme pipeline)
+echo "==> Generating theme state for fresh install..."
+if [[ "$DRY_RUN" != true ]] && [[ "$UNATTENDED" != true ]]; then
+  export LIB_DIR="$HOME/.local/lib"
+  export SHARE_DIR="$HOME/.local/share"
+  export PATH="$HOME/.local/lib/prodi:$HOME/.local/bin:${PATH}"
+
+  if source "$HOME/.local/lib/prodi/globalcontrol.sh" 2>/dev/null; then
+    echo "    Prodi environment initialized."
+
+    # Apply themes via theme.switch.sh (generates colors.lua, ui.lua, hypr_theme.lua)
+    if "$HOME/.local/lib/prodi/theme.switch.sh" -q 2>/dev/null; then
+      echo "    Theme color state generated (colors.lua, ui.lua, hypr_theme.lua)."
+    else
+      echo "    Warning: theme state generation skipped — run 'prodi-shell reload theme' manually."
+    fi
+
+    # Generate wallpaper cache
+    if "$HOME/.local/lib/prodi/wallpaper/cache.sh" commence -t "" 2>/dev/null; then
+      echo "    Wallpaper cache generated."
+    else
+      echo "    Warning: wallpaper cache generation skipped."
+    fi
+
+    # Update waybar configuration with theme colors
+    if "$HOME/.local/lib/prodi/waybar.py" --update 2>/dev/null; then
+      echo "    Waybar configuration updated with theme colors."
+    else
+      echo "    Warning: waybar update skipped."
+    fi
+  else
+    echo "    Warning: prodi environment could not be initialized — theme state not generated."
+  fi
+elif [[ "$UNATTENDED" == true ]]; then
+  echo "    Skipping theme state generation (unattended mode). Run 'prodi-shell reload theme' after first boot."
+else
+  echo "    Skipping theme state generation (dry run mode)."
+fi
+
+echo ""
+
+# 9. Make scripts executable
 if [[ "$DRY_RUN" == true ]]; then
   echo "    [DRY RUN] chmod +x \"$HOME/.config/waybar/scripts/htb.py\""
   echo "    [DRY RUN] chmod +x \"$HOME/.local/bin/prodi-shell\""
@@ -288,13 +430,11 @@ else
   chmod +x "$HOME/.local/bin/prodi-shell" 2>/dev/null || true
 fi
 
-# 7. HTB token setup (Hack The Box waybar module - optional)
+# 10. HTB token setup (Hack The Box waybar module - optional)
 if [[ "$DRY_RUN" == true ]]; then
   echo ""
   echo "==> Hack The Box Waybar Module Setup (optional) [DRY RUN]"
   echo "    Would prompt for HTB User ID and API token."
-  echo "    Would back up any existing credentials, then write to $HOME/.config/waybar/scripts/htb_token.env"
-  echo "    Pressing Enter (no token) leaves existing credentials untouched."
 else
   if [[ "$UNATTENDED" == true ]]; then
     echo ""
@@ -340,7 +480,6 @@ else
     chmod 600 "$TOKEN_FILE"
     echo "    Wrote HTB token to $TOKEN_FILE"
   elif [ -s "$TOKEN_FILE" ]; then
-    # No token entered: leave existing credentials untouched.
     echo "    No token entered; existing HTB credentials left untouched."
     if [[ -n "${HTB_USER_ID:-}" ]]; then
       if grep -q '^export HTB_USER_ID=' "$TOKEN_FILE" 2>/dev/null; then
@@ -356,11 +495,8 @@ else
   fi
 fi
 
-# 8. Ensure PATH includes ~/.local/bin.
-# The entry is wrapped in installer-owned markers so the uninstaller only
-# removes the block this script added, never a pre-existing user entry.
+# 11. Ensure PATH includes ~/.local/bin.
 RC_FILE="$HOME/.bashrc"
-# shellcheck disable=SC2016
 PATH_LINE='export PATH="$HOME/.local/bin:$PATH"'
 if [ -f "$RC_FILE" ] && grep -qF "$PATH_LINE" "$RC_FILE" 2>/dev/null; then
   echo "    ~/.local/bin already on PATH in $RC_FILE; leaving it untouched."
@@ -373,40 +509,6 @@ else
     echo '# <<< prodi: ~/.local/bin on PATH <<<'
   } >> "$RC_FILE"
   echo "    Added ~/.local/bin to PATH in $RC_FILE"
-fi
-
-# 9. Generate theme state on fresh install (mimic hyde: generate lua_state,
-#    wallpaper cache, and waybar config during install so colors work out of
-#    the box without requiring a manual `prodi-shell reload theme`).
-if [[ "$DRY_RUN" != true ]] && [[ "$UNATTENDED" != true ]]; then
-  echo ""
-  echo "==> Generating theme state for fresh install..."
-  export LIB_DIR="$HOME/.local/lib"
-  export SHARE_DIR="$HOME/.local/share"
-  export PATH="$HOME/.local/lib/prodi:$HOME/.local/bin:${PATH}"
-  if source "$HOME/.local/lib/prodi/globalcontrol.sh" 2>/dev/null; then
-    echo "    Prodi environment initialized."
-    if "$HOME/.local/lib/prodi/wallpaper/cache.sh" commence -t "" 2>/dev/null; then
-      echo "    Wallpaper cache generated."
-    else
-      echo "    Warning: wallpaper cache generation skipped."
-    fi
-    if "$HOME/.local/lib/prodi/theme.switch.sh" -q 2>/dev/null; then
-      echo "    Theme color state generated (colors.lua, ui.lua, hypr_theme.lua)."
-    else
-      echo "    Warning: theme state generation skipped — run 'prodi-shell reload theme' manually."
-    fi
-    if "$HOME/.local/lib/prodi/waybar.py" --update 2>/dev/null; then
-      echo "    Waybar configuration updated."
-    else
-      echo "    Warning: waybar update skipped."
-    fi
-  else
-    echo "    Warning: prodi environment could not be initialized — theme state not generated."
-  fi
-elif [[ "$UNATTENDED" == true ]]; then
-  echo ""
-  echo "==> Skipping theme state generation (unattended mode). Run 'prodi-shell reload theme' after first boot."
 fi
 
 echo ""
