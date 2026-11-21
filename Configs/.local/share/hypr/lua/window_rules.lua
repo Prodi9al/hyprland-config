@@ -6,7 +6,7 @@
 -- 2. Pinned windows (picture-in-picture, etc)
 -- 3. And common modals that are floating anyway but should be centered (file choosers, etc)
 
-local util = _G.prodi.utils
+local util = _G.hyde.utils
 
 local floating =
   util.regex_compile(
@@ -92,8 +92,8 @@ local modals =
 -- Consolidated floating rules (includes dialogs, portal dialogs, popups, dolphin dialogs)
 hl.window_rule(
   {
-    name = "prodi_floating_class",
-    tag = "+prodi_floating",
+    name = "hyde_floating_class",
+    tag = "+hyde_floating",
     match = {
       class = floating.class
     },
@@ -103,8 +103,8 @@ hl.window_rule(
 
 hl.window_rule(
   {
-    name = "prodi_floating_title",
-    tag = "+prodi_floating",
+    name = "hyde_floating_title",
+    tag = "+hyde_floating",
     match = {
       title = floating.title
     },
@@ -115,8 +115,8 @@ hl.window_rule(
 -- Pinned windows
 hl.window_rule(
   {
-    name = "prodi_pin",
-    tag = "+prodi_pin",
+    name = "hyde_pin",
+    tag = "+hyde_pin",
     match = {
       title = pinned.title
     },
@@ -132,8 +132,8 @@ hl.window_rule(
 
 hl.window_rule(
   {
-    name = "prodi_modals",
-    tag = "+prodi_modals",
+    name = "hyde_modals",
+    tag = "+hyde_modals",
     match = {
       class = modals.class,
       title = modals.title,

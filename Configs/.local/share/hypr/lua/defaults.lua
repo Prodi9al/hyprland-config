@@ -35,11 +35,11 @@ hl.config({
 			respect_gaps = true,
 			-- window_gap/monitor_gap deliberately not set here: they're a
 			-- minimum-pixel proximity threshold, and a fixed pixel count
-			-- doesn't scale across HiDPI monitors. Prodi shipping its own
+			-- doesn't scale across HiDPI monitors. HyDE shipping its own
 			-- copy of Hyprland's default (previously 1, then 10) also
 			-- silently drifts if Hyprland ever changes that default.
 			-- Leaving these keys out entirely means Hyprland's own
-			-- built-in default applies, un-owned by Prodi (#1917).
+			-- built-in default applies, un-owned by HyDE (#1917).
 		},
 	},
 })

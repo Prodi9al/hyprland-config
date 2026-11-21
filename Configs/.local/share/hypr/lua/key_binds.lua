@@ -2,12 +2,12 @@
 -- * This has to run before the first bind below, otherwise the binds in this
 -- * file are registered unchecked and only user overrides get deduplicated.
 -- * For multiple dispatcher actions, wrap them in one function and bind that.
--- * If you set `prodi.binds.dedup = false`, unbind duplicates manually.
-prodi.binds.dedup = true
--- prodi.binds.dedup_fields = {}
+-- * If you set `hyde.binds.dedup = false`, unbind duplicates manually.
+hyde.binds.dedup = true
+-- hyde.binds.dedup_fields = {}
 
 -- vars for easy access
-local MOD = prodi.config.modifiers.main
+local MOD = hyde.config.modifiers.main
 local _F
 
 -- Functions for some multi bind actions
@@ -47,21 +47,21 @@ local togglefloating = function()
 end
 
 _F = {description = "[Launcher|Apps] terminal emulator"}
--- prodi.config.exec resolves "app.terminal" at keypress time, not at bind
+-- hyde.config.exec resolves "app.terminal" at keypress time, not at bind
 -- time: key_binds.lua loads before dynamic.lua merges the user's
--- config.toml, so capturing prodi.config.app.terminal here would freeze it
+-- config.toml, so capturing hyde.config.app.terminal here would freeze it
 -- at its variables.lua default and silently ignore the user's override (#2087).
-hl.bind(MOD .. " + T", prodi.config.exec("app.terminal"), _F)
+hl.bind(MOD .. " + T", hyde.config.exec("app.terminal"), _F)
 _F = {description = "[Launcher|Apps] dropdown terminal"}
-hl.bind(MOD .. " + ALT + T", hl.dsp.exec_cmd("prodi-shell pypr toggle console"), _F)
+hl.bind(MOD .. " + ALT + T", hl.dsp.exec_cmd("hyde-shell pypr toggle console"), _F)
 _F = {description = "[Launcher|Apps] file explorer"}
-hl.bind(MOD .. " + E", prodi.config.exec("app.explorer"), _F)
+hl.bind(MOD .. " + E", hyde.config.exec("app.explorer"), _F)
 _F = {description = "[Launcher|Apps] browser"}
-hl.bind(MOD .. " + B", prodi.config.exec("app.browser"), _F)
+hl.bind(MOD .. " + B", hyde.config.exec("app.browser"), _F)
 _F = {description = "[Launcher|Apps] text editor"}
-hl.bind(MOD .. " + C", prodi.config.exec("app.editor"), _F)
+hl.bind(MOD .. " + C", hyde.config.exec("app.editor"), _F)
 _F = {description = "[Launcher|Apps] system monitor"}
-hl.bind("CTRL + SHIFT + ESCAPE", hl.dsp.exec_cmd("prodi-shell system.monitor.sh"), _F)
+hl.bind("CTRL + SHIFT + ESCAPE", hl.dsp.exec_cmd("hyde-shell system.monitor.sh"), _F)
 
 local _wm = "Window Management"
 _F = {description = "[Window Management] close focused window"}
@@ -79,19 +79,19 @@ hl.bind(MOD .. " + G", hl.dsp.group.toggle(), _F)
 _F = {description = "[Window Management] set a window’s pseudotiling state"}
 hl.bind("ALT + P", hl.dsp.window.pseudo(), _F)
 
--- bindd = $mainMod, G, $d toggle group,exec, prodictl tabs
+-- bindd = $mainMod, G, $d toggle group,exec, hydectl tabs
 _F = {description = "[Window Management] cycle fullscreen"}
 hl.bind("SHIFT + F11", cycle_fullscreen, _F)
 _F = {description = "[Window Management] toggle pin"}
-hl.bind(MOD .. " + SHIFT + F", hl.dsp.exec_cmd(prodi.sh.window.pin()), _F)
+hl.bind(MOD .. " + SHIFT + F", hl.dsp.exec_cmd(hyde.sh.window.pin()), _F)
 _F = {description = "[Window Management] logout menu"}
-hl.bind("CTRL + ALT + DELETE", hl.dsp.exec_cmd(prodi.sh.session.logout.launcher()), _F)
+hl.bind("CTRL + ALT + DELETE", hl.dsp.exec_cmd(hyde.sh.session.logout.launcher()), _F)
 -- ALT_R is a keysym, not a modifier: "ALT_R + CONTROL_R" resolves to a bare
 -- right Control, so every press of that key hid the bar.
 _F = {description = "[Window Management] hide waybar"}
-hl.bind(MOD .. " + CTRL + B", hl.dsp.exec_cmd(prodi.sh.waybar("--hide")), _F)
+hl.bind(MOD .. " + CTRL + B", hl.dsp.exec_cmd(hyde.sh.waybar("--hide")), _F)
 _F = {description = "[Window Management] lock session"}
-hl.bind(MOD .. " + L", hl.dsp.exec_cmd(prodi.sh.session.lock()), _F)
+hl.bind(MOD .. " + L", hl.dsp.exec_cmd(hyde.sh.session.lock()), _F)
 
 _F = {description = "[Window Management|Group Navigation] change active group backwards"}
 hl.bind(MOD .. " + CTRL + H", hl.dsp.group.prev(), _F)
@@ -115,12 +115,12 @@ hl.bind(MOD .. " + Down", hl.dsp.focus({direction = "down"}), _F)
 -- Window switcher
 -- Handles Alt Tab like Behavior like browser
 _F = {description = "[Window Management|alt-tab window switcher] cycle next", transparent = true}
-hl.bind("ALT+TAB", hl.dsp.exec_cmd(prodi.sh.altab("--next")), _F)
+hl.bind("ALT+TAB", hl.dsp.exec_cmd(hyde.sh.altab("--next")), _F)
 _F = {description = "[Window Management|alt-tab window switcher] cycle previous", transparent = true}
-hl.bind("ALT+SHIFT+TAB", hl.dsp.exec_cmd(prodi.sh.altab("--prev")), _F)
+hl.bind("ALT+SHIFT+TAB", hl.dsp.exec_cmd(hyde.sh.altab("--prev")), _F)
 _F = {description = "[Window Management|alt-tab window switcher] switch", release = true, transparent = true}
-hl.bind("ALT + ALT_R", hl.dsp.exec_cmd(prodi.sh.altab("--apply")), _F)
-hl.bind("ALT + ALT_L", hl.dsp.exec_cmd(prodi.sh.altab("--apply")), _F)
+hl.bind("ALT + ALT_R", hl.dsp.exec_cmd(hyde.sh.altab("--apply")), _F)
+hl.bind("ALT + ALT_L", hl.dsp.exec_cmd(hyde.sh.altab("--apply")), _F)
 
 -- # Resize kwindows
 
@@ -164,49 +164,49 @@ _F = {description = "[Layout Management|Dwindle] toggle split"}
 hl.bind(MOD .. " + J", hl.dsp.layout("togglesplit"), _F)
 
 _F = {description = "[Launcher|Rofi menus] application finder"}
-hl.bind(MOD .. " + A", hl.dsp.exec_cmd(prodi.sh.menu.apps()), _F)
+hl.bind(MOD .. " + A", hl.dsp.exec_cmd(hyde.sh.menu.apps()), _F)
 _F = {description = "[Launcher|Rofi menus] window switcher"}
-hl.bind(MOD .. " + TAB", hl.dsp.exec_cmd(prodi.sh.menu.windows()), _F)
+hl.bind(MOD .. " + TAB", hl.dsp.exec_cmd(hyde.sh.menu.windows()), _F)
 _F = {description = "[Launcher|Rofi menus] file finder"}
-hl.bind(MOD .. " + SHIFT + E", hl.dsp.exec_cmd(prodi.sh.menu.files()), _F)
+hl.bind(MOD .. " + SHIFT + E", hl.dsp.exec_cmd(hyde.sh.menu.files()), _F)
 _F = {description = "[Launcher|Rofi menus] keybindings hint"}
-hl.bind(MOD .. " + slash", hl.dsp.exec_cmd(prodi.sh.menu.binds()), _F)
+hl.bind(MOD .. " + slash", hl.dsp.exec_cmd(hyde.sh.menu.binds()), _F)
 _F = {description = "[Launcher|Rofi menus] emoji picker"}
-hl.bind(MOD .. " + comma", hl.dsp.exec_cmd(prodi.sh.menu.emoji()), _F)
+hl.bind(MOD .. " + comma", hl.dsp.exec_cmd(hyde.sh.menu.emoji()), _F)
 _F = {description = "[Launcher|Rofi menus] glyph picker"}
-hl.bind(MOD .. " + period", hl.dsp.exec_cmd(prodi.sh.menu.glyph()), _F)
+hl.bind(MOD .. " + period", hl.dsp.exec_cmd(hyde.sh.menu.glyph()), _F)
 _F = {description = "[Launcher|Rofi menus] clipboard"}
-hl.bind(MOD .. " + V", hl.dsp.exec_cmd(prodi.sh.menu.clipboard()), _F)
+hl.bind(MOD .. " + V", hl.dsp.exec_cmd(hyde.sh.menu.clipboard()), _F)
 _F = {description = "[Launcher|Rofi menus] clipboard manager"}
-hl.bind(MOD .. " + SHIFT + V", hl.dsp.exec_cmd(prodi.sh.menu.cliphist()), _F)
+hl.bind(MOD .. " + SHIFT + V", hl.dsp.exec_cmd(hyde.sh.menu.cliphist()), _F)
 _F = {description = "[Launcher|Rofi menus] select rofi launcher"}
-hl.bind(MOD .. " + SHIFT + A", hl.dsp.exec_cmd(prodi.sh.menu.select()), _F)
+hl.bind(MOD .. " + SHIFT + A", hl.dsp.exec_cmd(hyde.sh.menu.select()), _F)
 _F = {description = "[Launcher|Rofi menus] Calculator"}
-hl.bind(MOD .. " + SHIFT + K", hl.dsp.exec_cmd(prodi.sh.menu.calculator()), _F)
+hl.bind(MOD .. " + SHIFT + K", hl.dsp.exec_cmd(hyde.sh.menu.calculator()), _F)
 _F = {description = "[Launcher|Rofi menus] Web Search"}
-hl.bind(MOD .. " + SHIFT + slash", hl.dsp.exec_cmd(prodi.sh.menu.search()), _F)
+hl.bind(MOD .. " + SHIFT + slash", hl.dsp.exec_cmd(hyde.sh.menu.search()), _F)
 
 -- $hc=Hardware Controls
 -- $d=[$hc|Audio]
 
--- # binddl  = , F10, $d toggle mute output , exec, prodi-shell volumecontrol.sh -o m # toggle audio mute
--- # binddel = , F11, $d decrease volume , exec, prodi-shell volumecontrol.sh -o d # decrease volume
--- # binddel = , F12, $d increase volume , exec, prodi-shell volumecontrol.sh -o i # increase volume
+-- # binddl  = , F10, $d toggle mute output , exec, hyde-shell volumecontrol.sh -o m # toggle audio mute
+-- # binddel = , F11, $d decrease volume , exec, hyde-shell volumecontrol.sh -o d # decrease volume
+-- # binddel = , F12, $d increase volume , exec, hyde-shell volumecontrol.sh -o i # increase volume
 
 _F = {description = "[Hardware Controls|Audio] un/mute output", locked = true}
-hl.bind("F10", hl.dsp.exec_cmd(prodi.sh.volumecontrol("-o", "m")), _F)
+hl.bind("F10", hl.dsp.exec_cmd(hyde.sh.volumecontrol("-o", "m")), _F)
 _F = {description = "[Hardware Controls|Audio] decrease volume", locked = true, repeating = true}
-hl.bind("F11", hl.dsp.exec_cmd(prodi.sh.volumecontrol("-o", "d")), _F)
+hl.bind("F11", hl.dsp.exec_cmd(hyde.sh.volumecontrol("-o", "d")), _F)
 _F = {description = "[Hardware Controls|Audio] increase volume", locked = true, repeating = true}
-hl.bind("F12", hl.dsp.exec_cmd(prodi.sh.volumecontrol("-o", "i")), _F)
+hl.bind("F12", hl.dsp.exec_cmd(hyde.sh.volumecontrol("-o", "i")), _F)
 _F = {description = "[Hardware Controls|Audio] un/mmute output", locked = true}
-hl.bind("XF86AudioMute", hl.dsp.exec_cmd(prodi.sh.volumecontrol("-o", "m")), _F)
+hl.bind("XF86AudioMute", hl.dsp.exec_cmd(hyde.sh.volumecontrol("-o", "m")), _F)
 _F = {description = "[Hardware Controls|Audio] un/mute microphone", locked = true}
-hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd(prodi.sh.volumecontrol("-i", "m")), _F)
+hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd(hyde.sh.volumecontrol("-i", "m")), _F)
 _F = {description = "[Hardware Controls|Audio] decrease volume", locked = true, repeating = true}
-hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd(prodi.sh.volumecontrol("-o", "d")), _F)
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd(hyde.sh.volumecontrol("-o", "d")), _F)
 _F = {description = "[Hardware Controls|Audio] increase volume", locked = true, repeating = true}
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd(prodi.sh.volumecontrol("-o", "i")), _F)
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd(hyde.sh.volumecontrol("-o", "i")), _F)
 
 _F = {description = "[Hardware Controls|Media] play media", locked = true}
 hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), _F)
@@ -217,63 +217,63 @@ hl.bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"), _F)
 _F = {description = "[Hardware Controls|Media] previous media", locked = true}
 hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), _F)
 _F = {description = "[Hardware Controls|Media] toggle un/mute for active-window"}
-hl.bind(MOD .. "+ CONTROL + M", hl.dsp.exec_cmd(prodi.sh.window.mute()), _F)
+hl.bind(MOD .. "+ CONTROL + M", hl.dsp.exec_cmd(hyde.sh.window.mute()), _F)
 
 _F = {description = "[Hardware Controls|Brightness] increase brightness", locked = true, repeating = true}
-hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd(prodi.sh.brightnesscontrol("-i")), _F)
+hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd(hyde.sh.brightnesscontrol("-i")), _F)
 _F = {description = "[Hardware Controls|Brightness] decrease brightness", locked = true, repeating = true}
-hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd(prodi.sh.brightnesscontrol("-d")), _F)
+hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd(hyde.sh.brightnesscontrol("-d")), _F)
 
 _F = {description = "[Utilities] toggle keyboard layout", locked = true}
-hl.bind(MOD .. " + K", hl.dsp.exec_cmd(prodi.sh.kb.switch()), _F)
+hl.bind(MOD .. " + K", hl.dsp.exec_cmd(hyde.sh.kb.switch()), _F)
 _F = {description = "[Utilities] game mode", locked = true}
-hl.bind(MOD .. " + ALT + G", hl.dsp.exec_cmd(prodi.sh.gamemode()), _F) -- TODO
+hl.bind(MOD .. " + ALT + G", hl.dsp.exec_cmd(hyde.sh.gamemode()), _F) -- TODO
 _F = {description = "[Utilities] game launcher"}
-hl.bind(MOD .. " + SHIFT + G", hl.dsp.exec_cmd("prodi-shell gamelauncher"), _F)
+hl.bind(MOD .. " + SHIFT + G", hl.dsp.exec_cmd("hyde-shell gamelauncher"), _F)
 
 _F = {description = "[Utilities] screen capture] color picker", locked = true}
 hl.bind(MOD .. " + SHIFT + P", hl.dsp.exec_cmd("hyprpicker -an"), _F)
 _F = {description = "[Utilities] partial screenshot capture", locked = true}
-hl.bind(MOD .. " + P", hl.dsp.exec_cmd(prodi.sh.screenshot.snip()), _F)
+hl.bind(MOD .. " + P", hl.dsp.exec_cmd(hyde.sh.screenshot.snip()), _F)
 _F = {description = "[Utilities] freeze and snip screen", locked = true}
-hl.bind(MOD .. " + CONTROL + P", hl.dsp.exec_cmd(prodi.sh.screenshot.freeze()), _F)
+hl.bind(MOD .. " + CONTROL + P", hl.dsp.exec_cmd(hyde.sh.screenshot.freeze()), _F)
 _F = {description = "[Utilities] print monitor", locked = true}
-hl.bind(MOD .. " + ALT + P", hl.dsp.exec_cmd(prodi.sh.screenshot.monitor()), _F)
+hl.bind(MOD .. " + ALT + P", hl.dsp.exec_cmd(hyde.sh.screenshot.monitor()), _F)
 _F = {description = "[Utilities] print all monitors", locked = true}
-hl.bind("Print", hl.dsp.exec_cmd(prodi.sh.screenshot.full()), _F)
+hl.bind("Print", hl.dsp.exec_cmd(hyde.sh.screenshot.full()), _F)
 _F = {description = "[Utilities] OCR scanner", locked = true}
-hl.bind(MOD .. " + CONTROL + S", hl.dsp.exec_cmd(prodi.sh.screenshot.ocr()), _F)
+hl.bind(MOD .. " + CONTROL + S", hl.dsp.exec_cmd(hyde.sh.screenshot.ocr()), _F)
 
 _F = {description = "[Theming and Wallpaper] next global wallpaper"}
-hl.bind(MOD .. "+ ALT + Right", hl.dsp.exec_cmd(prodi.sh.wallpaper("--next")), _F)
+hl.bind(MOD .. "+ ALT + Right", hl.dsp.exec_cmd(hyde.sh.wallpaper("--next")), _F)
 _F = {description = "[Theming and Wallpaper] previous global wallpaper"}
-hl.bind(MOD .. "+ ALT + Left", hl.dsp.exec_cmd(prodi.sh.wallpaper("--previous")), _F)
+hl.bind(MOD .. "+ ALT + Left", hl.dsp.exec_cmd(hyde.sh.wallpaper("--previous")), _F)
 _F = {description = "[Theming and Wallpaper] next Waybar layout"}
-hl.bind(MOD .. "+ ALT + Up", hl.dsp.exec_cmd("prodi-shell waybar --next"), _F)
+hl.bind(MOD .. "+ ALT + Up", hl.dsp.exec_cmd("hyde-shell waybar --next"), _F)
 _F = {description = "[Theming and Wallpaper] previous Waybar layout"}
-hl.bind(MOD .. "+ ALT + Down", hl.dsp.exec_cmd("prodi-shell waybar --prev"), _F)
+hl.bind(MOD .. "+ ALT + Down", hl.dsp.exec_cmd("hyde-shell waybar --prev"), _F)
 
 _F = {description = "[Theming and Wallpaper] select a global wallpaper"}
-hl.bind(MOD .. "+ SHIFT + W", hl.dsp.exec_cmd(prodi.sh.menu.wallpapers()), _F)
+hl.bind(MOD .. "+ SHIFT + W", hl.dsp.exec_cmd(hyde.sh.menu.wallpapers()), _F)
 _F = {description = "[Theming and Wallpaper] wallbash mode selector"}
-hl.bind(MOD .. "+ SHIFT + R", hl.dsp.exec_cmd(prodi.sh.menu.wallbash()), _F)
+hl.bind(MOD .. "+ SHIFT + R", hl.dsp.exec_cmd(hyde.sh.menu.wallbash()), _F)
 _F = {description = "[Theming and Wallpaper] select a theme"}
-hl.bind(MOD .. "+ SHIFT + T", hl.dsp.exec_cmd(prodi.sh.menu.themes()), _F)
+hl.bind(MOD .. "+ SHIFT + T", hl.dsp.exec_cmd(hyde.sh.menu.themes()), _F)
 _F = {description = "[Theming and Wallpaper] select animations"}
-hl.bind(MOD .. "+ SHIFT + Y", hl.dsp.exec_cmd("prodi-shell animations --select"), _F)
+hl.bind(MOD .. "+ SHIFT + Y", hl.dsp.exec_cmd("hyde-shell animations --select"), _F)
 _F = {description = "[Theming and Wallpaper] select Hyprlock layout"}
-hl.bind(MOD .. "+ SHIFT + U", hl.dsp.exec_cmd("prodi-shell hyprlock --select"), _F)
+hl.bind(MOD .. "+ SHIFT + U", hl.dsp.exec_cmd("hyde-shell hyprlock --select"), _F)
 
 -- # TODO Make a main rofi menu for these selectors
 -- $rice=Theming and Wallpaper
 -- $d=[$rice]
--- # bindd = $mainMod Alt, Right, $d next global wallpaper , exec, prodi-shell wallpaper.sh -Gn # next global wallpaper
--- # bindd = $mainMod Alt, Left, $d previous global wallpaper , exec, prodi-shell wallpaper.sh -Gp # previous global wallpaper
--- bindd = $mainMod SHIFT, W, $d select a global wallpaper , exec, pkill -x rofi || prodi-shell wallpaper.sh -SG # launch wallpaper select menu
--- #! bindd = $mainMod Alt, Up, $d next waybar layout , exec, prodi-shell wbarconfgen.sh n # next waybar mode
--- #! bindd = $mainMod Alt, Down, $d previous waybar layout , exec, prodi-shell wbarconfgen.sh p # previous waybar mode
--- bindd = $mainMod SHIFT, R, $d wallbash mode selector , exec, pkill -x rofi || prodi-shell wallbashtoggle.sh -m # launch wallbash mode select menu
--- bindd = $mainMod SHIFT, T, $d select a theme, exec, pkill -x rofi || prodi-shell themeselect.sh # launch theme select menu
+-- # bindd = $mainMod Alt, Right, $d next global wallpaper , exec, hyde-shell wallpaper.sh -Gn # next global wallpaper
+-- # bindd = $mainMod Alt, Left, $d previous global wallpaper , exec, hyde-shell wallpaper.sh -Gp # previous global wallpaper
+-- bindd = $mainMod SHIFT, W, $d select a global wallpaper , exec, pkill -x rofi || hyde-shell wallpaper.sh -SG # launch wallpaper select menu
+-- #! bindd = $mainMod Alt, Up, $d next waybar layout , exec, hyde-shell wbarconfgen.sh n # next waybar mode
+-- #! bindd = $mainMod Alt, Down, $d previous waybar layout , exec, hyde-shell wbarconfgen.sh p # previous waybar mode
+-- bindd = $mainMod SHIFT, R, $d wallbash mode selector , exec, pkill -x rofi || hyde-shell wallbashtoggle.sh -m # launch wallbash mode select menu
+-- bindd = $mainMod SHIFT, T, $d select a theme, exec, pkill -x rofi || hyde-shell themeselect.sh # launch theme select menu
 
 -- Numpad keys for workspaces 11-20. The Lua bind parser has no keycode form,
 -- so each key is bound under both keysyms it can emit: the digit while Num
@@ -377,24 +377,24 @@ end
 -- bindd = $mainMod SHIFT, X,Inverted Screenshot, exec, $HOME/.local/bin/inverted-screenshot.sh
 
 -- unbind = Alt, Tab
--- binddt = Alt, Tab, Cycle Tabs, exec, hyprctl dispatch submap altab &&  prodi-shell hypr.altab --no-notify
--- binddt = Alt SHIFT, Tab, Cycle Tabs Reversed, exec, hyprctl dispatch submap altab &&  prodi-shell hypr.altab  --prev --no-notify
+-- binddt = Alt, Tab, Cycle Tabs, exec, hyprctl dispatch submap altab &&  hyde-shell hypr.altab --no-notify
+-- binddt = Alt SHIFT, Tab, Cycle Tabs Reversed, exec, hyprctl dispatch submap altab &&  hyde-shell hypr.altab  --prev --no-notify
 
 -- submap = altab
--- binddt = Alt, Tab, Cycle Tabs, exec, prodi-shell hypr.altab
--- binddt = Alt SHIFT, Tab, Cycle Tabs, exec, prodi-shell hypr.altab --prev
+-- binddt = Alt, Tab, Cycle Tabs, exec, hyde-shell hypr.altab
+-- binddt = Alt SHIFT, Tab, Cycle Tabs, exec, hyde-shell hypr.altab --prev
 
--- bindntr = Alt, Alt_L, exec, prodi-shell hypr.altab --apply
--- bindntr = Alt, Alt_R, exec, prodi-shell hypr.altab --apply
+-- bindntr = Alt, Alt_L, exec, hyde-shell hypr.altab --apply
+-- bindntr = Alt, Alt_R, exec, hyde-shell hypr.altab --apply
 -- bindntr = Alt, Alt_L, submap,reset
 -- bindntr = Alt, Alt_R, submap,reset
 -- bindntr = ,catchall,exec, notify-send "Keybinding Reset" "Exited submap mode"
--- bindntr = ,catchall,exec, prodi-shell hypr.altab --apply
+-- bindntr = ,catchall,exec, hyde-shell hypr.altab --apply
 -- bindntr = ,catchall,submap,reset
 -- bind = ,catchall,exec, notify-send "Keybinding Reset Second" "Exited submap mode"
 -- submap = reset
 
--- exec-once = prodi-shell app -- wayscriber --daemon
+-- exec-once = hyde-shell app -- wayscriber --daemon
 -- bindd = Alt, D, Annotate Screen,exec,pkill -SIGUSR1 wayscriber
 
 -- # $bind.Overview.Window = "qs -c Overview2 ipc call Overview2 toggle ||  qs -c Overview2"

@@ -1,0 +1,15 @@
+[Unit]
+Description=OmniRoute - Smart AI Router
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/node /home/prodi9al/.npm-global/lib/node_modules/omniroute/bin/omniroute.mjs serve --no-open
+Restart=always
+RestartSec=3
+Environment=HOME=/home/prodi9al
+WorkingDirectory=/home/prodi9al
+EnvironmentFile=/home/prodi9al/.omniroute/.env
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,20 @@
+[Unit]
+Description=9Router - AI Router
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/home/prodi9al/.npm-global/bin/9router --tray --port 20129 --skip-update --no-browser
+Restart=always
+RestartSec=3
+Environment=HOME=/home/prodi9al
+WorkingDirectory=/home/prodi9al
+
+Environment=SOCKS_PROXY=socks5h://127.0.0.1:1080
+Environment=HTTP_PROXY=socks5h://127.0.0.1:1080
+Environment=HTTPS_PROXY=socks5h://127.0.0.1:1080
+Environment=ALL_PROXY=socks5h://127.0.0.1:1080
+Environment=NO_PROXY=localhost,127.0.0.1,::1
+Environment=no_proxy=localhost,127.0.0.1,::1
+[Install]
+WantedBy=default.target
