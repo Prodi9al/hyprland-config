@@ -4,7 +4,10 @@
 -- runs only when this file is the entry point and Prodi9al has not been loaded.
 -- Removing it leaves a session with a cursor and nothing else.
 if not prodi then
-	local share = os.getenv("XDG_DATA_HOME") or (os.getenv("HOME") .. "/.local/share")
+	local share = os.getenv("XDG_DATA_HOME")
+	if share == nil or share == "" then
+		share = os.getenv("HOME") .. "/.local/share"
+	end
 	local entry = share .. "/hypr/prodi.lua"
 	local handle = io.open(entry, "r")
 	if not handle then

@@ -134,6 +134,9 @@ get_hashmap() {
             "png"
             "webp"
             "${WALLPAPER_FILETYPES[@]}")
+        if [ ${#supported_files[@]} -eq 0 ]; then
+            supported_files=("jpg" "png")
+        fi
         if [ -n "$WALLPAPER_OVERRIDE_FILETYPES" ]; then
             supported_files=("${WALLPAPER_OVERRIDE_FILETYPES[@]}")
         fi
@@ -171,20 +174,21 @@ get_hashmap() {
         }
         [ "$LOG_LEVEL" == "debug" ] && print_log -g "DEBUG:" -b "wallSource path:" "$wallSource"
         hashMap=$(find_wallpapers "$wallSource")
-        if [ -z "$hashMap" ]; then
+        if [ -z "${hashMap}" ]; then
             no_wallpapers+=("$wallSource")
             print_log -warn "No compatible wallpapers found in: " "$wallSource"
             continue
         fi
         while read -r hash image; do
+            [ -z "$hash" ] && continue
             wallHash+=("$hash")
-            wallList+=("$image")
+            [ -n "$image" ] && wallList+=("$image")
         done <<<"$hashMap"
     done
     if [ "${#no_wallpapers[@]}" -gt 0 ]; then
         print_log -warn "No compatible wallpapers found in:" "${no_wallpapers[*]}"
     fi
-    if [ -z "${#wallList[@]}" ] || [[ ${#wallList[@]} -eq 0 ]]; then
+    if [[ ${#wallList[@]} -eq 0 ]]; then
         if [[ $skipStrays -eq 1 ]]; then
             return 1
         else

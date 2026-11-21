@@ -123,6 +123,16 @@ if [[ -f "$SCRIPTS_DIR/pkg_extra.lst" ]]; then
   echo "    Extra packages installed."
 fi
 
+# Lua modules via luarocks (not in pacman repos)
+if ! lua -e "require('lfs')" 2>/dev/null; then
+  echo "==> Installing Lua modules via luarocks..."
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "    [DRY RUN] sudo luarocks install luafilesystem"
+  else
+    sudo luarocks install luafilesystem 2>/dev/null || echo "    Warning: luarocks install luafilesystem failed (may already be installed)"
+  fi
+fi
+
 echo ""
 
 # 3. Optional AUR packages
@@ -229,6 +239,17 @@ if [ -d "$CONFIGS_DIR/.local/lib/prodi" ]; then
     mkdir -p "$HOME/.local/lib/prodi"
     cp -a "$CONFIGS_DIR/.local/lib/prodi/"* "$HOME/.local/lib/prodi/"
     echo "    Restored .local/lib/prodi/*"
+  fi
+fi
+
+# Restore .local/state/prodi/lua_state (default color/theme state for fresh installs)
+if [ -d "$CONFIGS_DIR/.local/state/prodi/lua_state" ]; then
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "    [DRY RUN] mkdir -p \"$HOME/.local/state/prodi/lua_state\" && cp -a \"$CONFIGS_DIR/.local/state/prodi/lua_state/\"* \"$HOME/.local/state/prodi/lua_state/\""
+  else
+    mkdir -p "$HOME/.local/state/prodi/lua_state"
+    cp -a "$CONFIGS_DIR/.local/state/prodi/lua_state/"* "$HOME/.local/state/prodi/lua_state/"
+    echo "    Restored .local/state/prodi/lua_state/*"
   fi
 fi
 

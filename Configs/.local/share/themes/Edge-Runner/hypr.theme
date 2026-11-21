@@ -1,0 +1,5 @@
+# Prodi theme: Edge-Runner
+$THEME_NAME = Edge-Runner
+$COLOR_ACCENT = #ffffff
+$COLOR_BACKGROUND = #000000
+$COLOR_FOREGROUND = #ffffff

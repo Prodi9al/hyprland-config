@@ -1,0 +1,5 @@
+# Prodi theme: Catppuccin-Latte
+$THEME_NAME = Catppuccin-Latte
+$COLOR_ACCENT = #ffffff
+$COLOR_BACKGROUND = #000000
+$COLOR_FOREGROUND = #ffffff

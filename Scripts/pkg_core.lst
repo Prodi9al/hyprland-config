@@ -32,6 +32,8 @@ make
 gcc
 lua
 luarocks
+parallel
+lua-lgi
 python
 python-pip
 xdg-desktop-portal
