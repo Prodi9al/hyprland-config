@@ -4,13 +4,13 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python3 /home/prodi9al/.local/share/kilo/9router-kilo-proxy.py
+ExecStart=/usr/bin/python3 %h/.local/share/kilo/9router-kilo-proxy.py
 Restart=always
 RestartSec=3
-Environment=HOME=/home/prodi9al
+Environment=HOME=%h
 Environment=KILO_GATEWAY=https://api.kilo.ai/api/gateway/v1
 Environment=SOCKS_PROXY=socks5h://127.0.0.1:1080
-WorkingDirectory=/home/prodi9al/.local/share/kilo
+WorkingDirectory=%h/.local/share/kilo
 
 [Install]
 WantedBy=default.target

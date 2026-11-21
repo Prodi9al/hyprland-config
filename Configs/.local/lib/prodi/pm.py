@@ -10,19 +10,19 @@ import shlex
 import shutil
 import subprocess
 import sys
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 from types import ModuleType
-from typing import Callable, Iterable, Sequence
 
 # Add parent directory to path for absolute imports
 _BASE_DIR = Path(__file__).resolve().parent
 if str(_BASE_DIR) not in sys.path:
     sys.path.insert(0, str(_BASE_DIR))
 
-from package_managers.meta import PMMetadata, DEFAULT_META
+from package_managers.meta import DEFAULT_META, PMMetadata  # noqa: E402
 
 PACKAGE_ENTRY = tuple[str, str | None, str | None, str | None]
 ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
@@ -392,11 +392,11 @@ def cmd_remove(state: PMState, args: argparse.Namespace) -> None:
     handle_remove(state, args.packages)
 
 
-def cmd_upgrade(state: PMState, args: argparse.Namespace) -> None:  # noqa: ARG001
+def cmd_upgrade(state: PMState, args: argparse.Namespace) -> None:
     call_module(state, "upgrade")
 
 
-def cmd_fetch(state: PMState, args: argparse.Namespace) -> None:  # noqa: ARG001
+def cmd_fetch(state: PMState, args: argparse.Namespace) -> None:
     handle_fetch(state)
 
 
@@ -408,11 +408,11 @@ def cmd_list(state: PMState, args: argparse.Namespace) -> None:
     handle_list(state, args.source)
 
 
-def cmd_list_installed(state: PMState, args: argparse.Namespace) -> None:  # noqa: ARG001
+def cmd_list_installed(state: PMState, args: argparse.Namespace) -> None:
     handle_list(state, "installed")
 
 
-def cmd_list_all(state: PMState, args: argparse.Namespace) -> None:  # noqa: ARG001
+def cmd_list_all(state: PMState, args: argparse.Namespace) -> None:
     handle_list(state, "all")
 
 
@@ -420,15 +420,15 @@ def cmd_search(state: PMState, args: argparse.Namespace) -> None:
     handle_search_command(state, args.source)
 
 
-def cmd_search_installed(state: PMState, args: argparse.Namespace) -> None:  # noqa: ARG001
+def cmd_search_installed(state: PMState, args: argparse.Namespace) -> None:
     handle_search_command(state, "installed")
 
 
-def cmd_search_all(state: PMState, args: argparse.Namespace) -> None:  # noqa: ARG001
+def cmd_search_all(state: PMState, args: argparse.Namespace) -> None:
     handle_search_command(state, "all")
 
 
-def cmd_which(state: PMState, args: argparse.Namespace) -> None:  # noqa: ARG001
+def cmd_which(state: PMState, args: argparse.Namespace) -> None:
     print(state.name)
 
 
@@ -440,11 +440,11 @@ def cmd_file_query(state: PMState, args: argparse.Namespace) -> None:
     handle_file_query(state, args.target)
 
 
-def cmd_count_updates(state: PMState, args: argparse.Namespace) -> None:  # noqa: ARG001
+def cmd_count_updates(state: PMState, args: argparse.Namespace) -> None:
     handle_count_updates(state)
 
 
-def cmd_list_updates(state: PMState, args: argparse.Namespace) -> None:  # noqa: ARG001
+def cmd_list_updates(state: PMState, args: argparse.Namespace) -> None:
     handle_list_updates(state)
 
 
@@ -621,7 +621,7 @@ def build_color_profile(mode: str) -> ColorProfile:
 
 
 def current_date() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    return datetime.now(UTC).strftime("%Y-%m-%d")
 
 
 def die(message: str) -> None:

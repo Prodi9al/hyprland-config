@@ -59,7 +59,7 @@ def fetch_profile():
     }
     if token:
         headers["Authorization"] = f"Bearer {token}"
-    
+
     req = urllib.request.Request(url, headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=7) as resp:
@@ -80,7 +80,7 @@ def format_output(data):
             "tooltip": "Could not reach Hack The Box API\n<small>Right-click to retry</small>",
             "class": "offline"
         }
-    
+
     p = data.get("profile", {})
     name = p.get("name", "HTB")
     rank = p.get("rank", "Player")
@@ -120,7 +120,7 @@ def main():
     data = None
     if force_refresh or not cached or (now - cached.get("_fetched_at", 0) > CACHE_MAX_AGE):
         data = fetch_profile()
-    
+
     if not data:
         data = cached
 

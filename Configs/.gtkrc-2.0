@@ -1,7 +1,7 @@
 # DO NOT EDIT! This file will be overwritten by nwg-look.
 # Any customization should be done in ~/.gtkrc-2.0.mine instead.
 
-include "/home/prodi9al/.gtkrc-2.0.mime"
+include "$HOME/.gtkrc-2.0.mime"
 gtk-theme-name="Rose-Pine"
 gtk-icon-theme-name="Tela-circle-pink"
 gtk-font-name="Cantarell 10"

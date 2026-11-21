@@ -387,6 +387,7 @@ if [[ "$DRY_RUN" != true ]] && [[ "$UNATTENDED" != true ]]; then
   export SHARE_DIR="$HOME/.local/share"
   export PATH="$HOME/.local/lib/prodi:$HOME/.local/bin:${PATH}"
 
+  # shellcheck disable=SC1091
   if source "$HOME/.local/lib/prodi/globalcontrol.sh" 2>/dev/null; then
     echo "    Prodi environment initialized."
 
@@ -497,6 +498,7 @@ fi
 
 # 11. Ensure PATH includes ~/.local/bin.
 RC_FILE="$HOME/.bashrc"
+# shellcheck disable=SC2016
 PATH_LINE='export PATH="$HOME/.local/bin:$PATH"'
 if [ -f "$RC_FILE" ] && grep -qF "$PATH_LINE" "$RC_FILE" 2>/dev/null; then
   echo "    ~/.local/bin already on PATH in $RC_FILE; leaving it untouched."

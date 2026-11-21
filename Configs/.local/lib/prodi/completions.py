@@ -27,9 +27,12 @@ Usage:
   completions.py bash|zsh|fish                Output completion template
   completions.py --json                       Full metadata dump
 """
-import sys, re, os, json
-from pathlib import Path
+import json
+import os
+import re
+import sys
 from collections import OrderedDict
+from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 COMPLETIONS_DIR = HERE / "completions"
@@ -167,7 +170,7 @@ def parse_new_style(file_path: str) -> dict:
                             if fl:
                                 meta["commands"][current_cmd]["flags"].append({"flag": fl, "desc": flag_desc})
                         continue
-    except (OSError, IOError):
+    except OSError:
         pass
     return meta
 
@@ -182,7 +185,7 @@ def script_has_public_metadata(file_path: str) -> bool:
                     break
                 if NEW_NAME_RE.match(line):
                     return True
-    except (OSError, IOError):
+    except OSError:
         pass
     return False
 

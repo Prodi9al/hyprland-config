@@ -17,7 +17,7 @@ flg_DryRun=${flg_DryRun:-0}
 if pkg_installed sddm; then
     print_log -c "[DISPLAYMANAGER] " -b "detected :: " "sddm"
     if [ ! -d /etc/sddm.conf.d ]; then
-        [ ${flg_DryRun} -eq 1 ] || sudo mkdir -p /etc/sddm.conf.d
+        [ "${flg_DryRun}" -eq 1 ] || sudo mkdir -p /etc/sddm.conf.d
     fi
     if [ ! -f /etc/sddm.conf.d/prodi.conf ]; then
         print_log -g "[DISPLAYMANAGER] " -b " :: " "configuring sddm..."

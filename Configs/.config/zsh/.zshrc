@@ -42,7 +42,7 @@
 
 # Custom PATH: ~/bin first so wrapper scripts (tunnel, codex, antigravity) shadow system binaries
 export PATH="$HOME/bin:$HOME/.local/bin:$HOME/.npm-global/bin:$PATH"
-export PATH="$PATH:/home/prodi9al/.local/share/gem/ruby/3.4.0/bin"
+export PATH="$PATH:$HOME/.local/share/gem/ruby/3.4.0/bin"
 export PATH="$PATH:$HOME/go/bin"
 
 # unset -f command_not_found_handler # Uncomment to prevent searching for commands not found in package manager

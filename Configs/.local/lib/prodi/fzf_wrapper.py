@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# coding: utf-8
 
 # MIT License
 #
@@ -23,19 +22,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from subprocess import run, PIPE, CalledProcessError
-from typing import List
 from shutil import which
+from subprocess import PIPE, CalledProcessError, run
 
 FZF_URL = "https://github.com/junegunn/fzf"
 FZF_CMD = "fzf"
 
 
 def __check_fzf_in_path() -> bool:
-    return which(FZF_CMD) != None
+    return which(FZF_CMD) is not None
 
 
-def prompt(choices: List[str], fzf_options: List[str] = []) -> List[str]:
+def prompt(choices: list[str], fzf_options: list[str] = []) -> list[str]:
     """Summary
         Let user interactively choose from given choices using fzf program
 
@@ -78,9 +76,7 @@ def prompt(choices: List[str], fzf_options: List[str] = []) -> List[str]:
         results = command_result.stdout.decode().strip().split("\n")
         return results
     except CalledProcessError as e:
-        if e.returncode == 130:  # User cancel fzf
-            return []
-        elif e.returncode == 1:  # User select empty line
+        if e.returncode == 130 or e.returncode == 1:  # User cancel fzf
             return []
         else:
             raise AttributeError(str(e.stderr))

@@ -4,11 +4,11 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/home/prodi9al/.npm-global/bin/9router --tray --port 20129 --skip-update --no-browser
+ExecStart=%h/.npm-global/bin/9router --tray --port 20129 --skip-update --no-browser
 Restart=always
 RestartSec=3
-Environment=HOME=/home/prodi9al
-WorkingDirectory=/home/prodi9al
+Environment=HOME=%h
+WorkingDirectory=%h
 
 Environment=SOCKS_PROXY=socks5h://127.0.0.1:1080
 Environment=HTTP_PROXY=socks5h://127.0.0.1:1080

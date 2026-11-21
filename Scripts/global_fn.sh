@@ -36,7 +36,7 @@ chk_list() {
     for pkg in "${inList[@]}"; do
         if pkg_installed "${pkg}"; then
             printf -v "${vrType}" "%s" "${pkg}"
-            export "${vrType}"
+            export "$vrType"="${!vrType}"
             return 0
         fi
     done

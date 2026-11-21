@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
 import os
-import subprocess
 import re
-
+import subprocess
 
 tmp_dir = os.getenv("XDG_RUNTIME_DIR", "/tmp")
 tmp_dir = os.path.join(tmp_dir, "cliphist")
@@ -47,6 +46,5 @@ def main():
 
 
 if __name__ == "__main__":
-    import sys
 
     main()

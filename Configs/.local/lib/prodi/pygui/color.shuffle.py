@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 import argparse
+import os
 import random
 import re
-import os
 import sys
-from PyQt6 import QtWidgets, QtGui, QtCore
 from dataclasses import dataclass
+
+from PyQt6 import QtCore, QtGui, QtWidgets
 
 os.environ["QT_PLUGIN_PATH"] = "/usr/lib/qt6/plugins"
 
@@ -509,7 +510,7 @@ class ColorShuffleQt(QtWidgets.QWidget):
             hbox.addWidget(txt_btn)
             acc_btns = []
             for j in range(9):
-                color = getattr(self.color_rows[i], f"accent{j + 1}")
+                getattr(self.color_rows[i], f"accent{j + 1}")
                 acc_btn = QtWidgets.QPushButton()
                 acc_btn.setFixedSize(35, 25)  # Smaller color boxes for compact layout
                 acc_btn.setSizePolicy(
