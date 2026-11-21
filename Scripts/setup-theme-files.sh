@@ -43,7 +43,7 @@ for theme_dir in "$THEMES_DIR"/*/; do
 
   # 3. Create wall.set symlink to first wallpaper
   if compgen -G "$theme_dir/wallpapers/*" > /dev/null 2>&1; then
-    wp_file=$(ls "$theme_dir/wallpapers/" | head -1)
+    wp_file=$(find "$theme_dir/wallpapers/" -maxdepth 1 -type f | head -1 | xargs -r basename)
     ln -sf "$theme_dir/wallpapers/$wp_file" "$theme_dir/wall.set" 2>/dev/null || true
   fi
 

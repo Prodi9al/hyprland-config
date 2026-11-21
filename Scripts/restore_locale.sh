@@ -6,7 +6,6 @@
 set -euo pipefail
 
 SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_DIR="$(cd "$(dirname "${SCRIPTS_DIR}")" && pwd)"
 
 DRY_RUN=false
 
@@ -17,6 +16,8 @@ for arg in "$@"; do
 done
 
 # Source shared functions
+# shellcheck source=./global_fn.sh
+# shellcheck disable=SC1091
 . "$SCRIPTS_DIR/global_fn.sh"
 
 confDir="${XDG_CONFIG_HOME:-$HOME/.config}"

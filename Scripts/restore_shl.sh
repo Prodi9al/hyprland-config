@@ -6,7 +6,6 @@
 set -euo pipefail
 
 SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_DIR="$(cd "$(dirname "${SCRIPTS_DIR}")" && pwd)"
 
 DRY_RUN=false
 
@@ -17,6 +16,8 @@ for arg in "$@"; do
 done
 
 # Source shared functions
+# shellcheck source=./global_fn.sh
+# shellcheck disable=SC1091
 . "$SCRIPTS_DIR/global_fn.sh"
 
 # shellcheck disable=SC2154
@@ -78,7 +79,7 @@ if [ "${myShell}" = "zsh" ] && pkg_installed zsh; then
 					fi
 				fi
 				if [ "${z_plugin}" == "zsh-completions" ] && [ "$(grep -c 'fpath+=.*plugins/zsh-completions/src' "${Zsh_rc}")" -eq 0 ]; then
-					Fix_Completion='\nfpath+=${ZSH_CUSTOM:-${ZSH:-/usr/share/oh-my-zsh}/custom}/plugins/zsh-completions/src'
+					Fix_Completion="\nfpath+=${ZSH_CUSTOM:-${ZSH:-/usr/share/oh-my-zsh}/custom}/plugins/zsh-completions/src"
 				else
 					[ -z "${z_plugin}" ] || w_plugin+=" ${z_plugin}"
 				fi
