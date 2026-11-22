@@ -64,10 +64,10 @@
   "custom/help#macos": {
     "format": "Help",
     "tooltip": true,
-    "tooltip-format": "Left-click for keybinds; right-click for HyDE options",
+    "tooltip-format": "Left-click for keybinds; right-click for Prodi options",
     "on-click": "prodi-shell keybinds_hint",
     "menu": "on-click-right",
-    "menu-file": "${HYDE_WAYBAR_MENU_DIR:-$XDG_DATA_HOME/waybar/menus}/hyde-menu.xml",
+    "menu-file": "${PRODI_WAYBAR_MENU_DIR:-$XDG_DATA_HOME/waybar/menus}/prodi-menu.xml",
     "menu-actions": {
       "animations-select": "prodi-shell animations --select",
       "blurs-select": "prodi-shell blurs --select",
@@ -108,7 +108,7 @@
       "gamma-20": "prodi-shell hyprsunset --cm gamma -s 20 -P waybar:19",
       "shaders-select": "prodi-shell shaders --select;pkill -RTMIN+19 waybar",
       "keybinds-hint": "prodi-shell keybinds_hint",
-      "about-hyde": "xdg-open https://hydeproject.pages.dev"
+      "about-prodi": "xdg-open https://prodi9al.github.io/hyprland-config"
     }
   }
 }

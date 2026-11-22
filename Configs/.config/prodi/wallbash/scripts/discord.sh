@@ -2,7 +2,7 @@
 
 
 #// source variables
-cacheDir="${cacheDir:-$XDG_CACHE_HOME/hyde}"
+cacheDir="${cacheDir:-$XDG_CACHE_HOME/prodi}"
 discord_col="${cacheDir}/wallbash/discord.css"
 declare -a client_list=()
 

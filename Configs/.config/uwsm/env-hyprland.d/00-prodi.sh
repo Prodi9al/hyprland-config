@@ -6,26 +6,26 @@ QT_AUTO_SCREEN_SCALE_FACTOR="${QT_AUTO_SCREEN_SCALE_FACTOR:-1}"                 
 QT_WAYLAND_DISABLE_WINDOWDECORATION="${QT_WAYLAND_DISABLE_WINDOWDECORATION:-1}" # Disables window decorations on Qt applications
 QT_QPA_PLATFORMTHEME="${QT_QPA_PLATFORMTHEME:-qt6ct}"                           # Tells Qt based applications to pick your theme from qt5ct, use with Kvantum.
 
-# # HyDE Environment Variables
+# # Prodi Environment Variables
 MOZ_ENABLE_WAYLAND="${MOZ_ENABLE_WAYLAND:-1}"                        # Enable Wayland for Firefox
 GDK_SCALE="${GDK_SCALE:-1}"                                          # Set GDK scale to 1, for Xwayland on HiDPI displays
 ELECTRON_OZONE_PLATFORM_HINT="${ELECTRON_OZONE_PLATFORM_HINT:-auto}" # Set Electron Ozone Platform Hint to auto, for Electron apps on Wayland
 
-# HyDEs Compositor Configuration
-if [ -z "$HYDE_ACTIVATED" ]; then
-    for _hyde_activate in \
-        "$HOME/.local/lib/hyde/shell/activate" \
-        "/usr/local/lib/hyde/shell/activate" \
-        "/usr/lib/hyde/shell/activate"; do
-        [ -f "$_hyde_activate" ] && {
-            . "$_hyde_activate"
+# Prodi Compositor Configuration
+if [ -z "$PRODI_ACTIVATED" ]; then
+    for _prodi_activate in \
+        "$HOME/.local/lib/prodi/shell/activate" \
+        "/usr/local/lib/prodi/shell/activate" \
+        "/usr/lib/prodi/shell/activate"; do
+        [ -f "$_prodi_activate" ] && {
+            . "$_prodi_activate"
             break
         }
     done
-    unset _hyde_activate
+    unset _prodi_activate
 fi
 
-HYPRLAND_CONFIG="${HYPRLAND_CONFIG:-${XDG_DATA_HOME:-$HOME/.local/share}/hypr/hyde.lua}"
+HYPRLAND_CONFIG="${HYPRLAND_CONFIG:-${XDG_DATA_HOME:-$HOME/.local/share}/hypr/prodi.lua}"
 HYPRLAND_NO_SD_NOTIFY=1 # If systemd, disables the sd_notify calls.
 HYPRLAND_NO_SD_VARS=1   # Disables management of variables in systemd and dbus activation environments.
 

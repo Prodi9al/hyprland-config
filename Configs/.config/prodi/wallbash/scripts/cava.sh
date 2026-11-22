@@ -4,12 +4,12 @@
 # shellcheck disable=SC1091
 if ! source "$(command -v prodi-shell)"; then
     echo "[wallbash] code :: Error: prodi-shell not found."
-    echo "[wallbash] code :: Is HyDE installed?"
+    echo "[wallbash] code :: Is Prodi installed?"
     exit 1
 fi
 
 confDir="${confDir:-$XDG_CONFIG_HOME}"
-cacheDir="${cacheDir:-$XDG_CACHE_HOME/hyde}"
+cacheDir="${cacheDir:-$XDG_CACHE_HOME/prodi}"
 cvaDir="${confDir}/cava"
 CAVA_CONF="${cvaDir}/config"
 CAVA_DCOL="${cacheDir}/wallbash/cava"

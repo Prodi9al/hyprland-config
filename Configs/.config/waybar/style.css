@@ -16,7 +16,7 @@
     @import "$XDG_DATA_HOME/waybar/styles/hyprdots.css";
 
     /* Imports wallbash colors */
-    @import "$XDG_CACHE_DIR/hyde/wallbash/gtk.css";
+    @import "$XDG_CACHE_DIR/prodi/wallbash/gtk.css";
 
     /* Colors and theme configuration is generated through the `theme.css` file */
     @import "theme.css";

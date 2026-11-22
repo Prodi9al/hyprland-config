@@ -35,6 +35,7 @@ libinput-gestures = { source = "Configs/.config/libinput-gestures.conf", target 
 spotify-flags = { source = "Configs/.config/spotify-flags.conf", target = "~/.config/spotify-flags.conf" }
 baloofilerc = { source = "Configs/.config/baloofilerc", target = "~/.config/baloofilerc" }
 dconf-profile = { source = "Configs/.config/dconf/profile", target = "~/.config/dconf/profile" }
+uwsm = { source = "Configs/.config/uwsm", target = "~/.config/uwsm" }
 
 [local]
 lib-prodi = { source = "Configs/.local/lib/prodi", target = "~/.local/lib/prodi" }

@@ -431,7 +431,7 @@
         </child>
 
         <child>
-            <object class="GtkMenuItem" id="about-hyde">
+            <object class="GtkMenuItem" id="about-prodi">
                 <property name="label">&#x2003;About</property>
             </object>
         </child>

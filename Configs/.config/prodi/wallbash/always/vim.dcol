@@ -1,7 +1,7 @@
 ${XDG_CONFIG_HOME:-$HOME/.config}/vim/colors/wallbash.vim
 " Name:         wallbash
 " Description:  wallbash template
-" Author:       The HyDE Project
+" Author:       The Prodi9al Project
 " License:      Same as Vim
 " Last Change:  April 2025
 
