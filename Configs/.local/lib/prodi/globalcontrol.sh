@@ -137,12 +137,12 @@ get_hashmap() {
         if [ -n "$WALLPAPER_OVERRIDE_FILETYPES" ]; then
             supported_files=("${WALLPAPER_OVERRIDE_FILETYPES[@]}")
         fi
-        printf -- '-iname "*.%s" -o ' "${supported_files[@]}" | sed 's/ -o $//'
+        printf -- '-iname *.%s -o ' "${supported_files[@]}" | sed 's/ -o $//'
     }
     list_skipped_path() {
         local skip_path=(
             "*/logo/*")
-        printf -- '! -path "%s" ' "${skip_path[@]}" | sed 's/ $//'
+        printf -- '! -path %s ' "${skip_path[@]}" | sed 's/ $//'
     }
     find_wallpapers() {
         local wallSource="$1"

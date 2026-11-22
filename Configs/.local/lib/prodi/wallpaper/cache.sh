@@ -44,10 +44,9 @@ move_generated_thumbnail() {
 }
 
 wallpaper_cache_init() {
-    [ -d "$PRODI_THEME_DIR" ] && cacheIn="$PRODI_THEME_DIR" || {
-        echo "Error: PRODI_THEME_DIR not found!"
-        return 1
-    }
+    if [ -n "${PRODI_THEME_DIR:-}" ] && [ -d "$PRODI_THEME_DIR" ]; then
+        cacheIn="$PRODI_THEME_DIR"
+    fi
     [ -d "$thmbDir" ] || mkdir -p "$thmbDir"
     [ -d "$dcolDir" ] || mkdir -p "$dcolDir"
     [ -d "$cacheDir/landing" ] || mkdir -p "$cacheDir/landing"
