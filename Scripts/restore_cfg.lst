@@ -47,3 +47,4 @@
 .local/share/kxmlgui5 -> ~/.local/share/kxmlgui5
 .local/share/xdg-desktop-portal -> ~/.local/share/xdg-desktop-portal
 .local/share/dolphin -> ~/.local/share/dolphin
+.config/uwsm -> ~/.config/uwsm

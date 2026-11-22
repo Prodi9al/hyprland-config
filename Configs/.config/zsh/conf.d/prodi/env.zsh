@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 
-# HyDE Shell Environment Initialization
+# Prodi Shell Environment Initialization
 
 case ":$PATH:" in
 *":$HOME/.local/bin:"*) ;;
@@ -31,18 +31,18 @@ if command -v xdg-user-dir >/dev/null 2>&1; then
 fi
 unfunction set_xdg_user_dir
 
-# HyDE Compositor Environment
-if [[ -z "$HYDE_ACTIVATED" ]]; then
-  for _hyde_activate in \
-    "$HOME/.local/lib/hyde/shell/activate" \
-    "/usr/local/lib/hyde/shell/activate" \
-    "/usr/lib/hyde/shell/activate"; do
-    [[ -f "$_hyde_activate" ]] && {
-      source "$_hyde_activate"
+# Prodi Compositor Environment
+if [[ -z "$PRODI_ACTIVATED" ]]; then
+  for _prodi_activate in \
+    "$HOME/.local/lib/prodi/shell/activate" \
+    "/usr/local/lib/prodi/shell/activate" \
+    "/usr/lib/prodi/shell/activate"; do
+    [[ -f "$_prodi_activate" ]] && {
+      source "$_prodi_activate"
       break
     }
   done
-  unset _hyde_activate
+  unset _prodi_activate
 fi
 
 typeset -U PATH

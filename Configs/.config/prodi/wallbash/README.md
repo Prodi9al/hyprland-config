@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document provides an explanation of the color configuration used for theming HyDE. It covers primary colors, text colors, and accent colors. Each color can be specified in either hexadecimal or RGBA format.
+This document provides an explanation of the color configuration used for theming Prodi. It covers primary colors, text colors, and accent colors. Each color can be specified in either hexadecimal or RGBA format.
 
 ## Color Identifiers 
 

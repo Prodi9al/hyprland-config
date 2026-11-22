@@ -1,0 +1,8 @@
+{
+    "custom/github_prodi": {
+        "format": "\ue709 ",
+        "rotate": 0,
+        "tooltip-format": "\ue709 Prodi9al repository",
+        "on-click": "xdg-open https://github.com/Prodi-Project/Prodi"
+    }
+}

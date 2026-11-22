@@ -11,7 +11,7 @@
     "tooltip": true,
     "signal": 19,
     "menu": "on-click-right",
-    "menu-file": "${HYDE_WAYBAR_MENU_DIR:-$XDG_DATA_HOME/waybar/menus}/hyprsunset.xml",
+    "menu-file": "${PRODI_WAYBAR_MENU_DIR:-$XDG_DATA_HOME/waybar/menus}/hyprsunset.xml",
     "menu-actions": {
       "warm-candle": "prodi-shell hyprsunset --cm temp -s 3000 -P waybar:19",
       "soft-warm": "prodi-shell hyprsunset --cm temp -s 4000 -P waybar:19",

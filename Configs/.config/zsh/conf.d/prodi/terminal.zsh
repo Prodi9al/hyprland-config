@@ -7,10 +7,10 @@
 #! ██████╔╝╚█████╔╝  ██║░╚███║╚█████╔╝░░░██║░░░  ███████╗██████╔╝██║░░░██║░░░
 #! ╚═════╝░░╚════╝░  ╚═╝░░╚══╝░╚════╝░░░░╚═╝░░░  ╚══════╝╚═════╝░╚═╝░░░╚═╝░░░
 
-# HyDE's ZSH env configuration
+# Prodi ZSH env configuration
 # This file is sourced by ZSH on startup
 # And ensures that we have an obstruction-free .zshrc file
-# This also ensures that the proper HyDE $ENVs are loaded
+# This also ensures that the proper Prodi $ENVs are loaded
 
 setopt INTERACTIVE_COMMENTS
 
@@ -37,8 +37,8 @@ function _dedup_zsh_plugins {
     )
     for zsh_path in "${zsh_paths[@]}"; do [[ -d $zsh_path ]] && export ZSH=$zsh_path && break; done
     # Load Plugins
-    hyde_plugins=(git zsh-256color zsh-autosuggestions zsh-syntax-highlighting)
-    plugins+=("${plugins[@]}" "${hyde_plugins[@]}")
+    prodi_plugins=(git zsh-256color zsh-autosuggestions zsh-syntax-highlighting)
+    plugins+=("${plugins[@]}" "${prodi_plugins[@]}")
     # Deduplicate plugins
     plugins=("${plugins[@]}")
     plugins=($(printf "%s\n" "${plugins[@]}" | sort -u))
@@ -67,11 +67,11 @@ function _defer_omz_after_prompt_before_input() {
     [[ -r $ZDOTDIR/.zshrc ]] && source $ZDOTDIR/.zshrc
 }
 
-function _load_deferred_plugin_system_by_hyde() {
+function _load_deferred_plugin_system_by_prodi() {
 
-    # Exit early if HYDE_ZSH_DEFER is not set to 1
-    if [[ "${HYDE_ZSH_DEFER}" != "1" ]]; then
-        unset -f _load_deferred_plugin_system_by_hyde
+    # Exit early if PRODI_ZSH_DEFER is not set to 1
+    if [[ "${PRODI_ZSH_DEFER}" != "1" ]]; then
+        unset -f _load_deferred_plugin_system_by_prodi
         return
     fi
 
@@ -155,7 +155,7 @@ function _load_compinit() {
 function _load_prompt() {
     # Try to load prompts immediately
     if ! source ${ZDOTDIR}/prompt.zsh >/dev/null 2>&1; then
-        [[ -f $ZDOTDIR/conf.d/hyde/prompt.zsh ]] && source $ZDOTDIR/conf.d/hyde/prompt.zsh
+        [[ -f $ZDOTDIR/conf.d/prodi/prompt.zsh ]] && source $ZDOTDIR/conf.d/prodi/prompt.zsh
     fi
 }
 
@@ -163,9 +163,9 @@ function _load_prompt() {
 # cleaning up home folder
 # ZSH Plugin Configuration
 
-HYDE_ZSH_DEFER="1"      #Unset this variable in $ZDOTDIR/user.zsh to disable HyDE's deferred Zsh loading.
-HYDE_ZSH_PROMPT="1"     #Unset this variable in $ZDOTDIR/user.zsh to disable HyDE's prompt customization.
-HYDE_ZSH_NO_PLUGINS="0" #Set this variable to "1" in $ZDOTDIR/user.zsh to disable HyDE's Zsh plugin loading.
+PRODI_ZSH_DEFER="1"      #Unset this variable in $ZDOTDIR/user.zsh to disable Prodi deferred Zsh loading.
+PRODI_ZSH_PROMPT="1"     #Unset this variable in $ZDOTDIR/user.zsh to disable Prodi prompt customization.
+PRODI_ZSH_NO_PLUGINS="0" #Set this variable to "1" in $ZDOTDIR/user.zsh to disable Prodi Zsh plugin loading.
 
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 
@@ -181,12 +181,12 @@ SAVEHIST=10000
 
 export HISTFILE ZSH_AUTOSUGGEST_STRATEGY HISTSIZE SAVEHIST
 
-# HyDE Package Manager
+# Prodi Package Manager
 PM_COMMAND=(prodi-shell pm)
 
 # Optionally load user configuration // useful for customizing the shell without modifying the main file
-if [[ -f $HOME/.hyde.zshrc ]]; then
-    source $HOME/.hyde.zshrc # for backward compatibility
+if [[ -f $HOME/.prodi.zshrc ]]; then
+    source $HOME/.prodi.zshrc # for backward compatibility
 elif [[ -f $HOME/.user.zsh ]]; then
     source $HOME/.user.zsh # renamed to .user.zsh for intuitiveness that it is a user config
 elif [[ -f $ZDOTDIR/user.zsh ]]; then
@@ -195,11 +195,11 @@ fi
 
 _load_compinit
 
-if [[ ${HYDE_ZSH_NO_PLUGINS} != "1" ]]; then
+if [[ ${PRODI_ZSH_NO_PLUGINS} != "1" ]]; then
     _dedup_zsh_plugins
     if [[ "$HYDE_ZSH_OMZ_DEFER" == "1" ]] && [[ -r $ZSH/oh-my-zsh.sh ]]; then
-        # Loads the buggy deferred oh-my-zsh plugin system by HyDE // This is only for oh-my-zsh and compatibility
-        _load_deferred_plugin_system_by_hyde
+        # Loads the buggy deferred oh-my-zsh plugin system by Prodi // This is only for oh-my-zsh and compatibility
+        _load_deferred_plugin_system_by_prodi
         _load_prompt # This disables transient prompts sadly
     elif source $ZDOTDIR/plugin.zsh >/dev/null 2>&1; then
         # Load plugins from the user's plugin.zsh file

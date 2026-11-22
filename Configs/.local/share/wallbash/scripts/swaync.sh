@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #  Author : JaxTsai
-# Syncs swaync with the active HyDE theme's hypr.theme:
+# Syncs swaync with the active Prodi theme's hypr.theme:
 #   - notification popup gap from the screen edge  <- general:gaps_out (theme.css)
 #   - control center margin from the screen edge   <- general:gaps_out (config.json)
 #   - corner rounding                               <- decoration:rounding (theme.css)
@@ -18,7 +18,7 @@
 theme_css="${confDir}/swaync/theme.css"
 config_json="${confDir}/swaync/config.json"
 
-hypr_theme="${HYDE_THEME_DIR:-$XDG_CONFIG_HOME/hyde/themes/$HYDE_THEME}/hypr.theme"
+hypr_theme="${PRODI_THEME_DIR:-$XDG_CONFIG_HOME/prodi/themes/$PRODI_THEME}/hypr.theme"
 
 hyq_query() {
     local query="$1"
@@ -27,13 +27,13 @@ hyq_query() {
     hyq -s --query "$query" "$hypr_theme" 2>/dev/null | tail -n1
 }
 
-# gaps_out -> padding (hyde:gaps_out) + control-center-margin-*
+# gaps_out -> padding (prodi:gaps_out) + control-center-margin-*
 gaps_out="$(hyq_query "general:gaps_out")"
 [[ $gaps_out =~ ^([0-9]+,){0,3}[0-9]+$ ]] || gaps_out=8
 
 if [ -f "$theme_css" ]; then
     gaps_css="$(awk -F',' '{for(i=1;i<=NF;i++) printf "%s%dpx", (i>1?" ":""), $i}' <<<"$gaps_out")"
-    sed -i -E "s#padding: [0-9]+px( [0-9]+px){0,3};([[:space:]]*/\* hyde:gaps_out \*/)#padding: ${gaps_css};\2#" "$theme_css"
+    sed -i -E "s#padding: [0-9]+px( [0-9]+px){0,3};([[:space:]]*/\* prodi:gaps_out \*/)#padding: ${gaps_css};\2#" "$theme_css"
 fi
 
 # [notification] position in config.toml -> positionX / positionY
@@ -90,11 +90,11 @@ if [ -f "$theme_css" ] && [ "${enableWallDcol:-1}" -eq 0 ]; then
     fi
 fi
 
-# decoration:rounding -> border-radius (hyde:rounding)
+# decoration:rounding -> border-radius (prodi:rounding)
 if [ -f "$theme_css" ]; then
     rounding="$(hyq_query "decoration:rounding")"
     [[ $rounding =~ ^[0-9]+$ ]] || rounding=12
-    sed -i -E "s#border-radius: [0-9]+px;([[:space:]]*/\* hyde:rounding \*/)#border-radius: ${rounding}px;\1#" "$theme_css"
+    sed -i -E "s#border-radius: [0-9]+px;([[:space:]]*/\* prodi:rounding \*/)#border-radius: ${rounding}px;\1#" "$theme_css"
 fi
 
 swaync-client -R && swaync-client -rs

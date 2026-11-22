@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-# Hyde's Shell Environment Initialization Script
+# Prodi Shell Environment Initialization Script
 
 # Basic PATH prepending (user local bin)
 PATH="$HOME/.local/bin:$PATH"
