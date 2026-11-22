@@ -307,7 +307,7 @@ bash "$script_dir/restore.config.sh" "$THEME_DIR/restore_cfg.lst" "$THEME_DIR/Co
 }
 if [ "$3" != "--skipcaching" ]; then
     bash "$script_dir/wallpaper/cache.sh" commence -t "$THEME_NAME"
-    bash "$script_dir/theme.switch.sh"
+    bash "$script_dir/theme.switch.sh" -s "$THEME_NAME"
 fi
 print_log -y "\nNote: " "Warnings are not errors. Review the output to check if it concerns you."
 exit 0

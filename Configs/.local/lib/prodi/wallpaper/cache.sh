@@ -159,8 +159,13 @@ wallpaper_cache_commence() {
             mode=""
             ;;
         t)
-            cacheIn="$(dirname "$PRODI_THEME_DIR")/$OPTARG"
-            if [ ! -d "$cacheIn" ]; then
+            if [ -d "$PRODI_CONFIG_HOME/themes/$OPTARG" ]; then
+                cacheIn="$PRODI_CONFIG_HOME/themes/$OPTARG"
+            elif [ -d "$PRODI_THEME_DIR" ] && [ "$(basename "$PRODI_THEME_DIR")" = "$OPTARG" ]; then
+                cacheIn="$PRODI_THEME_DIR"
+            elif [ -d "$(dirname "$PRODI_THEME_DIR")/$OPTARG" ]; then
+                cacheIn="$(dirname "$PRODI_THEME_DIR")/$OPTARG"
+            else
                 echo "Error: Input theme \"$OPTARG\" not found!"
                 return 1
             fi

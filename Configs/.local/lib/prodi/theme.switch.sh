@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 [[ $PRODI_SHELL_INIT -ne 1 ]] && eval "$(prodi-shell init)"
-[ -z "$PRODI_THEME" ] && echo "ERROR: unable to detect theme" && exit 1
 get_themes
+[ -z "$PRODI_THEME" ] && [ -n "${thmList[0]:-}" ] && PRODI_THEME="${thmList[0]}"
+[ -z "$PRODI_THEME" ] && echo "ERROR: unable to detect theme" && exit 1
 confDir="${XDG_CONFIG_HOME:-$HOME/.config}"
 Theme_Change() {
     local x_switch=$1
