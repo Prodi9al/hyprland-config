@@ -72,6 +72,8 @@ require("events")
 require("start_up")
 -- * Automatically load generated monitor configs (e.g., from nwg-displays)
 check_require("monitors")
+-- * Load default layout (dwindle) and its gestures/keybindings
+require("layouts.dwindle")
 -- --* user now can have this file
 check_require("hyprland")
 -- --* workflows configuration overrides everything
