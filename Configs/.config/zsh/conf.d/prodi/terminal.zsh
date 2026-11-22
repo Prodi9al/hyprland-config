@@ -143,7 +143,7 @@ function _load_compinit() {
     setopt EXTENDED_GLOB
 
     # Fastest - use glob qualifiers on directory pattern
-    if [[ -n ${ZDOTDIR}/.zcompdump(#qN.mh+${HYDE_ZSH_COMPINIT_CHECK:-1}) ]]; then
+    if [[ -n ${ZDOTDIR}/.zcompdump(#qN.mh+${PRODI_ZSH_COMPINIT_CHECK:-1}) ]]; then
         compinit
     else
         compinit -C
@@ -197,7 +197,7 @@ _load_compinit
 
 if [[ ${PRODI_ZSH_NO_PLUGINS} != "1" ]]; then
     _dedup_zsh_plugins
-    if [[ "$HYDE_ZSH_OMZ_DEFER" == "1" ]] && [[ -r $ZSH/oh-my-zsh.sh ]]; then
+    if [[ "$PRODI_ZSH_OMZ_DEFER" == "1" ]] && [[ -r $ZSH/oh-my-zsh.sh ]]; then
         # Loads the buggy deferred oh-my-zsh plugin system by Prodi // This is only for oh-my-zsh and compatibility
         _load_deferred_plugin_system_by_prodi
         _load_prompt # This disables transient prompts sadly
