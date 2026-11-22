@@ -22,7 +22,11 @@ if ! timeout 15 awww query &> /dev/null; then
     # "$(wallpaper.sh ...)" capture open forever, which froze the installer (#2156).
     awww-daemon --format xrgb </dev/null &>/dev/null &
     disown
-    timeout 15 awww query && timeout 15 awww restore
+    for _ in {1..20}; do
+        timeout 1 awww query &> /dev/null && break
+        sleep 0.1
+    done
+    timeout 15 awww restore
 fi
 is_video=$(file --mime-type -b "$selected_wall" | grep -c '^video/')
 if [ "$is_video" -eq 1 ]; then

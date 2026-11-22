@@ -5,8 +5,8 @@ package.path = package.path .. ";" .. root .. "../?.lua;" .. root .. "../?/init.
 require("luautils.init")
 
 local xdg = require("luautils.xdg")
-local lgi = require("lgi")
-local Gio = lgi.Gio
+local has_lgi, lgi = pcall(require, "lgi")
+local Gio = has_lgi and lgi.Gio or nil
 
 local function _s(v)
     if v == nil or v == "" then return nil end
@@ -44,23 +44,6 @@ local FONT_HINTING      = _r("font_hinting")       or "slight"
 local BUTTON_LAYOUT     = _r("button_layout")      or ""
 local TERMINAL          = _r("terminal")            or "kitty"
 
-local iface = Gio.Settings.new("org.gnome.desktop.interface")
-if GTK_THEME         then iface:set_string("gtk-theme",           GTK_THEME)         end
-if ICON_THEME        then iface:set_string("icon-theme",          ICON_THEME)        end
-if COLOR_SCHEME      then iface:set_string("color-scheme",        COLOR_SCHEME)      end
-if CURSOR_THEME      then iface:set_string("cursor-theme",        CURSOR_THEME)      end
-iface:set_int("cursor-size", CURSOR_SIZE)
-if FONT_NAME         then iface:set_string("font-name",           FONT_NAME)         end
-if DOC_FONT_NAME     then iface:set_string("document-font-name",  DOC_FONT_NAME)     end
-if MONO_FONT_NAME    then iface:set_string("monospace-font-name", MONO_FONT_NAME)    end
-if FONT_ANTIALIASING then iface:set_string("font-antialiasing",   FONT_ANTIALIASING) end
-if FONT_HINTING      then iface:set_string("font-hinting",        FONT_HINTING)      end
-Gio.Settings.sync()
-
-local wm = Gio.Settings.new("org.gnome.desktop.wm.preferences")
-if BUTTON_LAYOUT then wm:set_string("button-layout", BUTTON_LAYOUT) end
-Gio.Settings.sync()
-
 -- TERMINAL comes from the user's own config (prodi.config.ui.terminal), so a
 -- quote in it must not break the probe or reach the shell unescaped (#1901).
 local function shell_quote(arg)
@@ -69,17 +52,67 @@ local function shell_quote(arg)
     return "'" .. arg .. "'"
 end
 
-local ok_term, term = pcall(Gio.Settings.new, "org.gnome.desktop.default-applications.terminal")
-if ok_term and term then
+if Gio then
+    local iface = Gio.Settings.new("org.gnome.desktop.interface")
+    if GTK_THEME         then iface:set_string("gtk-theme",           GTK_THEME)         end
+    if ICON_THEME        then iface:set_string("icon-theme",          ICON_THEME)        end
+    if COLOR_SCHEME      then iface:set_string("color-scheme",        COLOR_SCHEME)      end
+    if CURSOR_THEME      then iface:set_string("cursor-theme",        CURSOR_THEME)      end
+    iface:set_int("cursor-size", CURSOR_SIZE)
+    if FONT_NAME         then iface:set_string("font-name",           FONT_NAME)         end
+    if DOC_FONT_NAME     then iface:set_string("document-font-name",  DOC_FONT_NAME)     end
+    if MONO_FONT_NAME    then iface:set_string("monospace-font-name", MONO_FONT_NAME)    end
+    if FONT_ANTIALIASING then iface:set_string("font-antialiasing",   FONT_ANTIALIASING) end
+    if FONT_HINTING      then iface:set_string("font-hinting",        FONT_HINTING)      end
+    Gio.Settings.sync()
+
+    local wm = Gio.Settings.new("org.gnome.desktop.wm.preferences")
+    if BUTTON_LAYOUT then wm:set_string("button-layout", BUTTON_LAYOUT) end
+    Gio.Settings.sync()
+
+    local ok_term, term = pcall(Gio.Settings.new, "org.gnome.desktop.default-applications.terminal")
+    if ok_term and term then
+        local handle = io.popen("command -v " .. shell_quote(TERMINAL) .. " 2>/dev/null")
+        local bin = handle and handle:read("*l") or TERMINAL
+        if handle then handle:close() end
+        if bin and bin ~= "" then
+            term:set_string("exec", bin)
+            Gio.Settings.sync()
+        end
+    end
+else
+    -- Fallback to gsettings CLI if lgi is unavailable or incompatible with lua version
+    local function gset(schema, key, val, is_int)
+        if not val then return end
+        local cmd
+        if is_int then
+            cmd = string.format("gsettings set %s %s %d 2>/dev/null", schema, key, val)
+        else
+            cmd = string.format("gsettings set %s %s %s 2>/dev/null", schema, key, shell_quote(val))
+        end
+        os.execute(cmd)
+    end
+    gset("org.gnome.desktop.interface", "gtk-theme", GTK_THEME)
+    gset("org.gnome.desktop.interface", "icon-theme", ICON_THEME)
+    gset("org.gnome.desktop.interface", "color-scheme", COLOR_SCHEME)
+    gset("org.gnome.desktop.interface", "cursor-theme", CURSOR_THEME)
+    gset("org.gnome.desktop.interface", "cursor-size", CURSOR_SIZE, true)
+    gset("org.gnome.desktop.interface", "font-name", FONT_NAME)
+    gset("org.gnome.desktop.interface", "document-font-name", DOC_FONT_NAME)
+    gset("org.gnome.desktop.interface", "monospace-font-name", MONO_FONT_NAME)
+    gset("org.gnome.desktop.interface", "font-antialiasing", FONT_ANTIALIASING)
+    gset("org.gnome.desktop.interface", "font-hinting", FONT_HINTING)
+    if BUTTON_LAYOUT ~= "" then
+        gset("org.gnome.desktop.wm.preferences", "button-layout", BUTTON_LAYOUT)
+    end
     local handle = io.popen("command -v " .. shell_quote(TERMINAL) .. " 2>/dev/null")
     local bin = handle and handle:read("*l") or TERMINAL
     if handle then handle:close() end
     if bin and bin ~= "" then
-        term:set_string("exec", bin)
-        Gio.Settings.sync()
+        gset("org.gnome.desktop.default-applications.terminal", "exec", bin)
     end
 end
 
-if os.getenv("HYPRLAND_INSTANCE_SIGNATURE") then
+if os.getenv("HYPRLAND_INSTANCE_SIGNATURE") and CURSOR_THEME then
     os.execute(string.format("hyprctl setcursor %s %d", shell_quote(CURSOR_THEME), CURSOR_SIZE))
 end

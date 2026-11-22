@@ -173,7 +173,7 @@ toml_write "$confDir/kdeglobals" "UiSettings" "ColorScheme" "colors"
 toml_write "$confDir/kdeglobals" "KDE" "widgetStyle" "kvantum"
 toml_write "$XDG_DATA_HOME/icons/default/index.theme" "Icon Theme" "Inherits" "$CURSOR_THEME"
 toml_write "$HOME/.icons/default/index.theme" "Icon Theme" "Inherits" "$CURSOR_THEME"
-sed -i -e "/^gtk-theme-name=/c\gtk-theme-name=\"$GTK_THEME\"" \
+[ -f "$HOME/.gtkrc-2.0" ] && sed -i -e "/^gtk-theme-name=/c\gtk-theme-name=\"$GTK_THEME\"" \
     -e "/^include /c\include \"$HOME/.gtkrc-2.0.mime\"" \
     -e "/^gtk-cursor-theme-name=/c\gtk-cursor-theme-name=\"$CURSOR_THEME\"" \
     -e "/^gtk-icon-theme-name=/c\gtk-icon-theme-name=\"$ICON_THEME\"" "$HOME/.gtkrc-2.0"
