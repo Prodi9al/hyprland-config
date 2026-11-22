@@ -1,72 +1,12 @@
-# Theme patcher list
-# Available themes for the theme patcher system
-
-# Catppuccin themes
-catppuccin-latte
-catppuccin-mocha
-
-# Gruvbox themes
-gruvbox-retro
-
-# Decay themes
-decay-green
-
-# Edge themes
-edge-runner
-
-# Frosted themes
-frosted-glass
-
-# Graphite themes
-graphite-mono
-
-# Material themes
-material-sakura
-
-# Nordic themes
-nordic-blue
-
-# Rosé themes
-rosé-pine
-
-# Synth themes
-synth-wave
-
-# Tokyo themes
-tokyo-night
-
-# Anime themes
-black-clover
-bleach
-blue-lock
-demon-slayer
-dr-stone
-fullmetal-alchemist-brotherhood
-high-school-dxd
-hunter-x-hunter
-jujutsu-kaisen
-kaiju-no-8
-my-hero-academia
-seven-deadly-sins
-soul-land
-sword-art-online
-
-# Character themes
-gojo-satoru
-megumi-fushiguro
-sukuna
-yuji-itadori
-
-# Isekai themes
-re-zero
-that-time-i-got-reincarnated-as-a-slime
-the-eminence-in-shadow
-the-rising-of-the-shield-hero
-
-# Supernatural themes
-death-note
-tokyo-ghoul
-
-# Other
-edge-runner
-mulan
+"Catppuccin Mocha" "https://github.com/HyDE-Project/hyde-themes/tree/Catppuccin-Mocha"
+"Catppuccin Latte" "https://github.com/HyDE-Project/hyde-themes/tree/Catppuccin-Latte"
+"Rosé Pine" "https://github.com/HyDE-Project/hyde-themes/tree/Rose-Pine"
+"Tokyo Night" "https://github.com/HyDE-Project/hyde-themes/tree/Tokyo-Night"
+"Material Sakura" "https://github.com/HyDE-Project/hyde-themes/tree/Material-Sakura"
+"Graphite Mono" "https://github.com/HyDE-Project/hyde-themes/tree/Graphite-Mono"
+"Decay Green" "https://github.com/HyDE-Project/hyde-themes/tree/Decay-Green"
+"Edge Runner" "https://github.com/HyDE-Project/hyde-themes/tree/Edge-Runner"
+"Frosted Glass" "https://github.com/HyDE-Project/hyde-themes/tree/Frosted-Glass"
+"Gruvbox Retro" "https://github.com/HyDE-Project/hyde-themes/tree/Gruvbox-Retro"
+"Synth Wave" "https://github.com/HyDE-Project/hyde-themes/tree/Synth-Wave"
+"Nordic Blue" "https://github.com/HyDE-Project/hyde-themes/tree/Nordic-Blue"

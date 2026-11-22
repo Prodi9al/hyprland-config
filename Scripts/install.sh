@@ -354,6 +354,16 @@ else
   echo "    Added ~/.local/bin to PATH in $RC_FILE"
 fi
 
+# 9. Restore default themes
+if [ -f "$SCRIPTS_DIR/restore_thm.sh" ]; then
+  echo ""
+  if [[ "$DRY_RUN" == true ]]; then
+    bash "$SCRIPTS_DIR/restore_thm.sh" --dry-run
+  else
+    bash "$SCRIPTS_DIR/restore_thm.sh"
+  fi
+fi
+
 echo ""
 echo "==> Install complete!"
 echo ""

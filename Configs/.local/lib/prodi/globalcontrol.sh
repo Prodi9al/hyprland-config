@@ -208,8 +208,12 @@ get_themes() {
     unset thmList
     unset thmWall
     if [ ! -d "$PRODI_CONFIG_HOME/themes" ]; then
-        print_log -sec "theme" -warn "themes" "no theme directory at $PRODI_CONFIG_HOME/themes"
-        return 1
+        if [ -d "${XDG_CONFIG_HOME:-$HOME/.config}/hyde/themes" ]; then
+            PRODI_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/hyde"
+        else
+            print_log -sec "theme" -warn "themes" "no theme directory at $PRODI_CONFIG_HOME/themes"
+            return 1
+        fi
     fi
     while read -r thmDir; do
         local realWallPath

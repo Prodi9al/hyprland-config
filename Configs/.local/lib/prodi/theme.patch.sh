@@ -109,6 +109,11 @@ else
     fi
 fi
 print_log "Patching" -g " --// $THEME_NAME //-- " "from " -b "$THEME_DIR\n"
+# Upstream HyDE theme repos store themes in Configs/.config/hyde/themes/
+if [ ! -d "$THEME_DIR/Configs/.config/prodi/themes/$THEME_NAME" ] && [ -d "$THEME_DIR/Configs/.config/hyde/themes/$THEME_NAME" ]; then
+    mkdir -p "$THEME_DIR/Configs/.config/prodi/themes"
+    cp -a "$THEME_DIR/Configs/.config/hyde/themes/$THEME_NAME" "$THEME_DIR/Configs/.config/prodi/themes/$THEME_NAME"
+fi
 FAV_THEME_DIR="$THEME_DIR/Configs/.config/prodi/themes/$THEME_NAME"
 [ ! -d "$FAV_THEME_DIR" ] && print_log -r "[ERROR] " "'$FAV_THEME_DIR'" -y " Do not Exist" && exit 1
 config=$(find -H "${WALLBASH_DIRS[@]}" -type f -path "*/theme*" -name "*.dcol" 2>/dev/null | awk '!seen[substr($0, match($0, /[^/]+$/))]++' | awk -v favTheme="$THEME_NAME" -F 'theme/' '{gsub(/\.dcol$/, ".theme"); print ".config/prodi/themes/" favTheme "/" $2}')
