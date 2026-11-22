@@ -19,7 +19,6 @@ btop
 htop
 
 # Additional utilities
-wl-clipboard
 xdotool
 ydotool
 
@@ -29,4 +28,3 @@ qt5ct
 qt6ct
 
 # Screenshot/selection
-slurp
