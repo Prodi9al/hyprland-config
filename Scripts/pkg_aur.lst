@@ -11,8 +11,12 @@ uwsm
 satty
 
 # Additional Hyprland utilities
+hyprquery-git
 hyprpicker
 grimshot
+
+# Cursor and theme
+bibata-cursor-theme
 
 # Notification
 wl-clip-persist

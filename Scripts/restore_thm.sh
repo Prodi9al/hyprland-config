@@ -6,13 +6,15 @@ set -euo pipefail
 
 SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "$(dirname "${SCRIPTS_DIR}")" && pwd)"
-THEME_IMPORT_FILE="${1:-${SCRIPTS_DIR}/themepatcher.lst}"
+THEME_IMPORT_FILE="${SCRIPTS_DIR}/themepatcher.lst"
 CONF_DIR="${XDG_CONFIG_HOME:-$HOME/.config}"
 DRY_RUN=false
 
 for arg in "$@"; do
     case "$arg" in
         --dry-run) DRY_RUN=true ;;
+        -*) ;;
+        *) [[ -n "$arg" ]] && THEME_IMPORT_FILE="$arg" ;;
     esac
 done
 

@@ -32,6 +32,8 @@ make
 gcc
 lua
 luarocks
+lua-filesystem
+lua-lgi
 python
 python-pip
 xdg-desktop-portal
@@ -49,3 +51,7 @@ slurp
 libnotify
 imagemagick
 parallel
+wtype
+wf-recorder
+ttf-jetbrains-mono-nerd
+noto-fonts-emoji

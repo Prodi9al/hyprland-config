@@ -126,6 +126,16 @@ fi
 echo ""
 
 # 3. Optional AUR packages
+if [[ "$INSTALL_AUR" != true && "$UNATTENDED" != true && "$DRY_RUN" != true ]]; then
+  if command -v yay &>/dev/null || command -v paru &>/dev/null || command -v pamac &>/dev/null; then
+    echo ""
+    read -r -p "==> AUR helper detected. Install recommended AUR packages (hyprquery, satty, uwsm, etc.)? [Y/n] " confirm_aur || true
+    if [[ ! "$confirm_aur" =~ ^[Nn]$ ]]; then
+      INSTALL_AUR=true
+    fi
+  fi
+fi
+
 if [[ "$INSTALL_AUR" == true ]]; then
   echo "==> Installing AUR packages..."
   if command -v yay &>/dev/null || command -v paru &>/dev/null || command -v pamac &>/dev/null; then
