@@ -488,14 +488,16 @@ cd ~/hyprland-config
 The installer handles dependency installation, backs up existing configs to `~/.config/cfg_backups/`, and restores all dotfiles from `Configs/` to their target locations.
 
 **Options:**
-- `./Scripts/install.sh` — Standard install (pacman packages only)
-- `./Scripts/install.sh --aur` — Also install AUR packages (requires yay/paru/pamac)
+- `./Scripts/install.sh` — Standard interactive install (prompts for system update and recommended AUR packages)
+- `./Scripts/install.sh --aur` — Auto-install AUR packages (requires yay/paru/pamac)
+- `./Scripts/install.sh --unattended` — Run non-interactively for automated provisioning
 - `./Scripts/install.sh --skip-sys-update` — Skip `pacman -Syu` system update
 - `./Scripts/install.sh --dry-run` — Show what would be done without making changes
 
 **Other scripts:**
 - `./Scripts/uninstall.sh` — Remove all restored dotfiles
 - `./Scripts/restore_cfg.sh` — Restore configs from `Configs/` with backup
+- `./Scripts/restore_thm.sh` — Restore and patch default themes from `themepatcher.lst`
 - `./Scripts/install_aur.sh` — Install AUR packages from `pkg_aur.lst`
 - `./Scripts/version.sh` — Show version info
 
@@ -517,6 +519,9 @@ chmod +x ~/.local/bin/prodi-shell
 
 # Add ~/.local/bin to PATH
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+
+# Restore themes and wallpapers
+./Scripts/restore_thm.sh
 ```
 
 ### Dependencies (Arch & Arch-based)
@@ -526,12 +531,14 @@ Install manually if not using the installer:
 ```bash
 sudo pacman -S --needed \
   hyprland hyprlock hypridle hyprsunset xdg-desktop-portal-hyprland \
-  kitty konsole waybar rofi wofi \
-  swww hyprpaper mpvpaper awww waydeeper grimblast swappy \
+  kitty waybar rofi wofi awww hyprpaper swappy \
   brightnessctl pamixer pipewire pipewire-pulse polkit polkit-gnome \
-  dunst mako fastfetch fzf jq curl wget unzip tar git \
-  base-devel make gcc lua luarocks python python-pip \
-  xdg-desktop-portal xdg-desktop-portal-gtk kvantum dolphin
+  dunst swaync fastfetch fzf jq curl wget unzip tar git \
+  base-devel make gcc lua luarocks lua-filesystem lua-lgi python python-pip \
+  xdg-desktop-portal xdg-desktop-portal-gtk kvantum dolphin git-lfs \
+  udiskie cliphist wl-clipboard network-manager-applet blueman grim slurp \
+  libnotify imagemagick parallel wtype wf-recorder \
+  ttf-jetbrains-mono-nerd noto-fonts-emoji
 ```
 
 ---
