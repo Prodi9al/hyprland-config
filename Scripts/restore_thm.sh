@@ -23,6 +23,9 @@ fi
 
 echo "==> Importing default themes from $THEME_IMPORT_FILE..."
 
+export PATH="$HOME/.local/bin:$PATH"
+defaultTheme=""
+
 while IFS='"' read -r _ themeName _ themeRepo; do
     [[ -z "${themeName:-}" ]] && continue
     [[ "$themeName" =~ ^[[:space:]]*# ]] && continue
@@ -37,8 +40,20 @@ while IFS='"' read -r _ themeName _ themeRepo; do
             echo "    [WARNING] Could not import theme: ${themeName}"
         else
             echo "    [OK] Theme installed: ${themeName}"
+            [[ -z "$defaultTheme" ]] && defaultTheme="${themeName}"
         fi
     fi
 done < "$THEME_IMPORT_FILE"
+
+if [[ "$DRY_RUN" != true && -n "$defaultTheme" ]]; then
+    switch_script="${HOME}/.local/lib/prodi/theme.switch.sh"
+    [[ ! -x "$switch_script" ]] && switch_script="${REPO_DIR}/Configs/.local/lib/prodi/theme.switch.sh"
+    if [[ -x "$switch_script" ]]; then
+        echo "==> Activating default theme: ${defaultTheme}..."
+        if ! "$switch_script" -q -s "$defaultTheme"; then
+            echo "    [WARNING] Could not activate theme '${defaultTheme}' (may require an active Wayland session)."
+        fi
+    fi
+fi
 
 echo "==> Theme import complete!"

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-selected_wall="${1:-"$$PRODI_CACHE_HOME/wall.set"}"
 scrDir="$(dirname "$(realpath "$0")")"
 source "$scrDir/globalcontrol.sh"
+selected_wall="${1:-"$PRODI_CACHE_HOME/wall.set"}"
 wallpaper_acquire_lock 15
 trap 'flock -u "$WALLPAPER_LOCK_FD"' EXIT
 case "$WALLPAPER_SET_FLAG" in
@@ -14,7 +14,6 @@ case "$WALLPAPER_SET_FLAG" in
         xtrans="${xtrans:-"grow"}"
         ;;
 esac
-selected_wall="$1"
 [ -z "$selected_wall" ] && echo "No input wallpaper" && exit 1
 selected_wall="$(readlink -f "$selected_wall")"
 if ! timeout 15 awww query &> /dev/null; then
